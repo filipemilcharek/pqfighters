@@ -1,0 +1,94 @@
+"use client";
+
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import Link from "next/link";
+import Image from "next/image";
+
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      setError("Email ou senha inválidos");
+      setLoading(false);
+      return;
+    }
+
+    const res = await fetch("/api/auth/session");
+    const session = await res.json();
+
+    if (session?.user?.role === "ADMIN") {
+      router.push("/admin");
+    } else {
+      router.push("/student");
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#09090b] px-4">
+      <div className="w-full max-w-md">
+        <Card>
+          <div className="flex flex-col items-center mb-8">
+            <Image src="/logo.png" alt="PQ" width={72} height={72} />
+            <p className="text-zinc-400 text-sm mt-3">
+              Centro de Treinamento
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu@email.com"
+              required
+            />
+            <Input
+              label="Senha"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••"
+              required
+            />
+
+            {error && (
+              <p className="text-sm text-red-400 text-center">{error}</p>
+            )}
+
+            <Button type="submit" className="w-full" size="lg" disabled={loading}>
+              {loading ? "Entrando..." : "Entrar"}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-zinc-500 mt-6">
+            Não tem conta?{" "}
+            <Link href="/register" className="text-orange-500 hover:text-orange-400 transition-colors">
+              Cadastre-se
+            </Link>
+          </p>
+        </Card>
+      </div>
+    </div>
+  );
+}
