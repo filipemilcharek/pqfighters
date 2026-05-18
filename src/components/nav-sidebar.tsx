@@ -10,6 +10,7 @@ import {
   Bell,
   CalendarDays,
   ClipboardCheck,
+  ClipboardList,
   Home,
   LogOut,
   Menu,
@@ -27,6 +28,7 @@ const adminLinks = [
   { href: "/admin/group-classes", label: "Aulas Coletivas", icon: BookOpen },
   { href: "/admin/events", label: "Eventos", icon: CalendarDays },
   { href: "/admin/notifications", label: "Notificações", icon: Bell },
+  { href: "/admin/roll-call", label: "Chamada", icon: ClipboardList },
   { href: "/admin/attendance", label: "Presenças", icon: ClipboardCheck },
   { href: "/admin/belt-requirements", label: "Requisitos de Faixa", icon: Award },
 ];

@@ -16,6 +16,7 @@ model User {
   studentType        String    @default("COLETIVA") // PARTICULAR | COLETIVA
   belt               String    @default("BRANCA")
   degrees            Int       @default(0)
+  initialCheckins    Int       @default(0)
   photoUrl           String?
   monthlyDueDay      Int?
   lastPaymentDate    DateTime?
@@ -58,6 +59,7 @@ model Booking {
   date          String // "YYYY-MM-DD"
   status        String   @default("CONFIRMED")
   checkedIn     Boolean  @default(false)
+  checkinStatus String?  // PRESENTE | CANCELADO | AUSENTE
   createdAt     DateTime @default(now())
 
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)

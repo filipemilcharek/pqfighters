@@ -1,21 +1,36 @@
 import { PrismaClient } from "../src/generated/prisma/client.ts";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import bcrypt from "bcryptjs";
 
-const adapter = new PrismaBetterSqlite3({
-  url: "file:./dev.db",
-});
-const prisma = new PrismaClient({ adapter });
+function createPrismaClient(): PrismaClient {
+  if (process.env.TURSO_DATABASE_URL) {
+    const { createClient } = require("@libsql/client");
+    const { PrismaLibSql } = require("@prisma/adapter-libsql");
+    const libsql = createClient({
+      url: process.env.TURSO_DATABASE_URL,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+    return new PrismaClient({ adapter: new PrismaLibSql(libsql) });
+  }
+
+  const { PrismaBetterSqlite3 } = require("@prisma/adapter-better-sqlite3");
+  return new PrismaClient({
+    adapter: new PrismaBetterSqlite3({
+      url: process.env.DATABASE_URL || "file:./dev.db",
+    }),
+  });
+}
+
+const prisma = createPrismaClient();
 
 async function main() {
-  const passwordHash = await bcrypt.hash("admin123", 10);
+  const passwordHash = await bcrypt.hash("pq@portoalegre", 10);
 
   await prisma.user.upsert({
-    where: { email: "admin@ct.com" },
+    where: { email: "pqfighters@gmail.com" },
     update: {},
     create: {
-      name: "Admin CT",
-      email: "admin@ct.com",
+      name: "Patrick",
+      email: "pqfighters@gmail.com",
       passwordHash,
       role: "ADMIN",
       studentType: "PARTICULAR",
@@ -24,7 +39,7 @@ async function main() {
     },
   });
 
-  console.log("Seed completed: admin@ct.com / admin123");
+  console.log("Seed completed: pqfighters@gmail.com / pq@portoalegre");
 }
 
 main()

@@ -20,6 +20,7 @@ interface Student {
   photoUrl: string | null;
   monthlyDueDay: number | null;
   lastPaymentDate: string | null;
+  lastGraduationDate: string | null;
 }
 
 export default function EditStudentPage() {
@@ -34,6 +35,7 @@ export default function EditStudentPage() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [initialCheckins, setInitialCheckins] = useState<string>("0");
   const [monthlyDueDay, setMonthlyDueDay] = useState<string>("");
   const [lastPaymentDate, setLastPaymentDate] = useState<string>("");
 
@@ -46,6 +48,7 @@ export default function EditStudentPage() {
           setBelt(data.belt);
           setDegrees(data.degrees);
           setPhotoUrl(data.photoUrl);
+          setInitialCheckins(String(data.initialCheckins || 0));
           setMonthlyDueDay(data.monthlyDueDay ? String(data.monthlyDueDay) : "");
           setLastPaymentDate(
             data.lastPaymentDate
@@ -85,7 +88,7 @@ export default function EditStudentPage() {
       newPhotoUrl = uploadData.url;
     }
 
-    const body: Record<string, unknown> = { belt, degrees, photoUrl: newPhotoUrl };
+    const body: Record<string, unknown> = { belt, degrees, photoUrl: newPhotoUrl, initialCheckins: Number(initialCheckins) || 0 };
     if (monthlyDueDay) {
       body.monthlyDueDay = Number(monthlyDueDay);
     } else {
@@ -214,7 +217,47 @@ export default function EditStudentPage() {
               ))}
             </div>
           </div>
+
         </form>
+
+        {student.lastGraduationDate && (
+          <div className="mt-4 flex items-center justify-between text-sm">
+            <p className="text-zinc-400">
+              Última graduação: {new Date(student.lastGraduationDate).toLocaleDateString("pt-BR")}
+            </p>
+            <button
+              type="button"
+              onClick={async () => {
+                const res = await fetch(`/api/students/${id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ lastGraduationDate: null }),
+                });
+                if (res.ok) {
+                  setStudent((prev) => prev ? { ...prev, lastGraduationDate: null } : prev);
+                }
+              }}
+              className="text-xs text-red-400 hover:text-red-300 underline"
+            >
+              Limpar data
+            </button>
+          </div>
+        )}
+      </Card>
+
+      {/* Presenças Iniciais */}
+      <Card className="mb-6">
+        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Presenças Iniciais</h2>
+        <p className="text-sm text-zinc-400 mb-4">
+          Número de presenças anteriores ao sistema. Soma no total para progressão de faixa/grau.
+        </p>
+        <Input
+          label="Quantidade de presenças"
+          type="number"
+          min="0"
+          value={initialCheckins}
+          onChange={(e) => setInitialCheckins(e.target.value)}
+        />
       </Card>
 
       {/* Pagamento */}

@@ -1,5 +1,6 @@
 FROM node:20-slim AS deps
 WORKDIR /app
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN npm ci
 
@@ -7,6 +8,7 @@ FROM node:20-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ENV DATABASE_URL="file:./dummy.db"
 RUN npx prisma generate
 RUN npm run build
 

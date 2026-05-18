@@ -51,7 +51,9 @@ export const updateStudentSchema = z.object({
   studentType: z.enum(["PARTICULAR", "COLETIVA"]).optional(),
   belt: z.enum(["BRANCA", "AZUL", "ROXA", "MARROM", "PRETA"]).optional(),
   degrees: z.number().min(0).max(4).optional(),
+  initialCheckins: z.number().min(0).optional(),
   photoUrl: z.string().optional().nullable(),
   monthlyDueDay: z.number().min(1).max(31).optional().nullable(),
   lastPaymentDate: z.string().optional().nullable(),
+  lastGraduationDate: z.string().optional().nullable(),
 });

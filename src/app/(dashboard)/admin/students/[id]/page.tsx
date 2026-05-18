@@ -9,7 +9,7 @@ import { StudentAvatar } from "@/components/student-avatar";
 import { BeltVisual, BeltProgress } from "@/components/belt-visual";
 import { DegreeProgress } from "@/components/degree-progress";
 import { BELTS } from "@/lib/utils";
-import { ArrowLeft, CheckCircle, XCircle, Pencil } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, Clock, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 interface Booking {
@@ -18,6 +18,7 @@ interface Booking {
   date: string;
   status: string;
   checkedIn: boolean;
+  checkinStatus: string | null;
   createdAt: string;
   privateSlot?: { startTime: string; endTime: string } | null;
   groupClass?: { name: string; startTime: string; endTime: string } | null;
@@ -30,6 +31,7 @@ interface Student {
   studentType: string;
   belt: string;
   degrees: number;
+  initialCheckins: number;
   photoUrl: string | null;
   monthlyDueDay: number | null;
   lastPaymentDate: string | null;
@@ -78,17 +80,61 @@ export default function StudentProfilePage() {
   const [requirements, setRequirements] = useState<BeltRequirement[]>([]);
   const [degreeRequirements, setDegreeRequirements] = useState<DegreeRequirementData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [groupClasses, setGroupClasses] = useState<{ id: string; name: string; dayOfWeek: number }[]>([]);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addDate, setAddDate] = useState("");
+  const [addType, setAddType] = useState("GROUP");
+  const [addGroupClassId, setAddGroupClassId] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function addManualBooking() {
+    if (!addDate) return;
+    setSaving(true);
+    const res = await fetch("/api/bookings/manual", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId: id,
+        type: addType,
+        date: addDate,
+        groupClassId: addType === "GROUP" ? addGroupClassId || null : null,
+      }),
+    });
+    if (res.ok) {
+      const booking = await res.json();
+      setStudent((prev) => {
+        if (!prev) return prev;
+        return { ...prev, bookings: [booking, ...prev.bookings] };
+      });
+      setShowAddForm(false);
+      setAddDate("");
+    }
+    setSaving(false);
+  }
+
+  async function deleteBooking(bookingId: string) {
+    if (!confirm("Excluir esta presença?")) return;
+    const res = await fetch(`/api/bookings/${bookingId}`, { method: "DELETE" });
+    if (res.ok) {
+      setStudent((prev) => {
+        if (!prev) return prev;
+        return { ...prev, bookings: prev.bookings.filter((b) => b.id !== bookingId) };
+      });
+    }
+  }
 
   useEffect(() => {
     Promise.all([
       fetch(`/api/students/${id}`).then((r) => r.json()),
       fetch("/api/belt-requirements").then((r) => r.json()),
       fetch("/api/belt-requirements?type=degree").then((r) => r.json()),
+      fetch("/api/group-classes").then((r) => r.json()),
     ])
-      .then(([studentData, reqData, degreeReqData]) => {
+      .then(([studentData, reqData, degreeReqData, gcData]) => {
         if (!studentData.error) setStudent(studentData);
         setRequirements(reqData);
         if (Array.isArray(degreeReqData)) setDegreeRequirements(degreeReqData);
+        if (Array.isArray(gcData)) setGroupClasses(gcData);
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -102,10 +148,16 @@ export default function StudentProfilePage() {
   }
 
   const checkins = student.bookings.filter((b) => b.checkedIn);
+  const totalCheckins = checkins.length + student.initialCheckins;
   const totalBookings = student.bookings.length;
   const frequencia = totalBookings > 0
     ? Math.round((checkins.length / totalBookings) * 100)
     : 0;
+
+  // Degree progress: resets when degree increases (counts since last graduation)
+  const checkinsSinceGraduation = student.lastGraduationDate
+    ? checkins.filter((b) => b.date > student.lastGraduationDate!.split("T")[0]).length
+    : totalCheckins;
 
   const nextBelt = getNextBelt(student.belt);
   const nextBeltReq = nextBelt
@@ -221,7 +273,7 @@ export default function StudentProfilePage() {
         {/* Degree progress */}
         {degreeReq && (
           <DegreeProgress
-            checkins={checkins.length}
+            checkins={checkinsSinceGraduation}
             belt={student.belt}
             nextDegree={nextDegree!}
             requiredClasses={degreeReq.requiredClasses}
@@ -231,7 +283,7 @@ export default function StudentProfilePage() {
         {/* Belt progress */}
         {nextBelt && nextBeltReq && nextBeltReq.requiredClasses > 0 ? (
           <BeltProgress
-            checkins={checkins.length}
+            checkins={totalCheckins}
             nextBelt={nextBelt}
             requiredClasses={nextBeltReq.requiredClasses}
             width={320}
@@ -259,8 +311,11 @@ export default function StudentProfilePage() {
             <p className="text-sm text-zinc-400">Agendamentos</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-zinc-50">{checkins.length}</p>
+            <p className="text-2xl font-bold text-zinc-50">{totalCheckins}</p>
             <p className="text-sm text-zinc-400">Check-ins</p>
+            {student.initialCheckins > 0 && (
+              <p className="text-xs text-zinc-500">({student.initialCheckins} iniciais)</p>
+            )}
           </div>
           <div>
             <p className="text-2xl font-bold text-zinc-50">{frequencia}%</p>
@@ -271,17 +326,79 @@ export default function StudentProfilePage() {
 
       {/* Histórico de Aulas */}
       <Card>
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Histórico de Aulas</h2>
-        {student.bookings.length === 0 ? (
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-zinc-50">Histórico de Aulas</h2>
+          <Button size="sm" variant="secondary" onClick={() => setShowAddForm(!showAddForm)}>
+            <Plus size={14} className="mr-1.5" />
+            Adicionar Presença
+          </Button>
+        </div>
+
+        {showAddForm && (
+          <div className="mb-4 p-3 bg-zinc-800/50 rounded-lg space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs text-zinc-400 block mb-1">Data</label>
+                <input
+                  type="date"
+                  value={addDate}
+                  onChange={(e) => setAddDate(e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-zinc-50"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-zinc-400 block mb-1">Tipo</label>
+                <select
+                  value={addType}
+                  onChange={(e) => setAddType(e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-zinc-50"
+                >
+                  <option value="GROUP">Coletiva</option>
+                  <option value="PRIVATE">Particular</option>
+                </select>
+              </div>
+              {addType === "GROUP" && (
+                <div>
+                  <label className="text-xs text-zinc-400 block mb-1">Aula</label>
+                  <select
+                    value={addGroupClassId}
+                    onChange={(e) => setAddGroupClassId(e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-zinc-50"
+                  >
+                    <option value="">Selecionar...</option>
+                    {groupClasses.map((gc) => (
+                      <option key={gc.id} value={gc.id}>{gc.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={addManualBooking} disabled={saving || !addDate}>
+                {saving ? "Salvando..." : "Salvar"}
+              </Button>
+              <Button size="sm" variant="secondary" onClick={() => setShowAddForm(false)}>
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {student.bookings.length === 0 && !showAddForm ? (
           <p className="text-zinc-400 text-sm text-center py-4">
             Nenhum agendamento registrado
           </p>
         ) : (
           <div className="divide-y divide-zinc-800">
             {student.bookings.map((b) => {
-              const label = b.type === "PRIVATE"
-                ? `Particular: ${b.privateSlot?.startTime} - ${b.privateSlot?.endTime}`
-                : `${b.groupClass?.name}: ${b.groupClass?.startTime} - ${b.groupClass?.endTime}`;
+              let label: string;
+              if (b.type === "PRIVATE" && b.privateSlot) {
+                label = `Particular: ${b.privateSlot.startTime} - ${b.privateSlot.endTime}`;
+              } else if (b.type === "GROUP" && b.groupClass) {
+                label = `${b.groupClass.name}: ${b.groupClass.startTime} - ${b.groupClass.endTime}`;
+              } else {
+                label = b.type === "PRIVATE" ? "Particular (manual)" : "Coletiva (manual)";
+              }
 
               return (
                 <div key={b.id} className="flex items-center justify-between py-3">
@@ -300,17 +417,30 @@ export default function StudentProfilePage() {
                     <Badge variant={b.type === "PRIVATE" ? "success" : "default"}>
                       {b.type === "PRIVATE" ? "Particular" : "Coletiva"}
                     </Badge>
-                    {b.checkedIn ? (
-                      <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
-                        <CheckCircle size={14} />
-                        Presente
+                    {b.checkinStatus === "PRESENTE" ? (
+                      <span className="flex items-center gap-1 text-xs font-medium text-emerald-400">
+                        <CheckCircle size={14} /> Presente
+                      </span>
+                    ) : b.checkinStatus === "CANCELADO" ? (
+                      <span className="flex items-center gap-1 text-xs font-medium text-amber-400">
+                        <Clock size={14} /> Cancelou
+                      </span>
+                    ) : b.checkinStatus === "AUSENTE" ? (
+                      <span className="flex items-center gap-1 text-xs font-medium text-red-400">
+                        <XCircle size={14} /> Ausente
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 text-zinc-500 text-xs">
-                        <XCircle size={14} />
-                        Ausente
+                      <span className="flex items-center gap-1 text-xs font-medium text-zinc-500">
+                        <Clock size={14} /> Pendente
                       </span>
                     )}
+                    <button
+                      onClick={() => deleteBooking(b.id)}
+                      className="text-zinc-600 hover:text-red-400 transition-colors"
+                      title="Excluir presença"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 </div>
               );

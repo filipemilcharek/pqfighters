@@ -22,6 +22,7 @@ export async function GET(
       studentType: true,
       belt: true,
       degrees: true,
+      initialCheckins: true,
       photoUrl: true,
       monthlyDueDay: true,
       lastPaymentDate: true,
@@ -63,7 +64,6 @@ export async function PATCH(
     );
   }
 
-  // Check if belt or degrees changed to auto-update lastGraduationDate
   const current = await prisma.user.findUnique({
     where: { id: params.id },
     select: { belt: true, degrees: true },
@@ -71,15 +71,21 @@ export async function PATCH(
 
   const data: Record<string, unknown> = { ...result.data };
 
-  // Convert lastPaymentDate string to Date
+  // Convert date strings to Date objects
   if (data.lastPaymentDate && typeof data.lastPaymentDate === "string") {
     data.lastPaymentDate = new Date(data.lastPaymentDate as string);
   }
+  if (data.lastGraduationDate === null) {
+    // Allow explicitly clearing
+  } else if (data.lastGraduationDate && typeof data.lastGraduationDate === "string") {
+    data.lastGraduationDate = new Date(data.lastGraduationDate as string);
+  }
 
+  // Only auto-update lastGraduationDate when degrees actually increases
   if (
     current &&
-    ((result.data.belt && result.data.belt !== current.belt) ||
-      (result.data.degrees !== undefined && result.data.degrees !== current.degrees))
+    result.data.degrees !== undefined &&
+    result.data.degrees > current.degrees
   ) {
     data.lastGraduationDate = new Date();
   }
@@ -94,6 +100,7 @@ export async function PATCH(
       studentType: true,
       belt: true,
       degrees: true,
+      initialCheckins: true,
       photoUrl: true,
       monthlyDueDay: true,
       lastPaymentDate: true,

@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { format } from "date-fns";
+const VALID_STATUSES = ["PRESENTE", "CANCELADO", "AUSENTE"];
 
 export async function PATCH(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
@@ -24,26 +24,33 @@ export async function PATCH(
     );
   }
 
-  // Only admin or the booking owner can check in
-  if (
-    session.user.role !== "ADMIN" &&
-    booking.userId !== session.user.id
-  ) {
+  // Only admin can set checkin status
+  if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
-  // Check-in only on the day of the class
-  const today = format(new Date(), "yyyy-MM-dd");
-  if (booking.date !== today) {
+  const body = await req.json().catch(() => ({}));
+  const { checkinStatus } = body;
+
+  if (checkinStatus && !VALID_STATUSES.includes(checkinStatus)) {
     return NextResponse.json(
-      { error: "Check-in só pode ser feito no dia da aula" },
+      { error: "Status inválido. Use: PRESENTE, CANCELADO ou AUSENTE" },
       { status: 400 }
     );
   }
 
+  // If checkinStatus provided, set it; if null, clear it (reset to pending)
   const updated = await prisma.booking.update({
     where: { id: params.id },
-    data: { checkedIn: true },
+    data: {
+      checkinStatus: checkinStatus || null,
+      checkedIn: checkinStatus === "PRESENTE",
+    },
+    include: {
+      user: { select: { id: true, name: true, belt: true, degrees: true, photoUrl: true } },
+      privateSlot: true,
+      groupClass: true,
+    },
   });
 
   return NextResponse.json(updated);
