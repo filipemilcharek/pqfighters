@@ -9,12 +9,12 @@ export const metadata: Metadata = {
 
 const CONQUISTAS = [
   {
-    titulo: "Campeao Meio-Pesado IFL",
-    desc: "Cinturao meio-pesado do Inside Fighters League, vitoria por TKO.",
+    titulo: "Campeão Meio-Pesado IFL",
+    desc: "Cinturão meio-pesado do Inside Fighters League, vitória por TKO.",
   },
   {
     titulo: "LFA 132",
-    desc: "Participacao no Legacy Fighting Alliance, uma das maiores organizacoes formadoras de talentos para o UFC.",
+    desc: "Participação no Legacy Fighting Alliance, uma das maiores organizações formadoras de talentos para o UFC.",
   },
   {
     titulo: "FFC 51",
@@ -22,19 +22,19 @@ const CONQUISTAS = [
   },
   {
     titulo: "ADCC South American Trials",
-    desc: "Participacao nas seletivas sul-americanas do ADCC 2022.",
+    desc: "Participação nas seletivas sul-americanas do ADCC 2022.",
   },
 ];
 
 const STATS = [
-  { label: "Vitorias", value: "12", detail: "5 KO/TKO • 4 Sub • 2 Dec" },
+  { label: "Vitórias", value: "12", detail: "5 KO/TKO • 4 Sub • 2 Dec" },
   { label: "Altura", value: "1.85m", detail: "Meio-Pesado (93kg)" },
   { label: "Modalidades", value: "4", detail: "MMA • BJJ • Grappling • No-Gi" },
 ];
 
 const GALERIA = [
   { src: "/site/patrick-mma-4.jpg", alt: "Patrick no MMA - controle" },
-  { src: "/site/patrick-mma-5.jpg", alt: "Patrick no MMA - finalizacao" },
+  { src: "/site/patrick-mma-5.jpg", alt: "Patrick no MMA - finalização" },
   { src: "/site/patrick-grappling-1.jpg", alt: "Patrick no Grappling" },
   { src: "/site/patrick-grappling-2.jpg", alt: "Patrick em clinch" },
   { src: "/site/patrick-mma-2.jpg", alt: "Patrick no MMA - cage" },
@@ -102,33 +102,33 @@ export default function PatrickQuadrosPage() {
             <div className="text-zinc-400 mt-6 space-y-4 leading-relaxed">
               <p>
                 Patrick de Quadros Jayme, conhecido como &ldquo;White
-                Monkey&rdquo;, e atleta profissional de MMA, grappler e
-                competidor de Jiu-Jitsu com trajetoria consolidada no cenario
+                Monkey&rdquo;, é atleta profissional de MMA, grappler e
+                competidor de Jiu-Jitsu com trajetória consolidada no cenário
                 nacional e internacional das artes marciais.
               </p>
               <p>
-                Com experiencia em organizacoes reconhecidas como Legacy
+                Com experiência em organizações reconhecidas como Legacy
                 Fighting Alliance, Fusion Fighting Championship e Taura MMA,
-                desenvolveu carreira marcada pela agressividade, pressao fisica
+                desenvolveu carreira marcada pela agressividade, pressão física
                 e forte base de grappling.
               </p>
               <p>
-                Alem do MMA, tambem atuou em competicoes de alto nivel no
-                Jiu-Jitsu e Grappling, incluindo participacao nas seletivas
+                Além do MMA, também atuou em competições de alto nível no
+                Jiu-Jitsu e Grappling, incluindo participação nas seletivas
                 sul-americanas do ADCC e torneios da IBJJF.
               </p>
             </div>
           </div>
           <div className="space-y-3">
             <p className="text-zinc-600 text-xs uppercase tracking-widest mb-4">
-              Caracteristicas tecnicas
+              Características técnicas
             </p>
             {[
-              "Forte pressao fisica",
+              "Forte pressão física",
               "Alto volume ofensivo",
-              "Base solida de Jiu-Jitsu e grappling",
-              "Eficiencia em finalizacoes",
-              "Resistencia fisica e experiencia competitiva",
+              "Base sólida de Jiu-Jitsu e grappling",
+              "Eficiência em finalizações",
+              "Resistência física e experiência competitiva",
               "Versatilidade entre striking e luta de solo",
             ].map((c) => (
               <div
@@ -174,7 +174,7 @@ export default function PatrickQuadrosPage() {
           </div>
           <div className="mt-10">
             <p className="text-zinc-600 text-xs uppercase tracking-widest mb-3">
-              Principais organizacoes
+              Principais organizações
             </p>
             <div className="flex flex-wrap gap-2">
               {[
@@ -206,7 +206,7 @@ export default function PatrickQuadrosPage() {
             Galeria
           </p>
           <h2 className="font-teko text-4xl sm:text-5xl font-bold uppercase text-white leading-tight mb-12">
-            Em Acao
+            Em Ação
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
             {GALERIA.map((img) => (
@@ -233,7 +233,7 @@ export default function PatrickQuadrosPage() {
             Treine com o <span className="text-accent">Patrick</span>
           </h2>
           <p className="text-zinc-400 mt-4 max-w-lg mx-auto leading-relaxed">
-            Aulas de Jiu-Jitsu, Grappling e No-Gi com metodologia propria.
+            Aulas de Jiu-Jitsu, Grappling e No-Gi com metodologia própria.
             Venha conhecer o PQ Fighters.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">

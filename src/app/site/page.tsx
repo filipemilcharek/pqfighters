@@ -4,52 +4,52 @@ const FILOSOFIA = [
   {
     num: "01",
     nome: "Simplicidade que funciona",
-    desc: "Ensinamos menos para que voce entenda mais e aplique melhor. O simples bem feito vence o complexo mal feito.",
+    desc: "Ensinamos menos para que você entenda mais e aplique melhor. O simples bem feito vence o complexo mal feito.",
   },
   {
     num: "02",
-    nome: "Repeticao com proposito",
-    desc: "A repeticao cria memoria muscular, confianca e precisao. Cada repeticao tem intencao e constroi um Jiu-Jitsu solido.",
+    nome: "Repetição com propósito",
+    desc: "A repetição cria memória muscular, confiança e precisão. Cada repetição tem intenção e constrói um Jiu-Jitsu sólido.",
   },
   {
     num: "03",
-    nome: "Eficiencia na pratica",
-    desc: "Valorizamos o tempo no tatame. Cada treino e planejado para gerar evolucao real, com maximo aprendizado.",
+    nome: "Eficiência na prática",
+    desc: "Valorizamos o tempo no tatame. Cada treino é planejado para gerar evolução real, com máximo aprendizado.",
   },
   {
     num: "04",
     nome: "Mente forte, Jiu-Jitsu forte",
-    desc: "Controle emocional, disciplina e foco sao tao importantes quanto tecnica e forca.",
+    desc: "Controle emocional, disciplina e foco são tão importantes quanto técnica e força.",
   },
   {
     num: "05",
-    nome: "Evolucao sempre",
-    desc: "Nunca paramos no que ja sabemos. Nosso compromisso e com a sua melhor versao, dentro e fora do tatame.",
+    nome: "Evolução sempre",
+    desc: "Nunca paramos no que já sabemos. Nosso compromisso é com a sua melhor versão, dentro e fora do tatame.",
   },
 ];
 
 const PRINCIPIOS = [
-  { nome: "Objetividade", desc: "Tecnicas com proposito claro e aplicabilidade real." },
-  { nome: "Progressao", desc: "Do basico ao avancado, respeitando o tempo e a base de cada um." },
-  { nome: "Eficiencia", desc: "Economia de energia e movimentos que geram maximo resultado." },
-  { nome: "Adaptabilidade", desc: "Entender para se adaptar a qualquer oponente e situacao." },
-  { nome: "Inteligencia", desc: "Mais que forca: tomar boas decisoes e o que define o resultado." },
-  { nome: "Disciplina", desc: "Constancia, foco e mentalidade sao tao importantes quanto a tecnica." },
+  { nome: "Objetividade", desc: "Técnicas com propósito claro e aplicabilidade real." },
+  { nome: "Progressão", desc: "Do básico ao avançado, respeitando o tempo e a base de cada um." },
+  { nome: "Eficiência", desc: "Economia de energia e movimentos que geram máximo resultado." },
+  { nome: "Adaptabilidade", desc: "Entender para se adaptar a qualquer oponente e situação." },
+  { nome: "Inteligência", desc: "Mais que força: tomar boas decisões é o que define o resultado." },
+  { nome: "Disciplina", desc: "Constância, foco e mentalidade são tão importantes quanto a técnica." },
 ];
 
 const ESTRUTURA_AULA = [
-  { nome: "Aquecimento", min: 10, desc: "Preparacao fisica especifica, mobilidade e prevencao de lesoes." },
-  { nome: "Tecnica", min: 20, desc: "Ensino detalhado com demonstracao e pontos-chave." },
-  { nome: "Drills", min: 15, desc: "Exercicios para fixacao, timing e precisao." },
-  { nome: "Sparring", min: 10, desc: "Aplicacao em situacoes reais de luta." },
-  { nome: "Fechamento", min: 5, desc: "Alongamento e revisao." },
+  { nome: "Aquecimento", min: 10, desc: "Preparação física específica, mobilidade e prevenção de lesões." },
+  { nome: "Técnica", min: 20, desc: "Ensino detalhado com demonstração e pontos-chave." },
+  { nome: "Drills", min: 15, desc: "Exercícios para fixação, timing e precisão." },
+  { nome: "Sparring", min: 10, desc: "Aplicação em situações reais de luta." },
+  { nome: "Fechamento", min: 5, desc: "Alongamento e revisão." },
 ];
 
 const VALORES = [
-  { nome: "Uniao", desc: "Juntos somos mais fortes. Aqui, ninguem treina sozinho." },
+  { nome: "União", desc: "Juntos somos mais fortes. Aqui, ninguém treina sozinho." },
   { nome: "Respeito", desc: "Dentro e fora do tatame, tratamos todos com honra e humildade." },
-  { nome: "Disciplina", desc: "Fazemos o certo, mesmo quando ninguem ve." },
-  { nome: "Foco", desc: "Mente no objetivo. Cada treino e um passo em direcao a nossa melhor versao." },
+  { nome: "Disciplina", desc: "Fazemos o certo, mesmo quando ninguém vê." },
+  { nome: "Foco", desc: "Mente no objetivo. Cada treino é um passo em direção à nossa melhor versão." },
   { nome: "Compromisso", desc: "Prometemos, fazemos e entregamos." },
 ];
 
@@ -81,7 +81,7 @@ export default function LandingPage() {
             Grappling & Jiu-Jitsu
           </p>
           <p className="text-accent font-semibold tracking-widest uppercase text-sm mt-6">
-            Disciplina. Evolucao. Proposito.
+            Disciplina. Evolução. Propósito.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
             <a
@@ -96,7 +96,7 @@ export default function LandingPage() {
               href="/patrick-quadros"
               className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white px-8 py-3 rounded-md font-semibold transition-colors text-sm uppercase tracking-wider"
             >
-              Conheca o Professor
+              Conheça o Professor
             </a>
           </div>
         </div>
@@ -109,12 +109,12 @@ export default function LandingPage() {
             01 — Filosofia
           </p>
           <h2 className="font-teko text-4xl sm:text-5xl font-bold uppercase text-white leading-tight">
-            Filosofia do Metodo
+            Filosofia do Método
           </h2>
           <p className="text-zinc-400 mt-4 max-w-2xl text-lg leading-relaxed">
-            O metodo do PQ Fighters e baseado na simplicidade, eficiencia e
-            repeticao inteligente. Ensinamos o que realmente funciona, eliminando
-            o excesso e valorizando a essencia do Jiu-Jitsu.
+            O método do PQ Fighters é baseado na simplicidade, eficiência e
+            repetição inteligente. Ensinamos o que realmente funciona, eliminando
+            o excesso e valorizando a essência do Jiu-Jitsu.
           </p>
           <div className="mt-12 space-y-0">
             {FILOSOFIA.map((item) => (
@@ -137,8 +137,8 @@ export default function LandingPage() {
             ))}
           </div>
           <p className="text-zinc-600 italic mt-8 text-sm">
-            &ldquo;Nossa filosofia e transformar conhecimento em resultado e
-            disciplina em carater.&rdquo;
+            &ldquo;Nossa filosofia é transformar conhecimento em resultado e
+            disciplina em caráter.&rdquo;
           </p>
         </div>
       </section>
@@ -169,8 +169,8 @@ export default function LandingPage() {
             ))}
           </div>
           <p className="text-zinc-600 italic mt-10 text-sm">
-            &ldquo;Tecnica sem estrategia e movimento. Estrategia sem tecnica e
-            intencao. A uniao dos dois transforma intencao em vitoria.&rdquo;
+            &ldquo;Técnica sem estratégia é movimento. Estratégia sem técnica é
+            intenção. A união dos dois transforma intenção em vitória.&rdquo;
           </p>
         </div>
       </section>
@@ -179,7 +179,7 @@ export default function LandingPage() {
       <section className="relative h-[40vh] min-h-[300px] overflow-hidden">
         <Image
           src="/site/patrick-mma-3.jpg"
-          alt="PQ Fighters em acao"
+          alt="PQ Fighters em ação"
           fill
           className="object-cover object-center brightness-[0.25] grayscale"
         />
@@ -202,7 +202,7 @@ export default function LandingPage() {
           </h2>
           <p className="text-zinc-400 mt-4 max-w-2xl">
             60 minutos planejados para oferecer o melhor aprendizado de forma
-            organizada, dinamica e eficiente.
+            organizada, dinâmica e eficiente.
           </p>
           <div className="mt-12 flex flex-col gap-4">
             {ESTRUTURA_AULA.map((etapa, i) => (
@@ -243,7 +243,7 @@ export default function LandingPage() {
             Cultura da Equipe
           </h2>
           <p className="text-zinc-400 mt-4 max-w-2xl leading-relaxed">
-            Somos uma familia que cresce junto, se apoia e se desafia todos os
+            Somos uma família que cresce junto, se apoia e se desafia todos os
             dias. Nossos valores guiam nossas atitudes dentro e fora dos
             tatames.
           </p>
@@ -279,8 +279,8 @@ export default function LandingPage() {
             Pronto para <span className="text-accent">evoluir</span>?
           </h2>
           <p className="text-zinc-400 mt-4 max-w-lg mx-auto leading-relaxed">
-            Faca parte do PQ Fighters. Disciplina, tecnica e mentalidade para
-            sua melhor versao dentro e fora do tatame.
+            Faça parte do PQ Fighters. Disciplina, técnica e mentalidade para
+            sua melhor versão dentro e fora do tatame.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
             <a
@@ -295,7 +295,7 @@ export default function LandingPage() {
               href="/patrick-quadros"
               className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white px-8 py-3 rounded-md font-semibold transition-colors text-sm uppercase tracking-wider"
             >
-              Conheca o Professor
+              Conheça o Professor
             </a>
           </div>
         </div>

@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "PQ Fighters - Grappling & Jiu-Jitsu",
   description:
-    "Disciplina. Evolucao. Proposito. Centro de treinamento de Jiu-Jitsu e Grappling em Porto Alegre.",
+    "Disciplina. Evolução. Propósito. Centro de treinamento de Jiu-Jitsu e Grappling em Porto Alegre.",
 };
 
 function Header() {
@@ -32,7 +32,7 @@ function Header() {
             href="https://app.pqfighters.com.br/login"
             className="bg-accent hover:bg-accent-dark text-white px-4 py-2 rounded-md text-sm font-semibold transition-colors"
           >
-            Area do Aluno
+            Área do Aluno
           </a>
         </nav>
       </div>
