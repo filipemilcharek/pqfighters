@@ -1,28 +1,65 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
+import { NextRequest, NextResponse } from "next/server";
 
-export default withAuth(
-  function middleware(req) {
-    const { pathname } = req.nextUrl;
-    const token = req.nextauth.token;
+const SITE_HOSTNAMES = ["pqfighters.com.br", "www.pqfighters.com.br"];
 
-    if (pathname.startsWith("/admin") && token?.role !== "ADMIN") {
+function isSiteRequest(req: NextRequest): boolean {
+  const hostname = req.headers.get("host")?.split(":")[0] ?? "";
+  if (SITE_HOSTNAMES.includes(hostname)) return true;
+  // Localhost: ?site=1 sets a cookie, so subsequent navigations keep working
+  if (hostname === "localhost") {
+    if (req.nextUrl.searchParams.has("site")) return true;
+    if (req.cookies.get("site_mode")?.value === "1") return true;
+  }
+  return false;
+}
+
+export default async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // Site institucional: rewrite to /site/...
+  if (isSiteRequest(req)) {
+    if (
+      pathname.startsWith("/_next") ||
+      pathname.startsWith("/api") ||
+      pathname.startsWith("/favicon") ||
+      pathname.startsWith("/site/") ||
+      pathname === "/logo.png"
+    ) {
+      return NextResponse.next();
+    }
+    const url = req.nextUrl.clone();
+    url.pathname = `/site${pathname === "/" ? "" : pathname}`;
+    const response = NextResponse.rewrite(url);
+    // Set cookie on localhost so internal <a> links keep working without ?site=1
+    if (req.headers.get("host")?.startsWith("localhost")) {
+      response.cookies.set("site_mode", "1", { path: "/", maxAge: 60 * 60 });
+    }
+    return response;
+  }
+
+  // Dashboard auth: only protect /admin and /student
+  if (pathname.startsWith("/admin") || pathname.startsWith("/student")) {
+    const token = await getToken({ req });
+
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
+    if (pathname.startsWith("/admin") && token.role !== "ADMIN") {
       return NextResponse.redirect(new URL("/student", req.url));
     }
 
-    if (pathname.startsWith("/student") && token?.role === "ADMIN") {
+    if (pathname.startsWith("/student") && token.role === "ADMIN") {
       return NextResponse.redirect(new URL("/admin", req.url));
     }
-
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token,
-    },
   }
-);
+
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: ["/admin/:path*", "/student/:path*"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|logo.png|uploads|site/).*)",
+  ],
 };
