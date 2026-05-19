@@ -49,7 +49,10 @@ export default function LoginPage() {
         <Card>
           <div className="flex flex-col items-center mb-8">
             <Image src="/logo.png" alt="PQ" width={72} height={72} />
-            <p className="text-zinc-400 text-sm mt-3">
+            <h1 className="text-3xl font-bold text-zinc-50 tracking-tight font-teko uppercase mt-3">
+              PQ <span className="text-accent">FIGHTERS</span>
+            </h1>
+            <p className="text-zinc-400 text-sm mt-1">
               Centro de Treinamento
             </p>
           </div>

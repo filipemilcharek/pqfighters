@@ -13,30 +13,46 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            console.log("[auth] missing credentials");
+            return null;
+          }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
 
-        if (!user) return null;
+          if (!user) {
+            console.log("[auth] user not found:", credentials.email);
+            return null;
+          }
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.passwordHash
-        );
+          console.log("[auth] user found:", user.email, "hash:", user.passwordHash?.substring(0, 10));
 
-        if (!isValid) return null;
+          const isValid = await bcrypt.compare(
+            credentials.password,
+            user.passwordHash
+          );
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          studentType: user.studentType,
-          belt: user.belt,
-          degrees: user.degrees,
-        };
+          console.log("[auth] bcrypt result:", isValid);
+
+          if (!isValid) return null;
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            studentType: user.studentType,
+            belt: user.belt,
+            degrees: user.degrees,
+            photoUrl: user.photoUrl,
+          };
+        } catch (err) {
+          console.error("[auth] error:", err);
+          return null;
+        }
       },
     }),
   ],
@@ -49,6 +65,7 @@ export const authOptions: NextAuthOptions = {
         token.studentType = user.studentType;
         token.belt = user.belt;
         token.degrees = user.degrees;
+        token.photoUrl = user.photoUrl;
       }
       return token;
     },
@@ -58,6 +75,7 @@ export const authOptions: NextAuthOptions = {
       session.user.studentType = token.studentType;
       session.user.belt = token.belt;
       session.user.degrees = token.degrees;
+      session.user.photoUrl = token.photoUrl;
       return session;
     },
   },

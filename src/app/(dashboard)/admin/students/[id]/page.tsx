@@ -305,7 +305,7 @@ export default function StudentProfilePage() {
       {/* Frequência */}
       <Card className="mb-6">
         <h2 className="text-lg font-semibold mb-4 text-zinc-50">Frequência</h2>
-        <div className="grid grid-cols-3 gap-4 text-center">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div>
             <p className="text-2xl font-bold text-zinc-50">{totalBookings}</p>
             <p className="text-sm text-zinc-400">Agendamentos</p>

@@ -117,10 +117,10 @@ export default function AdminDashboard() {
             <thead>
               <tr className="border-b border-zinc-800">
                 <th className="text-left py-3 px-3 text-zinc-400 font-medium">Aluno</th>
-                <th className="text-left py-3 px-3 text-zinc-400 font-medium">Tipo</th>
+                <th className="text-left py-3 px-3 text-zinc-400 font-medium hidden sm:table-cell">Tipo</th>
                 <th className="text-left py-3 px-3 text-zinc-400 font-medium">Faixa</th>
-                <th className="text-left py-3 px-3 text-zinc-400 font-medium">Check-ins</th>
-                <th className="text-left py-3 px-3 text-zinc-400 font-medium">Pagamento</th>
+                <th className="text-left py-3 px-3 text-zinc-400 font-medium hidden sm:table-cell">Check-ins</th>
+                <th className="text-left py-3 px-3 text-zinc-400 font-medium hidden sm:table-cell">Pagamento</th>
                 <th className="text-left py-3 px-3 text-zinc-400 font-medium"></th>
               </tr>
             </thead>
@@ -142,7 +142,7 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-3 hidden sm:table-cell">
                       <Badge
                         variant={
                           s.studentType === "PARTICULAR" ? "success" : "default"
@@ -160,8 +160,8 @@ export default function AdminDashboard() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-3 text-zinc-300">{s._count.bookings}</td>
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-3 text-zinc-300 hidden sm:table-cell">{s._count.bookings}</td>
+                    <td className="py-3 px-3 hidden sm:table-cell">
                       {paymentStatus ? (
                         <Badge variant={paymentStatus.variant}>
                           {paymentStatus.label}

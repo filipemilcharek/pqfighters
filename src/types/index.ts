@@ -10,6 +10,7 @@ declare module "next-auth" {
       studentType: string;
       belt: string;
       degrees: number;
+      photoUrl?: string | null;
     };
   }
 
@@ -21,6 +22,7 @@ declare module "next-auth" {
     studentType: string;
     belt: string;
     degrees: number;
+    photoUrl?: string | null;
   }
 }
 
@@ -31,5 +33,6 @@ declare module "next-auth/jwt" {
     studentType: string;
     belt: string;
     degrees: number;
+    photoUrl?: string | null;
   }
 }

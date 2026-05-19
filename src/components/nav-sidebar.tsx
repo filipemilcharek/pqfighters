@@ -17,10 +17,12 @@ import {
   X,
   Award,
   ArrowLeft,
+  KeyRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BeltIcon } from "./belt-icon";
+import { StudentAvatar } from "./student-avatar";
 import { useState } from "react";
+import { ChangePasswordModal } from "./change-password-modal";
 
 const adminLinks = [
   { href: "/admin", label: "Dashboard", icon: Home },
@@ -43,6 +45,7 @@ export function NavSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   if (!session) return null;
 
@@ -56,10 +59,16 @@ export function NavSidebar() {
       <div className="p-5 border-b border-zinc-800">
         <div className="flex items-center gap-3">
           <Image src="/logo.png" alt="PQ" width={40} height={40} />
-          <span className="text-xl font-bold text-zinc-50 tracking-tight">FIGHTERS</span>
+          <span className="text-2xl font-bold text-zinc-50 tracking-tight font-teko uppercase">
+            PQ <span className="text-accent">FIGHTERS</span>
+          </span>
         </div>
         <div className="flex items-center gap-2 mt-3 text-sm text-zinc-400">
-          <BeltIcon belt={session.user.belt} size={16} />
+          <StudentAvatar
+            name={session.user.name}
+            photoUrl={session.user.photoUrl}
+            size={28}
+          />
           <span>{session.user.name}</span>
         </div>
       </div>
@@ -87,7 +96,17 @@ export function NavSidebar() {
         })}
       </nav>
 
-      <div className="p-3 border-t border-zinc-800">
+      <div className="p-3 border-t border-zinc-800 space-y-1">
+        <button
+          onClick={() => {
+            setShowChangePassword(true);
+            setOpen(false);
+          }}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-zinc-500 hover:bg-zinc-800 hover:text-zinc-50 w-full transition-colors"
+        >
+          <KeyRound size={18} />
+          Alterar Senha
+        </button>
         <button
           onClick={async () => {
             await signOut({ redirect: false });
@@ -106,17 +125,26 @@ export function NavSidebar() {
     <>
       {/* Mobile top bar */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center gap-2 p-3 lg:hidden bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-800">
+        <div className="flex items-center gap-2">
+          <Image src="/logo.png" alt="PQ" width={28} height={28} />
+          <span className="text-lg font-bold text-zinc-50 tracking-tight font-teko uppercase">
+            PQ <span className="text-accent">FIGHTERS</span>
+          </span>
+        </div>
         {!isHome ? (
           <button
             onClick={() => router.back()}
-            className="p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-400 hover:text-zinc-50 transition-colors"
+            className="p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-400 hover:text-zinc-50 transition-colors ml-auto"
           >
             <ArrowLeft size={20} />
           </button>
         ) : null}
         <button
           onClick={() => setOpen(!open)}
-          className="p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-400 hover:text-zinc-50 transition-colors ml-auto"
+          className={cn(
+            "p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-400 hover:text-zinc-50 transition-colors",
+            isHome && "ml-auto"
+          )}
         >
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -137,6 +165,11 @@ export function NavSidebar() {
       >
         {sidebar}
       </aside>
+
+      <ChangePasswordModal
+        open={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
+      />
     </>
   );
 }
