@@ -50,6 +50,7 @@ interface PrivateSlot {
   startTime: string;
   endTime: string;
   isAvailable: boolean;
+  userId: string | null;
 }
 
 interface Event {
@@ -350,9 +351,11 @@ export default function AgendaPage() {
           );
         })}
 
-        {/* Private slots (read-only) */}
+        {/* Private slots */}
         {privateSlotCards.map(({ slot, booking }) => {
           const label = booking ? getCheckinLabel(booking) : null;
+          const isBound = !!slot.userId;
+          const canCancel = !isBound && booking && !label;
           return (
             <Card key={slot.id} className={`!p-4 border-l-4 ${
               label === "Presente" ? "border-l-emerald-500" :
@@ -360,32 +363,43 @@ export default function AgendaPage() {
               label === "Ausente" ? "border-l-zinc-500" :
               "border-l-accent"
             }`}>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Clock size={14} className="text-zinc-400" />
-                  <span className="text-sm font-semibold text-zinc-50">
-                    {slot.startTime} - {slot.endTime}
-                  </span>
-                </div>
-                <p className="font-medium text-zinc-50">Aula Particular</p>
-                <div className="flex items-center gap-3 mt-2">
-                  <Badge variant="success">Particular</Badge>
-                  {label ? (
-                    <span className={`flex items-center gap-1 text-xs font-medium ${
-                      label === "Presente" ? "text-emerald-400" :
-                      label === "Cancelou" ? "text-red-400" :
-                      label === "Ausente" ? "text-zinc-400" : ""
-                    }`}>
-                      <CheckCircle size={14} />
-                      {label}
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock size={14} className="text-zinc-400" />
+                    <span className="text-sm font-semibold text-zinc-50">
+                      {slot.startTime} - {slot.endTime}
                     </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-orange-500 text-xs font-medium">
-                      <CalendarCheck size={14} />
-                      Agendado
-                    </span>
-                  )}
+                  </div>
+                  <p className="font-medium text-zinc-50">Aula Particular</p>
+                  <div className="flex items-center gap-3 mt-2">
+                    <Badge variant="success">Particular</Badge>
+                    {label ? (
+                      <span className={`flex items-center gap-1 text-xs font-medium ${
+                        label === "Presente" ? "text-emerald-400" :
+                        label === "Cancelou" ? "text-red-400" :
+                        label === "Ausente" ? "text-zinc-400" : ""
+                      }`}>
+                        <CheckCircle size={14} />
+                        {label}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-orange-500 text-xs font-medium">
+                        <CalendarCheck size={14} />
+                        Agendado
+                      </span>
+                    )}
+                  </div>
                 </div>
+                {canCancel && (
+                  <button
+                    onClick={() => handleCancel(booking!.id)}
+                    className="text-red-400 hover:text-red-300 p-1"
+                    title="Cancelar"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
               </div>
             </Card>
           );

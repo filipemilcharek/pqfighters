@@ -64,13 +64,6 @@ export async function POST(req: NextRequest) {
   }
 
   if (type === "PRIVATE") {
-    if (session.user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Aulas particulares são agendadas pelo professor" },
-        { status: 403 }
-      );
-    }
-
     if (!privateSlotId) {
       return NextResponse.json(
         { error: "Slot obrigatório para aula particular" },
@@ -86,6 +79,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Horário não disponível" },
         { status: 400 }
+      );
+    }
+
+    // Students can only book unbound slots (userId is null)
+    if (session.user.role !== "ADMIN" && slot.userId) {
+      return NextResponse.json(
+        { error: "Este horário é vinculado a um aluno específico" },
+        { status: 403 }
       );
     }
 

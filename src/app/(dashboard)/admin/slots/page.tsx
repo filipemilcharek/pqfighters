@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { TimeInput } from "@/components/ui/time-input";
 import { Modal } from "@/components/ui/modal";
 import { Badge } from "@/components/ui/badge";
 import { DAY_NAMES } from "@/lib/utils";
@@ -21,8 +21,8 @@ interface Slot {
   startTime: string;
   endTime: string;
   isAvailable: boolean;
-  userId: string;
-  user: { id: string; name: string };
+  userId: string | null;
+  user: { id: string; name: string } | null;
 }
 
 export default function SlotsPage() {
@@ -51,14 +51,10 @@ export default function SlotsPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.userId) {
-      alert("Selecione um aluno");
-      return;
-    }
     await fetch("/api/slots", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, userId: form.userId || null }),
     });
     setModalOpen(false);
     setForm({ dayOfWeek: 1, startTime: "08:00", endTime: "09:00", userId: "" });
@@ -106,7 +102,7 @@ export default function SlotsPage() {
                   <td className="py-2 px-2 text-zinc-50">{DAY_NAMES[slot.dayOfWeek]}</td>
                   <td className="py-2 px-2 text-zinc-50">{slot.startTime}</td>
                   <td className="py-2 px-2 text-zinc-50">{slot.endTime}</td>
-                  <td className="py-2 px-2 text-zinc-50">{slot.user?.name ?? "—"}</td>
+                  <td className="py-2 px-2 text-zinc-50">{slot.user?.name ?? <span className="text-zinc-500">Aberto</span>}</td>
                   <td className="py-2 px-2">
                     <button onClick={() => toggleAvailability(slot)}>
                       <Badge
@@ -149,7 +145,7 @@ export default function SlotsPage() {
             value={form.userId}
             onChange={(e) => setForm({ ...form, userId: e.target.value })}
           >
-            <option value="">Selecione um aluno</option>
+            <option value="">Aberto (qualquer particular)</option>
             {students.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -169,16 +165,14 @@ export default function SlotsPage() {
               </option>
             ))}
           </Select>
-          <Input
+          <TimeInput
             label="Início"
-            type="time"
             value={form.startTime}
             onChange={(e) => setForm({ ...form, startTime: e.target.value })}
             required
           />
-          <Input
+          <TimeInput
             label="Fim"
-            type="time"
             value={form.endTime}
             onChange={(e) => setForm({ ...form, endTime: e.target.value })}
             required

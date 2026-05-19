@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { TimeInput } from "@/components/ui/time-input";
 import { Modal } from "@/components/ui/modal";
 import { DAY_NAMES } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
@@ -132,16 +133,14 @@ export default function GroupClassesPage() {
               </option>
             ))}
           </Select>
-          <Input
+          <TimeInput
             label="Início"
-            type="time"
             value={form.startTime}
             onChange={(e) => setForm({ ...form, startTime: e.target.value })}
             required
           />
-          <Input
+          <TimeInput
             label="Fim"
-            type="time"
             value={form.endTime}
             onChange={(e) => setForm({ ...form, endTime: e.target.value })}
             required

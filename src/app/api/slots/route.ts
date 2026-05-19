@@ -13,14 +13,24 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
 
-  const where: Record<string, unknown> = {};
-
-  // Students can only see their own slots
+  // Students see their bound slots + unbound available slots
   if (session.user.role === "STUDENT") {
-    where.userId = session.user.id;
-  } else if (userId) {
-    where.userId = userId;
+    const slots = await prisma.privateSlot.findMany({
+      where: {
+        OR: [
+          { userId: session.user.id },
+          { userId: null, isAvailable: true },
+        ],
+      },
+      include: { user: { select: { id: true, name: true } } },
+      orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
+    });
+    return NextResponse.json(slots);
   }
+
+  // Admin: optional filter by userId
+  const where: Record<string, unknown> = {};
+  if (userId) where.userId = userId;
 
   const slots = await prisma.privateSlot.findMany({
     where,
@@ -46,8 +56,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const data = { ...result.data, userId: result.data.userId || null };
+
   const slot = await prisma.privateSlot.create({
-    data: result.data,
+    data,
     include: { user: { select: { id: true, name: true } } },
   });
   return NextResponse.json(slot, { status: 201 });

@@ -21,14 +21,14 @@ export async function GET(req: NextRequest) {
     const dayOfWeek = bookingDate.getDay();
 
     const activeSlots = await prisma.privateSlot.findMany({
-      where: { dayOfWeek, isAvailable: true },
+      where: { dayOfWeek, isAvailable: true, userId: { not: null } },
     });
 
     for (const slot of activeSlots) {
       try {
         await prisma.booking.create({
           data: {
-            userId: slot.userId,
+            userId: slot.userId!,
             type: "PRIVATE",
             privateSlotId: slot.id,
             date,

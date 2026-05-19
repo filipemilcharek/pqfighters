@@ -38,6 +38,7 @@ export default function EditStudentPage() {
   const [initialCheckins, setInitialCheckins] = useState<string>("0");
   const [monthlyDueDay, setMonthlyDueDay] = useState<string>("");
   const [lastPaymentDate, setLastPaymentDate] = useState<string>("");
+  const [resetPassword, setResetPassword] = useState("");
 
   useEffect(() => {
     fetch(`/api/students/${id}`)
@@ -305,6 +306,43 @@ export default function EditStudentPage() {
           Cancelar
         </Button>
       </div>
+
+      <Card className="mb-6">
+        <h2 className="text-lg font-semibold mb-2 text-zinc-50">Redefinir Senha</h2>
+        <p className="text-sm text-zinc-400 mb-4">
+          Defina uma nova senha temporária para o aluno.
+        </p>
+        <div className="flex items-end gap-3">
+          <Input
+            label="Nova senha"
+            type="text"
+            placeholder="Mínimo 6 caracteres"
+            value={resetPassword}
+            onChange={(e) => setResetPassword(e.target.value)}
+          />
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={saving || resetPassword.length < 6}
+            onClick={async () => {
+              setSaving(true);
+              const res = await fetch(`/api/students/${id}/reset-password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: resetPassword }),
+              });
+              if (res.ok) {
+                setResetPassword("");
+                alert("Senha redefinida com sucesso!");
+              }
+              setSaving(false);
+            }}
+          >
+            Redefinir
+          </Button>
+        </div>
+      </Card>
 
       <Card>
         <h2 className="text-lg font-semibold mb-2 text-red-400">Zona de Perigo</h2>

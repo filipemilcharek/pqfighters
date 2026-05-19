@@ -17,12 +17,11 @@ import {
   X,
   Award,
   ArrowLeft,
-  KeyRound,
+  UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StudentAvatar } from "./student-avatar";
 import { useState } from "react";
-import { ChangePasswordModal } from "./change-password-modal";
 
 const adminLinks = [
   { href: "/admin", label: "Dashboard", icon: Home },
@@ -38,6 +37,7 @@ const adminLinks = [
 const studentLinks = [
   { href: "/student", label: "Início", icon: Home },
   { href: "/student/agenda", label: "Minha Agenda", icon: CalendarDays },
+  { href: "/student/account", label: "Minha Conta", icon: UserCog },
 ];
 
 export function NavSidebar() {
@@ -45,7 +45,6 @@ export function NavSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [showChangePassword, setShowChangePassword] = useState(false);
 
   if (!session) return null;
 
@@ -97,16 +96,6 @@ export function NavSidebar() {
       </nav>
 
       <div className="p-3 border-t border-zinc-800 space-y-1">
-        <button
-          onClick={() => {
-            setShowChangePassword(true);
-            setOpen(false);
-          }}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-zinc-500 hover:bg-zinc-800 hover:text-zinc-50 w-full transition-colors"
-        >
-          <KeyRound size={18} />
-          Alterar Senha
-        </button>
         <button
           onClick={async () => {
             await signOut({ redirect: false });
@@ -166,10 +155,6 @@ export function NavSidebar() {
         {sidebar}
       </aside>
 
-      <ChangePasswordModal
-        open={showChangePassword}
-        onClose={() => setShowChangePassword(false)}
-      />
     </>
   );
 }

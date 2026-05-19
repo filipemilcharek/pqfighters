@@ -90,6 +90,16 @@ export default function LoginPage() {
               Cadastre-se
             </Link>
           </p>
+          <p className="text-center text-sm text-zinc-600 mt-3">
+            Esqueceu sua senha?{" "}
+            <button
+              type="button"
+              onClick={() => alert("Entre em contato com o professor para redefinir sua senha.")}
+              className="text-zinc-400 hover:text-zinc-300 underline transition-colors"
+            >
+              Clique aqui
+            </button>
+          </p>
         </Card>
       </div>
     </div>
