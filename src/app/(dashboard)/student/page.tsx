@@ -101,7 +101,6 @@ export default function StudentHome() {
   useEffect(() => {
     fetch("/api/bookings").then((r) => r.json()).then(setBookings);
     fetch("/api/group-classes").then((r) => r.json()).then(setGroupClasses);
-    fetch("/api/slots").then((r) => r.json()).then(setMySlots);
     fetch("/api/events").then((r) => r.json()).then(setEvents);
     fetch("/api/belt-requirements").then((r) => r.json()).then(setRequirements);
     fetch("/api/belt-requirements?type=degree")
@@ -125,6 +124,11 @@ export default function StudentHome() {
   const today = format(new Date(), "yyyy-MM-dd");
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const selectedDayOfWeek = selectedDate.getDay();
+
+  // Refetch slots when selected date changes to filter out taken open slots
+  useEffect(() => {
+    fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
+  }, [selectedDateStr]);
 
   const dayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek);
   const dayBookings = bookings.filter((b) => b.date === selectedDateStr);

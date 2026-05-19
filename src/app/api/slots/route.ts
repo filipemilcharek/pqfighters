@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
 
   // Students see their bound slots + unbound available slots
   if (session.user.role === "STUDENT") {
+    const date = searchParams.get("date");
     const slots = await prisma.privateSlot.findMany({
       where: {
         OR: [
@@ -25,6 +26,23 @@ export async function GET(req: NextRequest) {
       include: { user: { select: { id: true, name: true } } },
       orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
     });
+
+    // If date provided, hide open slots already booked by another student
+    if (date) {
+      const takenBookings = await prisma.booking.findMany({
+        where: {
+          date,
+          type: "PRIVATE",
+          privateSlotId: { not: null },
+          userId: { not: session.user.id },
+          privateSlot: { userId: null },
+        },
+        select: { privateSlotId: true },
+      });
+      const takenSlotIds = new Set(takenBookings.map((b) => b.privateSlotId));
+      return NextResponse.json(slots.filter((s) => !takenSlotIds.has(s.id)));
+    }
+
     return NextResponse.json(slots);
   }
 

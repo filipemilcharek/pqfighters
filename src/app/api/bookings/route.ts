@@ -99,24 +99,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Unique constraint will handle duplicate booking
-    try {
-      const booking = await prisma.booking.create({
-        data: {
-          userId: session.user.id,
-          type: "PRIVATE",
-          privateSlotId,
-          date,
-        },
-        include: { privateSlot: true },
-      });
-      return NextResponse.json(booking, { status: 201 });
-    } catch {
+    // Check if slot is already booked on this date
+    const existingBooking = await prisma.booking.findFirst({
+      where: { privateSlotId, date },
+    });
+    if (existingBooking) {
+      if (existingBooking.userId === session.user.id) {
+        return NextResponse.json(
+          { error: "Você já agendou este horário nesta data" },
+          { status: 409 }
+        );
+      }
       return NextResponse.json(
-        { error: "Este horário já está reservado nesta data" },
+        { error: "Este horário já foi reservado por outro aluno nesta data" },
         { status: 409 }
       );
     }
+
+    const booking = await prisma.booking.create({
+      data: {
+        userId: session.user.id,
+        type: "PRIVATE",
+        privateSlotId,
+        date,
+      },
+      include: { privateSlot: true },
+    });
+    return NextResponse.json(booking, { status: 201 });
   }
 
   // GROUP booking
