@@ -4,8 +4,27 @@ import { slotSchema } from "@/lib/validations";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get("userId");
+
+  const where: Record<string, unknown> = {};
+
+  // Students can only see their own slots
+  if (session.user.role === "STUDENT") {
+    where.userId = session.user.id;
+  } else if (userId) {
+    where.userId = userId;
+  }
+
   const slots = await prisma.privateSlot.findMany({
+    where,
+    include: { user: { select: { id: true, name: true } } },
     orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
   });
   return NextResponse.json(slots);
@@ -27,6 +46,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const slot = await prisma.privateSlot.create({ data: result.data });
+  const slot = await prisma.privateSlot.create({
+    data: result.data,
+    include: { user: { select: { id: true, name: true } } },
+  });
   return NextResponse.json(slot, { status: 201 });
 }

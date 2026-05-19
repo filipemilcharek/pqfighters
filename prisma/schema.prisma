@@ -24,6 +24,7 @@ model User {
   createdAt          DateTime  @default(now())
 
   bookings          Booking[]
+  privateSlots      PrivateSlot[]
   createdEvents     Event[]
   createdNotifs     Notification[]
   notificationReads NotificationRead[]
@@ -35,7 +36,9 @@ model PrivateSlot {
   startTime   String // "HH:mm"
   endTime     String // "HH:mm"
   isAvailable Boolean @default(true)
+  userId      String
 
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookings Booking[]
 }
 

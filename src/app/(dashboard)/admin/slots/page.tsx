@@ -10,25 +10,37 @@ import { Badge } from "@/components/ui/badge";
 import { DAY_NAMES } from "@/lib/utils";
 import { Trash2 } from "lucide-react";
 
+interface Student {
+  id: string;
+  name: string;
+}
+
 interface Slot {
   id: string;
   dayOfWeek: number;
   startTime: string;
   endTime: string;
   isAvailable: boolean;
+  userId: string;
+  user: { id: string; name: string };
 }
 
 export default function SlotsPage() {
   const [slots, setSlots] = useState<Slot[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({
     dayOfWeek: 1,
     startTime: "08:00",
     endTime: "09:00",
+    userId: "",
   });
 
   useEffect(() => {
     loadSlots();
+    fetch("/api/students")
+      .then((r) => r.json())
+      .then(setStudents);
   }, []);
 
   function loadSlots() {
@@ -39,12 +51,17 @@ export default function SlotsPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
+    if (!form.userId) {
+      alert("Selecione um aluno");
+      return;
+    }
     await fetch("/api/slots", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
     setModalOpen(false);
+    setForm({ dayOfWeek: 1, startTime: "08:00", endTime: "09:00", userId: "" });
     loadSlots();
   }
 
@@ -78,6 +95,7 @@ export default function SlotsPage() {
                 <th className="text-left py-2 px-2 text-zinc-400">Dia</th>
                 <th className="text-left py-2 px-2 text-zinc-400">Início</th>
                 <th className="text-left py-2 px-2 text-zinc-400">Fim</th>
+                <th className="text-left py-2 px-2 text-zinc-400">Aluno</th>
                 <th className="text-left py-2 px-2 text-zinc-400">Status</th>
                 <th className="text-left py-2 px-2"></th>
               </tr>
@@ -88,12 +106,13 @@ export default function SlotsPage() {
                   <td className="py-2 px-2 text-zinc-50">{DAY_NAMES[slot.dayOfWeek]}</td>
                   <td className="py-2 px-2 text-zinc-50">{slot.startTime}</td>
                   <td className="py-2 px-2 text-zinc-50">{slot.endTime}</td>
+                  <td className="py-2 px-2 text-zinc-50">{slot.user?.name ?? "—"}</td>
                   <td className="py-2 px-2">
                     <button onClick={() => toggleAvailability(slot)}>
                       <Badge
                         variant={slot.isAvailable ? "success" : "danger"}
                       >
-                        {slot.isAvailable ? "Disponível" : "Indisponível"}
+                        {slot.isAvailable ? "Ativo" : "Inativo"}
                       </Badge>
                     </button>
                   </td>
@@ -109,7 +128,7 @@ export default function SlotsPage() {
               ))}
               {slots.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-zinc-500">
+                  <td colSpan={6} className="py-8 text-center text-zinc-500">
                     Nenhum horário cadastrado
                   </td>
                 </tr>
@@ -125,6 +144,18 @@ export default function SlotsPage() {
         title="Novo Horário"
       >
         <form onSubmit={handleCreate} className="space-y-4">
+          <Select
+            label="Aluno"
+            value={form.userId}
+            onChange={(e) => setForm({ ...form, userId: e.target.value })}
+          >
+            <option value="">Selecione um aluno</option>
+            {students.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </Select>
           <Select
             label="Dia da Semana"
             value={String(form.dayOfWeek)}

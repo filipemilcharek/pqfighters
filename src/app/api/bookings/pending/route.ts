@@ -15,6 +15,31 @@ export async function GET(req: NextRequest) {
   const where: Record<string, unknown> = {};
   if (date) where.date = date;
 
+  // Auto-create bookings for active private slots on this date
+  if (date) {
+    const bookingDate = new Date(date + "T12:00:00");
+    const dayOfWeek = bookingDate.getDay();
+
+    const activeSlots = await prisma.privateSlot.findMany({
+      where: { dayOfWeek, isAvailable: true },
+    });
+
+    for (const slot of activeSlots) {
+      try {
+        await prisma.booking.create({
+          data: {
+            userId: slot.userId,
+            type: "PRIVATE",
+            privateSlotId: slot.id,
+            date,
+          },
+        });
+      } catch {
+        // Unique constraint violation — booking already exists
+      }
+    }
+  }
+
   const bookings = await prisma.booking.findMany({
     where,
     include: {

@@ -18,6 +18,7 @@ export const slotSchema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   endTime: z.string().regex(/^\d{2}:\d{2}$/),
   isAvailable: z.boolean().optional(),
+  userId: z.string().min(1),
 });
 
 export const groupClassSchema = z.object({

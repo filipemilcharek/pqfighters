@@ -64,6 +64,13 @@ export async function POST(req: NextRequest) {
   }
 
   if (type === "PRIVATE") {
+    if (session.user.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Aulas particulares são agendadas pelo professor" },
+        { status: 403 }
+      );
+    }
+
     if (!privateSlotId) {
       return NextResponse.json(
         { error: "Slot obrigatório para aula particular" },

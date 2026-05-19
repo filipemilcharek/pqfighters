@@ -44,8 +44,10 @@ interface Booking {
   type: string;
   date: string;
   checkedIn: boolean;
+  checkinStatus?: string | null;
   groupClassId?: string | null;
-  privateSlot?: { startTime: string; endTime: string } | null;
+  privateSlotId?: string | null;
+  privateSlot?: { id: string; startTime: string; endTime: string } | null;
   groupClass?: { id: string; name: string; startTime: string; endTime: string } | null;
 }
 
@@ -56,6 +58,14 @@ interface GroupClass {
   startTime: string;
   endTime: string;
   capacity: number;
+}
+
+interface PrivateSlot {
+  id: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  isAvailable: boolean;
 }
 
 interface Event {
@@ -75,6 +85,7 @@ export default function StudentHome() {
   const { data: session } = useSession();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [groupClasses, setGroupClasses] = useState<GroupClass[]>([]);
+  const [mySlots, setMySlots] = useState<PrivateSlot[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [requirements, setRequirements] = useState<BeltRequirement[]>([]);
   const [degreeRequirements, setDegreeRequirements] = useState<DegreeRequirementData[]>([]);
@@ -88,6 +99,7 @@ export default function StudentHome() {
   useEffect(() => {
     fetch("/api/bookings").then((r) => r.json()).then(setBookings);
     fetch("/api/group-classes").then((r) => r.json()).then(setGroupClasses);
+    fetch("/api/slots").then((r) => r.json()).then(setMySlots);
     fetch("/api/events").then((r) => r.json()).then(setEvents);
     fetch("/api/belt-requirements").then((r) => r.json()).then(setRequirements);
     fetch("/api/belt-requirements?type=degree")
@@ -116,6 +128,9 @@ export default function StudentHome() {
   const dayEvents = events.filter((e) => e.date === selectedDateStr);
   const privateBookings = dayBookings.filter((b) => b.type === "PRIVATE");
 
+  // Slots assigned to this student for the selected day
+  const daySlotsAssigned = mySlots.filter((s) => s.dayOfWeek === selectedDayOfWeek && s.isAvailable);
+
   // Upcoming events (next 30 days)
   const upcomingEvents = useMemo(() => {
     const todayStr = format(new Date(), "yyyy-MM-dd");
@@ -130,13 +145,18 @@ export default function StudentHome() {
     return dayBookings.find((b) => b.groupClassId === classId);
   }
 
+  function getBookingForSlot(slotId: string): Booking | undefined {
+    return privateBookings.find((b) => b.privateSlotId === slotId);
+  }
+
   function hasItems(date: Date) {
     const dateStr = format(date, "yyyy-MM-dd");
     const dow = date.getDay();
     return (
       bookings.some((b) => b.date === dateStr) ||
       events.some((e) => e.date === dateStr) ||
-      groupClasses.some((gc) => gc.dayOfWeek === dow)
+      groupClasses.some((gc) => gc.dayOfWeek === dow) ||
+      mySlots.some((s) => s.dayOfWeek === dow && s.isAvailable)
     );
   }
 
@@ -181,6 +201,14 @@ export default function StudentHome() {
     setActionLoading(null);
   }
 
+  function getCheckinLabel(booking: Booking) {
+    if (booking.checkinStatus === "PRESENTE") return "Presente";
+    if (booking.checkinStatus === "CANCELADO") return "Cancelou";
+    if (booking.checkinStatus === "AUSENTE") return "Ausente";
+    if (booking.checkedIn) return "Presente";
+    return null;
+  }
+
   if (!session) return null;
 
   const { user } = session;
@@ -190,6 +218,12 @@ export default function StudentHome() {
   const degreeReq = nextDegree
     ? degreeRequirements.find((r) => r.belt === user.belt && r.degree === nextDegree)
     : null;
+
+  // Build list of private slot cards: merge assigned slots with existing bookings
+  const privateSlotCards = daySlotsAssigned.map((slot) => {
+    const booking = getBookingForSlot(slot.id);
+    return { slot, booking };
+  });
 
   return (
     <div>
@@ -294,7 +328,7 @@ export default function StudentHome() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
           {weekDays.map((day) => {
             const isSelected = isSameDay(day, selectedDate);
             const isToday = format(day, "yyyy-MM-dd") === today;
@@ -303,7 +337,7 @@ export default function StudentHome() {
               <button
                 key={day.toISOString()}
                 onClick={() => setSelectedDate(day)}
-                className={`flex flex-col items-center p-2 rounded-md text-sm transition-colors ${
+                className={`flex flex-col items-center p-1.5 sm:p-2 rounded-md text-sm transition-colors ${
                   isSelected
                     ? "bg-orange-500 text-zinc-50"
                     : isToday
@@ -311,13 +345,14 @@ export default function StudentHome() {
                     : "hover:bg-zinc-800"
                 }`}
               >
-                <span className="text-xs uppercase text-zinc-400">
-                  {format(day, "EEE", { locale: ptBR })}
+                <span className="text-[10px] sm:text-xs uppercase text-zinc-400">
+                  <span className="sm:hidden">{format(day, "EEEEE", { locale: ptBR })}</span>
+                  <span className="hidden sm:inline">{format(day, "EEE", { locale: ptBR })}</span>
                 </span>
-                <span className="font-medium text-zinc-50">{format(day, "d")}</span>
+                <span className="font-medium text-zinc-50 text-sm sm:text-base">{format(day, "d")}</span>
                 {has && (
                   <div
-                    className={`w-1.5 h-1.5 rounded-full mt-1 ${
+                    className={`w-1.5 h-1.5 rounded-full mt-0.5 sm:mt-1 ${
                       isSelected ? "bg-white" : "bg-orange-500"
                     }`}
                   />
@@ -444,57 +479,49 @@ export default function StudentHome() {
           );
         })}
 
-        {/* Private bookings */}
-        {privateBookings.map((booking) => (
-          <Card key={booking.id} className={`!p-4 border-l-4 ${
-            booking.checkedIn ? "border-l-emerald-500" : "border-l-accent"
-          }`}>
-            <div className="flex items-center justify-between">
+        {/* Private slots (read-only) */}
+        {privateSlotCards.map(({ slot, booking }) => {
+          const label = booking ? getCheckinLabel(booking) : null;
+          return (
+            <Card key={slot.id} className={`!p-4 border-l-4 ${
+              label === "Presente" ? "border-l-emerald-500" :
+              label === "Cancelou" ? "border-l-red-500" :
+              label === "Ausente" ? "border-l-zinc-500" :
+              "border-l-accent"
+            }`}>
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <Clock size={14} className="text-zinc-400" />
                   <span className="text-sm font-semibold text-zinc-50">
-                    {booking.privateSlot?.startTime} - {booking.privateSlot?.endTime}
+                    {slot.startTime} - {slot.endTime}
                   </span>
                 </div>
                 <p className="font-medium text-zinc-50">Aula Particular</p>
                 <div className="flex items-center gap-3 mt-2">
                   <Badge variant="success">Particular</Badge>
-                  {booking.checkedIn && (
-                    <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
+                  {label ? (
+                    <span className={`flex items-center gap-1 text-xs font-medium ${
+                      label === "Presente" ? "text-emerald-400" :
+                      label === "Cancelou" ? "text-red-400" :
+                      label === "Ausente" ? "text-zinc-400" : ""
+                    }`}>
                       <CheckCircle size={14} />
-                      Presente
+                      {label}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-orange-500 text-xs font-medium">
+                      <CalendarCheck size={14} />
+                      Agendado
                     </span>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                {!booking.checkedIn && booking.date === today && (
-                  <Button
-                    size="sm"
-                    disabled={actionLoading === booking.id}
-                    onClick={() => handleCheckin(booking.id)}
-                  >
-                    <CheckCircle size={14} className="mr-1.5" />
-                    Check-in
-                  </Button>
-                )}
-                {!booking.checkedIn && (
-                  <button
-                    onClick={() => handleCancel(booking.id)}
-                    className="text-red-400 hover:text-red-300 p-1"
-                    title="Cancelar"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
 
         {/* Empty state */}
-        {dayClasses.length === 0 && privateBookings.length === 0 && dayEvents.length === 0 && (
+        {dayClasses.length === 0 && privateSlotCards.length === 0 && dayEvents.length === 0 && (
           <Card className="!p-8">
             <p className="text-zinc-400 text-sm text-center">
               {DAY_NAMES[selectedDayOfWeek] === "Domingo" || DAY_NAMES[selectedDayOfWeek] === "Sábado"

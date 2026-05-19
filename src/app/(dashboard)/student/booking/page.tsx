@@ -8,14 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DAY_NAMES } from "@/lib/utils";
 
-interface Slot {
-  id: string;
-  dayOfWeek: number;
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
-}
-
 interface GroupClass {
   id: string;
   name: string;
@@ -27,7 +19,6 @@ interface GroupClass {
 
 export default function BookingPage() {
   const { data: session } = useSession();
-  const [slots, setSlots] = useState<Slot[]>([]);
   const [groupClasses, setGroupClasses] = useState<GroupClass[]>([]);
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
@@ -37,15 +28,10 @@ export default function BookingPage() {
   const isParticular = session?.user.studentType === "PARTICULAR";
 
   useEffect(() => {
-    if (isParticular) {
-      fetch("/api/slots")
-        .then((r) => r.json())
-        .then((data: Slot[]) => setSlots(data.filter((s) => s.isAvailable)));
-    }
     fetch("/api/group-classes")
       .then((r) => r.json())
       .then(setGroupClasses);
-  }, [isParticular]);
+  }, []);
 
   function getDateDayOfWeek(): number | null {
     if (!date) return null;
@@ -54,35 +40,9 @@ export default function BookingPage() {
 
   const selectedDay = getDateDayOfWeek();
 
-  const filteredSlots = selectedDay !== null
-    ? slots.filter((s) => s.dayOfWeek === selectedDay)
-    : [];
-
   const filteredClasses = selectedDay !== null
     ? groupClasses.filter((gc) => gc.dayOfWeek === selectedDay)
     : [];
-
-  async function bookPrivate(slotId: string) {
-    if (!date) return;
-    setError("");
-    setSuccess("");
-    setLoading(true);
-
-    const res = await fetch("/api/bookings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "PRIVATE", privateSlotId: slotId, date }),
-    });
-
-    const data = await res.json();
-    setLoading(false);
-
-    if (!res.ok) {
-      setError(data.error);
-    } else {
-      setSuccess("Aula particular agendada com sucesso!");
-    }
-  }
 
   async function bookGroup(classId: string) {
     if (!date) return;
@@ -109,6 +69,14 @@ export default function BookingPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6 text-zinc-50">Agendar Aula</h1>
+
+      {isParticular && (
+        <Card className="mb-6 !p-4">
+          <p className="text-sm text-zinc-400">
+            Suas aulas particulares são agendadas pelo professor. Consulte sua agenda para ver os horários.
+          </p>
+        </Card>
+      )}
 
       <Card className="mb-6">
         <Input
@@ -140,74 +108,37 @@ export default function BookingPage() {
       )}
 
       {date && (
-        <>
-          {isParticular && (
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold mb-3 text-zinc-50">
-                Aulas Particulares
-              </h2>
-              {filteredSlots.length === 0 ? (
-                <p className="text-zinc-400 text-sm">
-                  Nenhum horário particular disponível neste dia
-                </p>
-              ) : (
-                <div className="grid gap-3">
-                  {filteredSlots.map((slot) => (
-                    <Card key={slot.id} className="!p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-zinc-50">
-                            {slot.startTime} - {slot.endTime}
-                          </p>
-                          <Badge variant="success">Particular</Badge>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => bookPrivate(slot.id)}
-                          disabled={loading}
-                        >
-                          Agendar
-                        </Button>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
+        <div>
+          <h2 className="text-lg font-semibold mb-3 text-zinc-50">Aulas Coletivas</h2>
+          {filteredClasses.length === 0 ? (
+            <p className="text-zinc-400 text-sm">
+              Nenhuma aula coletiva neste dia
+            </p>
+          ) : (
+            <div className="grid gap-3">
+              {filteredClasses.map((gc) => (
+                <Card key={gc.id} className="!p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-zinc-50">{gc.name}</p>
+                      <p className="text-sm text-zinc-400">
+                        {gc.startTime} - {gc.endTime}
+                      </p>
+                      <Badge>Coletiva - {gc.capacity} vagas</Badge>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => bookGroup(gc.id)}
+                      disabled={loading}
+                    >
+                      Agendar
+                    </Button>
+                  </div>
+                </Card>
+              ))}
             </div>
           )}
-
-          <div>
-            <h2 className="text-lg font-semibold mb-3 text-zinc-50">Aulas Coletivas</h2>
-            {filteredClasses.length === 0 ? (
-              <p className="text-zinc-400 text-sm">
-                Nenhuma aula coletiva neste dia
-              </p>
-            ) : (
-              <div className="grid gap-3">
-                {filteredClasses.map((gc) => (
-                  <Card key={gc.id} className="!p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-zinc-50">{gc.name}</p>
-                        <p className="text-sm text-zinc-400">
-                          {gc.startTime} - {gc.endTime}
-                        </p>
-                        <Badge>Coletiva - {gc.capacity} vagas</Badge>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => bookGroup(gc.id)}
-                        disabled={loading}
-                      >
-                        Agendar
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
+        </div>
       )}
     </div>
   );
