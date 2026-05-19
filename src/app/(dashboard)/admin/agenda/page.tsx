@@ -19,6 +19,7 @@ import {
   Clock,
   Users,
   User,
+  RefreshCw,
 } from "lucide-react";
 import { DAY_NAMES } from "@/lib/utils";
 
@@ -117,12 +118,27 @@ export default function AdminAgendaPage() {
       return <Badge variant="danger">Cancelou</Badge>;
     if (booking.checkinStatus === "AUSENTE")
       return <Badge variant="default">Ausente</Badge>;
-    return <Badge variant="default">Pendente</Badge>;
+    return <Badge variant="default">Agendado</Badge>;
+  }
+
+  function refetchBookings() {
+    setLoading(true);
+    fetch(`/api/bookings/pending?date=${selectedDateStr}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setBookings(data);
+        setLoading(false);
+      });
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6 text-zinc-50">Agenda do Dia</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-zinc-50">Agenda do Dia</h1>
+        <Button variant="ghost" size="sm" onClick={refetchBookings} disabled={loading}>
+          <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+        </Button>
+      </div>
 
       {/* Week navigation */}
       <Card className="mb-6">

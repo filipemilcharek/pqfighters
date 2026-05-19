@@ -152,20 +152,24 @@ export default function AgendaPage() {
 
   async function handleBookPrivate(slotId: string) {
     setActionLoading(slotId);
-    const res = await fetch("/api/bookings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "PRIVATE", privateSlotId: slotId, date: selectedDateStr }),
-    });
-    if (!res.ok) {
-      const data = await res.json();
-      alert(data.error || "Erro ao agendar");
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "PRIVATE", privateSlotId: slotId, date: selectedDateStr }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Erro ao agendar");
+        return;
+      }
+      const booking = await res.json();
+      setBookings((prev) => [...prev, booking]);
+    } catch {
+      alert("Erro de conexão ao agendar");
+    } finally {
       setActionLoading(null);
-      return;
     }
-    const booking = await res.json();
-    setBookings((prev) => [...prev, booking]);
-    setActionLoading(null);
   }
 
   async function handleCancel(bookingId: string) {

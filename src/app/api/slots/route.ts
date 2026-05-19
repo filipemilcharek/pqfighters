@@ -13,16 +13,15 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
 
-  // Students see their bound slots + unbound available slots
+  // Students see their bound slots + (PARTICULAR only) unbound available slots
   if (session.user.role === "STUDENT") {
     const date = searchParams.get("date");
+    const isParticular = session.user.studentType === "PARTICULAR";
+    const orFilter = isParticular
+      ? [{ userId: session.user.id }, { userId: null, isAvailable: true }]
+      : [{ userId: session.user.id }];
     const slots = await prisma.privateSlot.findMany({
-      where: {
-        OR: [
-          { userId: session.user.id },
-          { userId: null, isAvailable: true },
-        ],
-      },
+      where: { OR: orFilter },
       include: { user: { select: { id: true, name: true } } },
       orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
     });
