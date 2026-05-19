@@ -131,8 +131,10 @@ export default function StudentHome() {
   const dayEvents = events.filter((e) => e.date === selectedDateStr);
   const privateBookings = dayBookings.filter((b) => b.type === "PRIVATE");
 
-  // Slots assigned to this student for the selected day
-  const daySlotsAssigned = mySlots.filter((s) => s.dayOfWeek === selectedDayOfWeek && s.isAvailable);
+  // Bound slots (assigned to this student) for the selected day
+  const boundSlots = mySlots.filter((s) => s.dayOfWeek === selectedDayOfWeek && s.isAvailable && s.userId);
+  // Open slots (available for any student to book)
+  const openSlots = mySlots.filter((s) => s.dayOfWeek === selectedDayOfWeek && s.isAvailable && !s.userId);
 
   // Upcoming events (next 30 days)
   const upcomingEvents = useMemo(() => {
@@ -194,6 +196,24 @@ export default function StudentHome() {
     setActionLoading(null);
   }
 
+  async function handleBookPrivate(slotId: string) {
+    setActionLoading(slotId);
+    const res = await fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "PRIVATE", privateSlotId: slotId, date: selectedDateStr }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      alert(data.error || "Erro ao agendar");
+      setActionLoading(null);
+      return;
+    }
+    const booking = await res.json();
+    setBookings((prev) => [...prev, booking]);
+    setActionLoading(null);
+  }
+
   async function handleCancel(bookingId: string) {
     if (!confirm("Cancelar este agendamento?")) return;
     setActionLoading(bookingId);
@@ -222,8 +242,14 @@ export default function StudentHome() {
     ? degreeRequirements.find((r) => r.belt === user.belt && r.degree === nextDegree)
     : null;
 
-  // Build list of private slot cards: merge assigned slots with existing bookings
-  const privateSlotCards = daySlotsAssigned.map((slot) => {
+  // Bound slot cards (read-only)
+  const privateSlotCards = boundSlots.map((slot) => {
+    const booking = getBookingForSlot(slot.id);
+    return { slot, booking };
+  });
+
+  // Open slot cards (bookable by student)
+  const openSlotCards = openSlots.map((slot) => {
     const booking = getBookingForSlot(slot.id);
     return { slot, booking };
   });
@@ -482,11 +508,9 @@ export default function StudentHome() {
           );
         })}
 
-        {/* Private slots */}
+        {/* Bound private slots (read-only) */}
         {privateSlotCards.map(({ slot, booking }) => {
           const label = booking ? getCheckinLabel(booking) : null;
-          const isBound = !!slot.userId;
-          const canCancel = !isBound && booking && !label;
           return (
             <Card key={slot.id} className={`!p-4 border-l-4 ${
               label === "Presente" ? "border-l-emerald-500" :
@@ -522,22 +546,86 @@ export default function StudentHome() {
                     )}
                   </div>
                 </div>
-                {canCancel && (
-                  <button
-                    onClick={() => handleCancel(booking!.id)}
-                    className="text-red-400 hover:text-red-300 p-1"
-                    title="Cancelar"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
+              </div>
+            </Card>
+          );
+        })}
+
+        {/* Open private slots (bookable) */}
+        {openSlotCards.map(({ slot, booking }) => {
+          const label = booking ? getCheckinLabel(booking) : null;
+          const isBooked = !!booking;
+          const loading = actionLoading === slot.id || actionLoading === booking?.id;
+          return (
+            <Card key={slot.id} className={`!p-4 border-l-4 ${
+              label === "Presente" ? "border-l-emerald-500" :
+              label === "Cancelou" ? "border-l-red-500" :
+              label === "Ausente" ? "border-l-zinc-500" :
+              isBooked ? "border-l-accent" :
+              "border-l-zinc-800"
+            }`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock size={14} className="text-zinc-400" />
+                    <span className="text-sm font-semibold text-zinc-50">
+                      {slot.startTime} - {slot.endTime}
+                    </span>
+                  </div>
+                  <p className="font-medium text-zinc-50">Aula Particular</p>
+                  <div className="flex items-center gap-3 mt-2">
+                    <Badge variant="success">Particular</Badge>
+                    {label ? (
+                      <span className={`flex items-center gap-1 text-xs font-medium ${
+                        label === "Presente" ? "text-emerald-400" :
+                        label === "Cancelou" ? "text-red-400" :
+                        label === "Ausente" ? "text-zinc-400" : ""
+                      }`}>
+                        <CheckCircle size={14} />
+                        {label}
+                      </span>
+                    ) : isBooked ? (
+                      <span className="flex items-center gap-1 text-orange-500 text-xs font-medium">
+                        <CalendarCheck size={14} />
+                        Agendado
+                      </span>
+                    ) : (
+                      <span className="text-xs text-zinc-500">Disponível</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {!isBooked && !label && (
+                    <Button
+                      size="sm"
+                      disabled={loading}
+                      onClick={() => handleBookPrivate(slot.id)}
+                    >
+                      {loading ? "..." : (
+                        <>
+                          <CalendarCheck size={14} className="mr-1.5" />
+                          Agendar
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  {isBooked && !label && (
+                    <button
+                      onClick={() => handleCancel(booking!.id)}
+                      className="text-red-400 hover:text-red-300 p-1"
+                      title="Cancelar"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
               </div>
             </Card>
           );
         })}
 
         {/* Empty state */}
-        {dayClasses.length === 0 && privateSlotCards.length === 0 && dayEvents.length === 0 && (
+        {dayClasses.length === 0 && privateSlotCards.length === 0 && openSlotCards.length === 0 && dayEvents.length === 0 && (
           <Card className="!p-8">
             <p className="text-zinc-400 text-sm text-center">
               {DAY_NAMES[selectedDayOfWeek] === "Domingo" || DAY_NAMES[selectedDayOfWeek] === "Sábado"
