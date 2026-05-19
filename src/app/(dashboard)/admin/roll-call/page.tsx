@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { StudentAvatar } from "@/components/student-avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Trash2 } from "lucide-react";
 
 interface BookingUser {
   id: string;
@@ -67,6 +67,16 @@ export default function RollCallPage() {
     setUpdating(null);
   }
 
+  async function handleDelete(bookingId: string) {
+    if (!confirm("Excluir este agendamento?")) return;
+    setUpdating(bookingId);
+    const res = await fetch(`/api/bookings/${bookingId}`, { method: "DELETE" });
+    if (res.ok) {
+      setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+    }
+    setUpdating(null);
+  }
+
   const pending = bookings.filter((b) => !b.checkinStatus);
   const done = bookings.filter((b) => b.checkinStatus);
 
@@ -115,6 +125,7 @@ export default function RollCallPage() {
                     booking={b}
                     updating={updating === b.id}
                     onSetStatus={setCheckinStatus}
+                    onDelete={handleDelete}
                   />
                 ))}
               </div>
@@ -133,6 +144,7 @@ export default function RollCallPage() {
                     booking={b}
                     updating={updating === b.id}
                     onSetStatus={setCheckinStatus}
+                    onDelete={handleDelete}
                   />
                 ))}
               </div>
@@ -148,10 +160,12 @@ function BookingCard({
   booking,
   updating,
   onSetStatus,
+  onDelete,
 }: {
   booking: Booking;
   updating: boolean;
   onSetStatus: (id: string, status: string) => void;
+  onDelete: (id: string) => void;
 }) {
   const b = booking;
 
@@ -175,12 +189,22 @@ function BookingCard({
           <p className="text-xs text-zinc-400">{classLabel}</p>
         </div>
 
-        {currentStatus && (
-          <span className={`flex items-center gap-1 text-xs font-medium ${currentStatus.color} shrink-0`}>
-            {currentStatus.icon}
-            {currentStatus.label}
-          </span>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {currentStatus && (
+            <span className={`flex items-center gap-1 text-xs font-medium ${currentStatus.color}`}>
+              {currentStatus.icon}
+              {currentStatus.label}
+            </span>
+          )}
+          <button
+            onClick={() => onDelete(b.id)}
+            disabled={updating}
+            className="text-zinc-500 hover:text-red-400 transition-colors p-1"
+            title="Excluir"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-2 mt-3">
