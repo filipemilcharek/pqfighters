@@ -157,11 +157,11 @@ function BookingCard({
 
   let classLabel: string;
   if (b.type === "PRIVATE" && b.privateSlot) {
-    classLabel = `Particular: ${b.privateSlot.startTime} - ${b.privateSlot.endTime}`;
+    classLabel = `Aula Particular - ${b.privateSlot.startTime} - ${b.privateSlot.endTime}`;
   } else if (b.type === "GROUP" && b.groupClass) {
-    classLabel = `${b.groupClass.name}: ${b.groupClass.startTime} - ${b.groupClass.endTime}`;
+    classLabel = `${b.groupClass.name} - ${b.groupClass.startTime} - ${b.groupClass.endTime}`;
   } else {
-    classLabel = b.type === "PRIVATE" ? "Particular" : "Coletiva";
+    classLabel = b.type === "PRIVATE" ? "Aula Particular" : "Aula Coletiva";
   }
 
   const currentStatus = b.checkinStatus ? STATUS_CONFIG[b.checkinStatus] : null;
