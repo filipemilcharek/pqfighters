@@ -222,73 +222,75 @@ export default function EditStudentPage() {
         </div>
       </Card>
 
-      {/* Graduação */}
-      <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Graduação</h2>
+      {/* Graduação (only for Grappling students) */}
+      {modalities.includes("GRAPPLING") && (
+        <Card className="mb-6">
+          <h2 className="text-lg font-semibold mb-4 text-zinc-50">Graduação</h2>
 
-        <div className="mb-5 p-4 bg-zinc-800 rounded-lg">
-          <BeltVisual belt={belt} degrees={degrees} width={280} />
-        </div>
-
-        <form onSubmit={handleSave} id="edit-form" className="space-y-4">
-          <Select
-            label="Faixa"
-            value={belt}
-            onChange={(e) => { setBelt(e.target.value); setDegrees(0); }}
-          >
-            {BELTS.map((b) => (
-              <option key={b} value={b}>{b}</option>
-            ))}
-          </Select>
-
-          <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-2">
-              Graus
-            </label>
-            <div className="flex gap-2">
-              {[0, 1, 2, 3, 4].map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => setDegrees(d)}
-                  className={`w-10 h-10 rounded-md border text-sm font-medium transition-colors ${
-                    degrees === d
-                      ? "bg-orange-500 text-zinc-50 border-orange-500"
-                      : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
+          <div className="mb-5 p-4 bg-zinc-800 rounded-lg">
+            <BeltVisual belt={belt} degrees={degrees} width={280} />
           </div>
 
-        </form>
-
-        {student.lastGraduationDate && (
-          <div className="mt-4 flex items-center justify-between text-sm">
-            <p className="text-zinc-400">
-              Última graduação: {new Date(student.lastGraduationDate).toLocaleDateString("pt-BR")}
-            </p>
-            <button
-              type="button"
-              onClick={async () => {
-                const res = await fetch(`/api/students/${id}`, {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ lastGraduationDate: null }),
-                });
-                if (res.ok) {
-                  setStudent((prev) => prev ? { ...prev, lastGraduationDate: null } : prev);
-                }
-              }}
-              className="text-xs text-red-400 hover:text-red-300 underline"
+          <form onSubmit={handleSave} id="edit-form" className="space-y-4">
+            <Select
+              label="Faixa"
+              value={belt}
+              onChange={(e) => { setBelt(e.target.value); setDegrees(0); }}
             >
-              Limpar data
-            </button>
-          </div>
-        )}
-      </Card>
+              {BELTS.map((b) => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </Select>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Graus
+              </label>
+              <div className="flex gap-2">
+                {[0, 1, 2, 3, 4].map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setDegrees(d)}
+                    className={`w-10 h-10 rounded-md border text-sm font-medium transition-colors ${
+                      degrees === d
+                        ? "bg-orange-500 text-zinc-50 border-orange-500"
+                        : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+          </form>
+
+          {student.lastGraduationDate && (
+            <div className="mt-4 flex items-center justify-between text-sm">
+              <p className="text-zinc-400">
+                Última graduação: {new Date(student.lastGraduationDate).toLocaleDateString("pt-BR")}
+              </p>
+              <button
+                type="button"
+                onClick={async () => {
+                  const res = await fetch(`/api/students/${id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ lastGraduationDate: null }),
+                  });
+                  if (res.ok) {
+                    setStudent((prev) => prev ? { ...prev, lastGraduationDate: null } : prev);
+                  }
+                }}
+                className="text-xs text-red-400 hover:text-red-300 underline"
+              >
+                Limpar data
+              </button>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Presenças Iniciais */}
       <Card className="mb-6">

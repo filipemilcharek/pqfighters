@@ -29,6 +29,7 @@ interface Student {
   name: string;
   email: string;
   studentType: string;
+  modalities: string;
   belt: string;
   degrees: number;
   initialCheckins: number;
@@ -246,51 +247,53 @@ export default function StudentProfilePage() {
         )}
       </Card>
 
-      {/* Graduação */}
-      <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Graduação</h2>
+      {/* Graduação (only for Grappling students) */}
+      {(student.modalities || "GRAPPLING").includes("GRAPPLING") && (
+        <Card className="mb-6">
+          <h2 className="text-lg font-semibold mb-4 text-zinc-50">Graduação</h2>
 
-        <div className="mb-2">
-          <BeltVisual belt={student.belt} degrees={student.degrees} width={320} />
-        </div>
+          <div className="mb-2">
+            <BeltVisual belt={student.belt} degrees={student.degrees} width={320} />
+          </div>
 
-        {student.lastGraduationDate && (
-          <p className="text-xs text-zinc-400 mb-3">
-            Última graduação: {new Date(student.lastGraduationDate).toLocaleDateString("pt-BR")}
-          </p>
-        )}
+          {student.lastGraduationDate && (
+            <p className="text-xs text-zinc-400 mb-3">
+              Última graduação: {new Date(student.lastGraduationDate).toLocaleDateString("pt-BR")}
+            </p>
+          )}
 
-        {/* Degree progress */}
-        {degreeReq && (
-          <DegreeProgress
-            checkins={checkinsSinceGraduation}
-            belt={student.belt}
-            nextDegree={nextDegree!}
-            requiredClasses={degreeReq.requiredClasses}
-          />
-        )}
+          {/* Degree progress */}
+          {degreeReq && (
+            <DegreeProgress
+              checkins={checkinsSinceGraduation}
+              belt={student.belt}
+              nextDegree={nextDegree!}
+              requiredClasses={degreeReq.requiredClasses}
+            />
+          )}
 
-        {/* Belt progress */}
-        {nextBelt && nextBeltReq && nextBeltReq.requiredClasses > 0 ? (
-          <BeltProgress
-            checkins={totalCheckins}
-            nextBelt={nextBelt}
-            requiredClasses={nextBeltReq.requiredClasses}
-            width={320}
-          />
-        ) : nextBelt && (!nextBeltReq || nextBeltReq.requiredClasses === 0) ? (
-          <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
-            Requisito para faixa {nextBelt} não configurado.{" "}
-            <Link href="/admin/belt-requirements" className="underline text-orange-500 hover:text-orange-500/80">
-              Configurar
-            </Link>
-          </p>
-        ) : (
-          <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
-            Faixa máxima atingida.
-          </p>
-        )}
-      </Card>
+          {/* Belt progress */}
+          {nextBelt && nextBeltReq && nextBeltReq.requiredClasses > 0 ? (
+            <BeltProgress
+              checkins={totalCheckins}
+              nextBelt={nextBelt}
+              requiredClasses={nextBeltReq.requiredClasses}
+              width={320}
+            />
+          ) : nextBelt && (!nextBeltReq || nextBeltReq.requiredClasses === 0) ? (
+            <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
+              Requisito para faixa {nextBelt} não configurado.{" "}
+              <Link href="/admin/belt-requirements" className="underline text-orange-500 hover:text-orange-500/80">
+                Configurar
+              </Link>
+            </p>
+          ) : (
+            <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
+              Faixa máxima atingida.
+            </p>
+          )}
+        </Card>
+      )}
 
       {/* Frequência */}
       <Card className="mb-6">

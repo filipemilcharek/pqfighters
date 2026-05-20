@@ -45,6 +45,7 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             role: user.role,
             studentType: user.studentType,
+            modalities: user.modalities,
             belt: user.belt,
             degrees: user.degrees,
             photoUrl: user.photoUrl,
@@ -63,6 +64,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.studentType = user.studentType;
+        token.modalities = user.modalities;
         token.belt = user.belt;
         token.degrees = user.degrees;
         token.photoUrl = user.photoUrl;
@@ -73,6 +75,7 @@ export const authOptions: NextAuthOptions = {
       session.user.id = token.id;
       session.user.role = token.role;
       session.user.studentType = token.studentType;
+      session.user.modalities = token.modalities;
       session.user.belt = token.belt;
       session.user.degrees = token.degrees;
       session.user.photoUrl = token.photoUrl;

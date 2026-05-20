@@ -8,6 +8,7 @@ declare module "next-auth" {
       email: string;
       role: string;
       studentType: string;
+      modalities: string;
       belt: string;
       degrees: number;
       photoUrl?: string | null;
@@ -20,6 +21,7 @@ declare module "next-auth" {
     email: string;
     role: string;
     studentType: string;
+    modalities: string;
     belt: string;
     degrees: number;
     photoUrl?: string | null;
@@ -31,6 +33,7 @@ declare module "next-auth/jwt" {
     id: string;
     role: string;
     studentType: string;
+    modalities: string;
     belt: string;
     degrees: number;
     photoUrl?: string | null;

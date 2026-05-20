@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useSession } from "next-auth/react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +62,7 @@ interface Event {
 }
 
 export default function AgendaPage() {
+  const { data: session } = useSession();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [groupClasses, setGroupClasses] = useState<GroupClass[]>([]);
   const [mySlots, setMySlots] = useState<PrivateSlot[]>([]);
@@ -286,8 +288,8 @@ export default function AgendaPage() {
           </Card>
         ))}
 
-        {/* Group classes for the day */}
-        {dayClasses.map((gc) => {
+        {/* Group classes for the day (only for Grappling students) */}
+        {(session?.user.modalities || "GRAPPLING").includes("GRAPPLING") && dayClasses.map((gc) => {
           const booking = getBookingForClass(gc.id);
           const isBooked = !!booking;
           const isCheckedIn = booking?.checkedIn || false;

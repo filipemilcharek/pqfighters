@@ -13,6 +13,7 @@ export async function GET() {
     where: { id: session.user.id },
     select: {
       initialCheckins: true,
+      modalities: true,
       lastGraduationDate: true,
       lastPaymentDate: true,
       monthlyDueDay: true,

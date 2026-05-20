@@ -36,6 +36,7 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(false);
 
   const isParticular = session?.user.studentType === "PARTICULAR";
+  const hasGrappling = (session?.user.modalities || "GRAPPLING").includes("GRAPPLING");
 
   useEffect(() => {
     if (isParticular) {
@@ -177,7 +178,7 @@ export default function BookingPage() {
             </div>
           )}
 
-          <div>
+          {hasGrappling && <div>
             <h2 className="text-lg font-semibold mb-3 text-zinc-50">Aulas Coletivas</h2>
             {filteredClasses.length === 0 ? (
               <p className="text-zinc-400 text-sm">
@@ -207,7 +208,7 @@ export default function BookingPage() {
                 ))}
               </div>
             )}
-          </div>
+          </div>}
         </>
       )}
     </div>

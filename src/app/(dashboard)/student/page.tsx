@@ -243,6 +243,7 @@ export default function StudentHome() {
   if (!session) return null;
 
   const { user } = session;
+  const hasGrappling = (user.modalities || "GRAPPLING").includes("GRAPPLING");
   const nextBelt = getNextBelt(user.belt);
   const nextBeltReq = nextBelt ? requirements.find((r) => r.belt === nextBelt) : null;
   const nextDegree = user.degrees < 4 ? user.degrees + 1 : null;
@@ -298,47 +299,56 @@ export default function StudentHome() {
         </div>
       )}
 
-      {/* Belt card */}
-      <Card className="mb-6">
-        <div className="mb-1">
-          <BeltVisual belt={user.belt} degrees={user.degrees} width={320} />
-        </div>
-        <p className="text-sm text-zinc-400 mt-3">
-          Plano: {user.studentType === "PARTICULAR" ? "Particular + Coletiva" : "Coletiva"}
-        </p>
-
-        {lastGraduationDate && (
-          <p className="text-xs text-zinc-500 mt-1">
-            Última graduação: {new Date(lastGraduationDate).toLocaleDateString("pt-BR")}
+      {/* Belt card (only for Grappling students) */}
+      {hasGrappling ? (
+        <Card className="mb-6">
+          <div className="mb-1">
+            <BeltVisual belt={user.belt} degrees={user.degrees} width={320} />
+          </div>
+          <p className="text-sm text-zinc-400 mt-3">
+            Plano: {user.studentType === "PARTICULAR" ? "Particular + Coletiva" : "Coletiva"}
           </p>
-        )}
 
-        {degreeReq && (
-          <DegreeProgress
-            checkins={checkins}
-            belt={user.belt}
-            nextDegree={nextDegree!}
-            requiredClasses={degreeReq.requiredClasses}
-          />
-        )}
+          {lastGraduationDate && (
+            <p className="text-xs text-zinc-500 mt-1">
+              Última graduação: {new Date(lastGraduationDate).toLocaleDateString("pt-BR")}
+            </p>
+          )}
 
-        {nextBelt && nextBeltReq && nextBeltReq.requiredClasses > 0 ? (
-          <BeltProgress
-            checkins={checkins}
-            nextBelt={nextBelt}
-            requiredClasses={nextBeltReq.requiredClasses}
-            width={320}
-          />
-        ) : nextBelt && (!nextBeltReq || nextBeltReq.requiredClasses === 0) ? (
-          <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
-            Requisito para faixa {nextBelt} não configurado.
+          {degreeReq && (
+            <DegreeProgress
+              checkins={checkins}
+              belt={user.belt}
+              nextDegree={nextDegree!}
+              requiredClasses={degreeReq.requiredClasses}
+            />
+          )}
+
+          {nextBelt && nextBeltReq && nextBeltReq.requiredClasses > 0 ? (
+            <BeltProgress
+              checkins={checkins}
+              nextBelt={nextBelt}
+              requiredClasses={nextBeltReq.requiredClasses}
+              width={320}
+            />
+          ) : nextBelt && (!nextBeltReq || nextBeltReq.requiredClasses === 0) ? (
+            <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
+              Requisito para faixa {nextBelt} não configurado.
+            </p>
+          ) : (
+            <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
+              Faixa máxima atingida.
+            </p>
+          )}
+        </Card>
+      ) : (
+        <Card className="mb-6">
+          <p className="text-sm text-zinc-400">
+            Plano: {user.studentType === "PARTICULAR" ? "Particular + Coletiva" : "Coletiva"}
           </p>
-        ) : (
-          <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
-            Faixa máxima atingida.
-          </p>
-        )}
-      </Card>
+          <p className="text-2xl font-bold text-zinc-50 mt-2">{checkins} presenças</p>
+        </Card>
+      )}
 
       {/* Agenda - Week navigation */}
       <h2 className="text-lg font-semibold mb-3 text-zinc-50">Minha Agenda</h2>
@@ -417,8 +427,8 @@ export default function StudentHome() {
           </Card>
         ))}
 
-        {/* Group classes */}
-        {dayClasses.map((gc) => {
+        {/* Group classes (only for Grappling students) */}
+        {hasGrappling && dayClasses.map((gc) => {
           const booking = getBookingForClass(gc.id);
           const isBooked = !!booking;
           const isCheckedIn = booking?.checkedIn || false;
