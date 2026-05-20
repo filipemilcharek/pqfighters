@@ -35,6 +35,7 @@ export const bookingSchema = z.object({
   privateSlotId: z.string().optional(),
   groupClassId: z.string().optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  userId: z.string().optional(),
 });
 
 export const eventSchema = z.object({

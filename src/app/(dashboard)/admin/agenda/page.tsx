@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StudentAvatar } from "@/components/student-avatar";
 import {
   format,
   startOfWeek,
@@ -20,6 +21,9 @@ import {
   Users,
   User,
   RefreshCw,
+  X,
+  Search,
+  CalendarPlus,
 } from "lucide-react";
 import { DAY_NAMES } from "@/lib/utils";
 
@@ -55,15 +59,30 @@ interface PrivateSlot {
   user: { id: string; name: string } | null;
 }
 
+interface Student {
+  id: string;
+  name: string;
+  email: string;
+  studentType: string;
+  modalities: string;
+  photoUrl: string | null;
+}
+
 export default function AdminAgendaPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [groupClasses, setGroupClasses] = useState<GroupClass[]>([]);
   const [slots, setSlots] = useState<PrivateSlot[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(false);
+
+  // Modal state
+  const [modalSlot, setModalSlot] = useState<PrivateSlot | null>(null);
+  const [modalSearch, setModalSearch] = useState("");
+  const [bookingStudent, setBookingStudent] = useState<string | null>(null);
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const selectedDayOfWeek = selectedDate.getDay();
@@ -72,6 +91,7 @@ export default function AdminAgendaPage() {
   useEffect(() => {
     fetch("/api/group-classes").then((r) => r.json()).then(setGroupClasses);
     fetch("/api/slots").then((r) => r.json()).then(setSlots);
+    fetch("/api/students").then((r) => r.json()).then(setStudents);
   }, []);
 
   useEffect(() => {
@@ -129,6 +149,42 @@ export default function AdminAgendaPage() {
         setBookings(data);
         setLoading(false);
       });
+  }
+
+  async function handleBookForStudent(studentId: string, slot: PrivateSlot) {
+    setBookingStudent(studentId);
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "PRIVATE",
+          privateSlotId: slot.id,
+          date: selectedDateStr,
+          userId: studentId,
+        }),
+      });
+      if (res.ok) {
+        setModalSlot(null);
+        setModalSearch("");
+        refetchBookings();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Erro ao agendar");
+      }
+    } finally {
+      setBookingStudent(null);
+    }
+  }
+
+  const filteredStudents = students.filter((s) =>
+    s.name.toLowerCase().includes(modalSearch.toLowerCase())
+  );
+
+  function modalityLabel(modalities: string) {
+    return (modalities || "GRAPPLING").split(",").map((m) =>
+      m === "GRAPPLING" ? "Grappling/JJ" : "MMA/Boxe"
+    ).join(", ");
   }
 
   return (
@@ -276,10 +332,9 @@ export default function AdminAgendaPage() {
               );
             })}
 
-            {/* Private slots (open, student-booked) */}
+            {/* Private slots (open) */}
             {daySlots.filter((s) => !s.userId).map((slot) => {
               const booking = getBookingForSlot(slot.id);
-              if (!booking) return null;
               return (
                 <Card key={slot.id} className="!p-4 border-l-4 border-l-yellow-500">
                   <div className="flex items-center gap-2 mb-2">
@@ -290,15 +345,26 @@ export default function AdminAgendaPage() {
                   </div>
                   <div className="flex items-center gap-2 mb-2">
                     <p className="font-medium text-zinc-50">Aula Particular</p>
-                    <Badge variant="success">Particular (Aberto)</Badge>
+                    <Badge variant="warning">Aberto</Badge>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-zinc-300 flex items-center gap-1.5">
-                      <User size={12} />
-                      {booking.user?.name}
-                    </span>
-                    {statusBadge(booking)}
-                  </div>
+                  {booking ? (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-zinc-300 flex items-center gap-1.5">
+                        <User size={12} />
+                        {booking.user?.name}
+                      </span>
+                      {statusBadge(booking)}
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => { setModalSlot(slot); setModalSearch(""); }}
+                    >
+                      <CalendarPlus size={14} className="mr-1.5" />
+                      Agendar Aluno
+                    </Button>
+                  )}
                 </Card>
               );
             })}
@@ -316,6 +382,74 @@ export default function AdminAgendaPage() {
           </>
         )}
       </div>
+
+      {/* Student selection modal */}
+      {modalSlot && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setModalSlot(null)}>
+          <div
+            className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-md max-h-[80vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-50">Agendar Aluno</h3>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  {modalSlot.startTime} - {modalSlot.endTime} | {format(selectedDate, "d/MM/yyyy")}
+                </p>
+              </div>
+              <button onClick={() => setModalSlot(null)} className="text-zinc-400 hover:text-zinc-200">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Search */}
+            <div className="p-4 border-b border-zinc-800">
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                <input
+                  type="text"
+                  placeholder="Buscar aluno..."
+                  value={modalSearch}
+                  onChange={(e) => setModalSearch(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-50 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            {/* Student list */}
+            <div className="overflow-y-auto flex-1 p-3 space-y-2">
+              {filteredStudents.length === 0 ? (
+                <p className="text-center text-zinc-500 text-sm py-4">Nenhum aluno encontrado</p>
+              ) : (
+                filteredStudents.map((s) => (
+                  <button
+                    key={s.id}
+                    disabled={bookingStudent !== null}
+                    onClick={() => handleBookForStudent(s.id, modalSlot)}
+                    className="w-full flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-colors text-left disabled:opacity-50"
+                  >
+                    <StudentAvatar name={s.name} photoUrl={s.photoUrl} size={40} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-zinc-50 truncate">{s.name}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs text-zinc-400">{modalityLabel(s.modalities)}</span>
+                        <Badge variant={s.studentType === "PARTICULAR" ? "success" : "default"}>
+                          {s.studentType === "PARTICULAR" ? "Particular" : "Coletiva"}
+                        </Badge>
+                      </div>
+                    </div>
+                    {bookingStudent === s.id && (
+                      <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

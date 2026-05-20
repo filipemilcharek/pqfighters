@@ -53,10 +53,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { type, privateSlotId, groupClassId, date } = result.data;
+  const { type, privateSlotId, groupClassId, date, userId: targetUserId } = result.data;
 
-  // Rule: COLETIVA students can only book GROUP classes
-  if (type === "PRIVATE" && session.user.studentType === "COLETIVA") {
+  // Admin can book for another user
+  const bookingUserId = (session.user.role === "ADMIN" && targetUserId) ? targetUserId : session.user.id;
+
+  // Rule: COLETIVA students can only book GROUP classes (skip for admin booking on behalf)
+  if (type === "PRIVATE" && session.user.role !== "ADMIN" && session.user.studentType === "COLETIVA") {
     return NextResponse.json(
       { error: "Alunos de aula coletiva não podem agendar aulas particulares" },
       { status: 403 }
@@ -104,9 +107,9 @@ export async function POST(req: NextRequest) {
       where: { privateSlotId, date },
     });
     if (existingBooking) {
-      if (existingBooking.userId === session.user.id) {
+      if (existingBooking.userId === bookingUserId) {
         return NextResponse.json(
-          { error: "Você já agendou este horário nesta data" },
+          { error: "Este aluno já está agendado neste horário" },
           { status: 409 }
         );
       }
@@ -118,12 +121,12 @@ export async function POST(req: NextRequest) {
 
     const booking = await prisma.booking.create({
       data: {
-        userId: session.user.id,
+        userId: bookingUserId,
         type: "PRIVATE",
         privateSlotId,
         date,
       },
-      include: { privateSlot: true },
+      include: { privateSlot: true, user: { select: { id: true, name: true } } },
     });
     return NextResponse.json(booking, { status: 201 });
   }
@@ -168,18 +171,18 @@ export async function POST(req: NextRequest) {
 
   // Check if already booked
   const existing = await prisma.booking.findFirst({
-    where: { userId: session.user.id, groupClassId, date },
+    where: { userId: bookingUserId, groupClassId, date },
   });
   if (existing) {
     return NextResponse.json(
-      { error: "Você já está agendado nesta aula" },
+      { error: "Este aluno já está agendado nesta aula" },
       { status: 409 }
     );
   }
 
   const booking = await prisma.booking.create({
     data: {
-      userId: session.user.id,
+      userId: bookingUserId,
       type: "GROUP",
       groupClassId,
       date,
