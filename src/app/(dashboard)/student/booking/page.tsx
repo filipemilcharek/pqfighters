@@ -24,6 +24,7 @@ interface GroupClass {
   startTime: string;
   endTime: string;
   capacity: number;
+  isKids: boolean;
 }
 
 export default function BookingPage() {
@@ -60,8 +61,9 @@ export default function BookingPage() {
     ? slots.filter((s) => s.dayOfWeek === selectedDay)
     : [];
 
+  const userIsKids = session?.user.isKids || false;
   const filteredClasses = selectedDay !== null
-    ? groupClasses.filter((gc) => gc.dayOfWeek === selectedDay)
+    ? groupClasses.filter((gc) => gc.dayOfWeek === selectedDay && gc.isKids === userIsKids)
     : [];
 
   async function bookPrivate(slotId: string) {

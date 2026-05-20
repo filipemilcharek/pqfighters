@@ -19,6 +19,7 @@ export default function RegisterPage() {
     studentType: "COLETIVA",
   });
   const [modalities, setModalities] = useState<string[]>(["GRAPPLING"]);
+  const [isKids, setIsKids] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -55,7 +56,7 @@ export default function RegisterPage() {
     const res = await fetch("/api/students", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, modalities: modalities.join(","), photoUrl }),
+      body: JSON.stringify({ ...form, modalities: modalities.join(","), isKids, photoUrl }),
     });
 
     const data = await res.json();
@@ -131,6 +132,18 @@ export default function RegisterPage() {
               <option value="COLETIVA">Coletiva</option>
               <option value="PARTICULAR">Particular</option>
             </Select>
+
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isKids}
+                  onChange={(e) => setIsKids(e.target.checked)}
+                  className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500"
+                />
+                <span className="text-sm font-medium text-zinc-300">Aluno Kids</span>
+              </label>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-2">Modalidades</label>

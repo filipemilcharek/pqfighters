@@ -26,7 +26,7 @@ import {
   CalendarCheck,
   CalendarDays,
 } from "lucide-react";
-import { BELTS, DAY_NAMES } from "@/lib/utils";
+import { DAY_NAMES, getBeltsForType } from "@/lib/utils";
 
 interface BeltRequirement {
   belt: string;
@@ -58,6 +58,7 @@ interface GroupClass {
   startTime: string;
   endTime: string;
   capacity: number;
+  isKids: boolean;
 }
 
 interface PrivateSlot {
@@ -76,10 +77,11 @@ interface Event {
   description: string;
 }
 
-function getNextBelt(current: string): string | null {
-  const idx = BELTS.indexOf(current);
-  if (idx === -1 || idx >= BELTS.length - 1) return null;
-  return BELTS[idx + 1];
+function getNextBelt(current: string, isKids: boolean): string | null {
+  const belts = getBeltsForType(isKids);
+  const idx = belts.indexOf(current);
+  if (idx === -1 || idx >= belts.length - 1) return null;
+  return belts[idx + 1];
 }
 
 export default function StudentHome() {
@@ -130,7 +132,8 @@ export default function StudentHome() {
     fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
   }, [selectedDateStr]);
 
-  const dayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek);
+  const userIsKids = session?.user.isKids || false;
+  const dayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && gc.isKids === userIsKids);
   const dayBookings = bookings.filter((b) => b.date === selectedDateStr);
   const dayEvents = events.filter((e) => e.date === selectedDateStr);
   const privateBookings = dayBookings.filter((b) => b.type === "PRIVATE");
@@ -244,7 +247,7 @@ export default function StudentHome() {
 
   const { user } = session;
   const hasGrappling = (user.modalities || "GRAPPLING").includes("GRAPPLING");
-  const nextBelt = getNextBelt(user.belt);
+  const nextBelt = getNextBelt(user.belt, user.isKids);
   const nextBeltReq = nextBelt ? requirements.find((r) => r.belt === nextBelt) : null;
   const nextDegree = user.degrees < 4 ? user.degrees + 1 : null;
   const degreeReq = nextDegree

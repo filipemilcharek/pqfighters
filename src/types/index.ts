@@ -11,6 +11,7 @@ declare module "next-auth" {
       modalities: string;
       belt: string;
       degrees: number;
+      isKids: boolean;
       photoUrl?: string | null;
     };
   }
@@ -24,6 +25,7 @@ declare module "next-auth" {
     modalities: string;
     belt: string;
     degrees: number;
+    isKids: boolean;
     photoUrl?: string | null;
   }
 }
@@ -36,6 +38,7 @@ declare module "next-auth/jwt" {
     modalities: string;
     belt: string;
     degrees: number;
+    isKids: boolean;
     photoUrl?: string | null;
   }
 }

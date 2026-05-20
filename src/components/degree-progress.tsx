@@ -1,4 +1,4 @@
-import { BELT_COLORS } from "@/lib/utils";
+import { BELT_COLORS, KIDS_BELT_COLORS } from "@/lib/utils";
 
 export function DegreeProgress({
   checkins,
@@ -14,7 +14,7 @@ export function DegreeProgress({
   if (requiredClasses <= 0) return null;
 
   const progress = Math.min(1, checkins / requiredClasses);
-  const color = BELT_COLORS[belt] || "#FFF";
+  const color = BELT_COLORS[belt] || KIDS_BELT_COLORS[belt]?.[0] || "#FFF";
   const height = 6;
   const fillWidth = `${Math.round(progress * 100)}%`;
 

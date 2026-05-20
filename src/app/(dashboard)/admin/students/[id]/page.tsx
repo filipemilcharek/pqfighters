@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { StudentAvatar } from "@/components/student-avatar";
 import { BeltVisual, BeltProgress } from "@/components/belt-visual";
 import { DegreeProgress } from "@/components/degree-progress";
-import { BELTS } from "@/lib/utils";
+import { getBeltsForType } from "@/lib/utils";
 import { ArrowLeft, CheckCircle, XCircle, Clock, Pencil, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 
@@ -30,6 +30,7 @@ interface Student {
   email: string;
   studentType: string;
   modalities: string;
+  isKids: boolean;
   belt: string;
   degrees: number;
   initialCheckins: number;
@@ -52,10 +53,11 @@ interface DegreeRequirementData {
   requiredClasses: number;
 }
 
-function getNextBelt(current: string): string | null {
-  const idx = BELTS.indexOf(current);
-  if (idx === -1 || idx >= BELTS.length - 1) return null;
-  return BELTS[idx + 1];
+function getNextBelt(current: string, isKids: boolean): string | null {
+  const belts = getBeltsForType(isKids);
+  const idx = belts.indexOf(current);
+  if (idx === -1 || idx >= belts.length - 1) return null;
+  return belts[idx + 1];
 }
 
 function getPaymentStatus(
@@ -150,7 +152,7 @@ export default function StudentProfilePage() {
     ? checkins.filter((b) => b.date > student.lastGraduationDate!.split("T")[0]).length
     : totalCheckins;
 
-  const nextBelt = getNextBelt(student.belt);
+  const nextBelt = getNextBelt(student.belt, student.isKids);
   const nextBeltReq = nextBelt
     ? requirements.find((r) => r.belt === nextBelt)
     : null;
@@ -200,9 +202,12 @@ export default function StudentProfilePage() {
           </div>
           <div>
             <p className="text-zinc-400">Tipo de Plano</p>
-            <Badge variant={student.studentType === "PARTICULAR" ? "success" : "default"}>
-              {student.studentType}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant={student.studentType === "PARTICULAR" ? "success" : "default"}>
+                {student.studentType}
+              </Badge>
+              {student.isKids && <Badge variant="warning">Kids</Badge>}
+            </div>
           </div>
           <div>
             <p className="text-zinc-400">Cadastrado em</p>

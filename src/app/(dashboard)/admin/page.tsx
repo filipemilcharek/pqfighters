@@ -16,6 +16,7 @@ interface Student {
   email: string;
   studentType: string;
   modalities: string;
+  isKids: boolean;
   belt: string;
   degrees: number;
   photoUrl: string | null;
@@ -140,7 +141,10 @@ export default function AdminDashboard() {
                       <div className="flex items-center gap-3">
                         <StudentAvatar name={s.name} photoUrl={s.photoUrl} size={32} />
                         <div>
-                          <p className="font-medium text-zinc-50">{s.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-zinc-50">{s.name}</p>
+                            {s.isKids && <Badge variant="warning">Kids</Badge>}
+                          </div>
                           <p className="text-xs text-zinc-500">{s.email}</p>
                         </div>
                       </div>

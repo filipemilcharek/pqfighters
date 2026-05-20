@@ -27,6 +27,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const groupClass = await prisma.groupClass.create({ data: result.data });
+  const groupClass = await prisma.groupClass.create({ data: { ...result.data, isKids: result.data.isKids || false } });
   return NextResponse.json(groupClass, { status: 201 });
 }

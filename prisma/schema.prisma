@@ -18,6 +18,7 @@ model User {
   degrees            Int       @default(0)
   initialCheckins    Int       @default(0)
   modalities         String    @default("GRAPPLING") // GRAPPLING, MMA, ou GRAPPLING,MMA
+  isKids             Boolean   @default(false)
   photoUrl           String?
   monthlyDueDay      Int?
   lastPaymentDate    DateTime?
@@ -50,6 +51,7 @@ model GroupClass {
   startTime String
   endTime   String
   capacity  Int
+  isKids    Boolean @default(false)
 
   bookings Booking[]
 }

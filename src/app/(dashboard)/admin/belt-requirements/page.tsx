@@ -5,9 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BeltIcon } from "@/components/belt-icon";
+import { BELTS, KIDS_BELTS, KIDS_BELT_LABELS } from "@/lib/utils";
 
-const PROMOTION_BELTS = ["AZUL", "ROXA", "MARROM", "PRETA"];
-const ALL_BELTS = ["BRANCA", "AZUL", "ROXA", "MARROM", "PRETA"];
 const DEGREES = [1, 2, 3, 4];
 
 interface Requirement {
@@ -21,10 +20,22 @@ interface DegreeRequirement {
   requiredClasses: number;
 }
 
+function getPromotionBelts(belts: string[]): string[] {
+  return belts.slice(1);
+}
+
+function getBeltTransitionLabel(belts: string[], belt: string, isKids: boolean): string {
+  const idx = belts.indexOf(belt);
+  if (idx <= 0) return belt;
+  const prev = belts[idx - 1];
+  const prevLabel = isKids ? (KIDS_BELT_LABELS[prev] || prev) : prev;
+  const curLabel = isKids ? (KIDS_BELT_LABELS[belt] || belt) : belt;
+  return `${prevLabel} → ${curLabel}`;
+}
+
 export default function BeltRequirementsPage() {
-  const [requirements, setRequirements] = useState<Record<string, number>>({
-    AZUL: 0, ROXA: 0, MARROM: 0, PRETA: 0,
-  });
+  const [mode, setMode] = useState<"adult" | "kids">("adult");
+  const [requirements, setRequirements] = useState<Record<string, number>>({});
   const [degreeReqs, setDegreeReqs] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -33,7 +44,7 @@ export default function BeltRequirementsPage() {
     fetch("/api/belt-requirements")
       .then((r) => r.json())
       .then((data: Requirement[]) => {
-        const map: Record<string, number> = { AZUL: 0, ROXA: 0, MARROM: 0, PRETA: 0 };
+        const map: Record<string, number> = {};
         data.forEach((r) => { map[r.belt] = r.requiredClasses; });
         setRequirements(map);
       });
@@ -47,18 +58,22 @@ export default function BeltRequirementsPage() {
       });
   }, []);
 
+  const activeBelts = mode === "kids" ? KIDS_BELTS : BELTS;
+  const promotionBelts = getPromotionBelts(activeBelts);
+  const isKids = mode === "kids";
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setSaved(false);
 
-    const beltBody = PROMOTION_BELTS.map((belt) => ({
+    const beltBody = promotionBelts.map((belt) => ({
       belt,
       requiredClasses: requirements[belt] || 0,
     }));
 
     const degreeBody: { belt: string; degree: number; requiredClasses: number }[] = [];
-    ALL_BELTS.forEach((belt) => {
+    activeBelts.forEach((belt) => {
       DEGREES.forEach((degree) => {
         const key = `${belt}-${degree}`;
         if (degreeReqs[key] !== undefined && degreeReqs[key] > 0) {
@@ -87,13 +102,6 @@ export default function BeltRequirementsPage() {
     setTimeout(() => setSaved(false), 3000);
   }
 
-  const beltLabels: Record<string, string> = {
-    AZUL: "Branca → Azul",
-    ROXA: "Azul → Roxa",
-    MARROM: "Roxa → Marrom",
-    PRETA: "Marrom → Preta",
-  };
-
   return (
     <div className="max-w-2xl">
       <h1 className="text-2xl font-bold text-zinc-50 mb-2">Requisitos de Graduação</h1>
@@ -101,17 +109,34 @@ export default function BeltRequirementsPage() {
         Configure a quantidade de aulas necessárias para avançar de faixa e de grau.
       </p>
 
+      <div className="flex gap-2 mb-6">
+        <Button
+          variant={mode === "adult" ? "primary" : "secondary"}
+          size="sm"
+          onClick={() => setMode("adult")}
+        >
+          Adulto
+        </Button>
+        <Button
+          variant={mode === "kids" ? "primary" : "secondary"}
+          size="sm"
+          onClick={() => setMode("kids")}
+        >
+          Kids
+        </Button>
+      </div>
+
       <form onSubmit={handleSave}>
         {/* Belt requirements */}
         <Card className="mb-6">
           <h2 className="text-lg font-semibold text-zinc-50 mb-4">Requisitos por Faixa</h2>
           <div className="space-y-5">
-            {PROMOTION_BELTS.map((belt) => (
+            {promotionBelts.map((belt) => (
               <div key={belt} className="flex items-center gap-4">
                 <BeltIcon belt={belt} size={24} />
                 <div className="flex-1">
                   <Input
-                    label={beltLabels[belt]}
+                    label={getBeltTransitionLabel(activeBelts, belt, isKids)}
                     type="number"
                     min="0"
                     value={String(requirements[belt] || "")}
@@ -136,11 +161,13 @@ export default function BeltRequirementsPage() {
             Aulas necessárias para cada grau dentro de cada faixa.
           </p>
           <div className="space-y-6">
-            {ALL_BELTS.map((belt) => (
+            {activeBelts.map((belt) => (
               <div key={belt}>
                 <div className="flex items-center gap-2 mb-3">
                   <BeltIcon belt={belt} size={20} />
-                  <span className="text-sm font-medium text-zinc-300">{belt}</span>
+                  <span className="text-sm font-medium text-zinc-300">
+                    {isKids ? (KIDS_BELT_LABELS[belt] || belt) : belt}
+                  </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {DEGREES.map((degree) => {

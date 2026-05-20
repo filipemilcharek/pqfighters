@@ -1,4 +1,20 @@
-import { BELT_COLORS } from "@/lib/utils";
+import { BELT_COLORS, KIDS_BELT_COLORS, KIDS_BELT_LABELS } from "@/lib/utils";
+
+function getBeltColor(belt: string): string {
+  if (BELT_COLORS[belt]) return BELT_COLORS[belt];
+  const kids = KIDS_BELT_COLORS[belt];
+  if (kids) return kids[0];
+  return "#FFFFFF";
+}
+
+function getBeltLabel(belt: string): string {
+  return KIDS_BELT_LABELS[belt] || belt;
+}
+
+function isKidsDualColor(belt: string): boolean {
+  const colors = KIDS_BELT_COLORS[belt];
+  return !!colors && colors[0] !== colors[1];
+}
 
 export function BeltVisual({
   belt,
@@ -9,14 +25,18 @@ export function BeltVisual({
   degrees?: number;
   width?: number;
 }) {
-  const color = BELT_COLORS[belt] || "#FFFFFF";
+  const color = getBeltColor(belt);
   const isWhite = belt === "BRANCA";
+  const isDual = isKidsDualColor(belt);
+  const dualColors = KIDS_BELT_COLORS[belt];
   const height = width * 0.12;
   const tipWidth = width * 0.22;
   const stripeWidth = Math.max(2, width * 0.012);
   const stripeGap = Math.max(3, width * 0.018);
   const stripeHeight = height * 0.7;
   const borderRadius = height * 0.15;
+  const bodyWidth = width - tipWidth - 4;
+  const label = getBeltLabel(belt);
 
   return (
     <svg
@@ -29,21 +49,48 @@ export function BeltVisual({
         <filter id="beltShadow" x="-4%" y="-20%" width="108%" height="160%">
           <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#ffffff" floodOpacity="0.12" />
         </filter>
+        {isDual && dualColors && (
+          <clipPath id={`beltClip-${belt}`}>
+            <rect x={2} y={4} width={bodyWidth} height={height} rx={borderRadius} ry={borderRadius} />
+          </clipPath>
+        )}
       </defs>
 
       {/* Belt body */}
-      <rect
-        x={2}
-        y={4}
-        width={width - tipWidth - 4}
-        height={height}
-        rx={borderRadius}
-        ry={borderRadius}
-        fill={color}
-        stroke={isWhite ? "#D1D5DB" : "rgba(255,255,255,0.15)"}
-        strokeWidth={0.5}
-        filter="url(#beltShadow)"
-      />
+      {isDual && dualColors ? (
+        <g clipPath={`url(#beltClip-${belt})`}>
+          <rect x={2} y={4} width={bodyWidth / 2} height={height} fill={dualColors[0]} />
+          <rect x={2 + bodyWidth / 2} y={4} width={bodyWidth / 2} height={height} fill={dualColors[1]} />
+        </g>
+      ) : (
+        <rect
+          x={2}
+          y={4}
+          width={bodyWidth}
+          height={height}
+          rx={borderRadius}
+          ry={borderRadius}
+          fill={color}
+          stroke={isWhite ? "#D1D5DB" : "rgba(255,255,255,0.15)"}
+          strokeWidth={0.5}
+          filter="url(#beltShadow)"
+        />
+      )}
+
+      {isDual && dualColors && (
+        <rect
+          x={2}
+          y={4}
+          width={bodyWidth}
+          height={height}
+          rx={borderRadius}
+          ry={borderRadius}
+          fill="none"
+          stroke="rgba(255,255,255,0.15)"
+          strokeWidth={0.5}
+          filter="url(#beltShadow)"
+        />
+      )}
 
       {/* Black tip (ponta) */}
       <rect
@@ -65,7 +112,7 @@ export function BeltVisual({
         y={4}
         width={8}
         height={height}
-        fill={color}
+        fill={isDual && dualColors ? dualColors[1] : color}
         stroke="none"
       />
       <rect
@@ -97,7 +144,7 @@ export function BeltVisual({
       <rect
         x={2}
         y={4}
-        width={width - tipWidth - 4}
+        width={bodyWidth}
         height={height * 0.3}
         rx={borderRadius}
         ry={borderRadius}
@@ -111,12 +158,12 @@ export function BeltVisual({
         y={4 + height / 2}
         textAnchor="middle"
         dominantBaseline="central"
-        fill={isWhite ? "#000000" : "#FFFFFF"}
+        fill={isWhite || (isDual && dualColors?.[1] === "#FFFFFF") ? "#000000" : "#FFFFFF"}
         fontSize={height * 0.38}
         fontWeight="600"
         fontFamily="system-ui, sans-serif"
       >
-        {belt}{degrees > 0 ? ` - ${degrees}° grau` : ""}
+        {label}{degrees > 0 ? ` - ${degrees}° grau` : ""}
       </text>
     </svg>
   );
@@ -136,17 +183,18 @@ export function BeltProgress({
   if (!nextBelt || requiredClasses <= 0) return null;
 
   const progress = Math.min(1, checkins / requiredClasses);
-  const nextColor = BELT_COLORS[nextBelt] || "#000";
+  const nextColor = getBeltColor(nextBelt);
 
   // The progress fills the belt shape
   const height = width * 0.06;
   const fillWidth = Math.max(0, (width - 4) * progress);
+  const nextLabel = getBeltLabel(nextBelt);
 
   return (
     <div className="mt-3">
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-xs text-zinc-500">
-          Progresso para <span className="font-semibold" style={{ color: nextColor }}>{nextBelt}</span>
+          Progresso para <span className="font-semibold" style={{ color: nextColor }}>{nextLabel}</span>
         </span>
         <span className="text-xs font-medium">
           {checkins} / {requiredClasses}

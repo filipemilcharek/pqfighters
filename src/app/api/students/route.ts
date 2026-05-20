@@ -22,6 +22,7 @@ export async function GET() {
       belt: true,
       degrees: true,
       initialCheckins: true,
+      isKids: true,
       photoUrl: true,
       monthlyDueDay: true,
       lastPaymentDate: true,
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { name, email, password, studentType, modalities, photoUrl } = result.data;
+  const { name, email, password, studentType, modalities, photoUrl, isKids } = result.data;
 
   const exists = await prisma.user.findUnique({ where: { email } });
   if (exists) {
@@ -58,7 +59,7 @@ export async function POST(req: NextRequest) {
   const passwordHash = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, studentType, modalities: modalities || "GRAPPLING", photoUrl: photoUrl || null },
+    data: { name, email, passwordHash, studentType, modalities: modalities || "GRAPPLING", isKids: isKids || false, photoUrl: photoUrl || null },
     select: { id: true, name: true, email: true },
   });
 

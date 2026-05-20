@@ -48,6 +48,7 @@ interface GroupClass {
   startTime: string;
   endTime: string;
   capacity: number;
+  isKids: boolean;
 }
 
 interface PrivateSlot {
@@ -299,6 +300,7 @@ export default function AdminAgendaPage() {
                   <div className="flex items-center gap-2 mb-3">
                     <p className="font-medium text-zinc-50">{gc.name}</p>
                     <Badge>Coletiva</Badge>
+                    {gc.isKids && <Badge variant="warning">Kids</Badge>}
                     <span className="text-xs text-zinc-400 flex items-center gap-1">
                       <Users size={12} />
                       {classBookings.length}/{gc.capacity}

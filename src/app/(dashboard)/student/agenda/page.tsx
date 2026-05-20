@@ -43,6 +43,7 @@ interface GroupClass {
   startTime: string;
   endTime: string;
   capacity: number;
+  isKids: boolean;
 }
 
 interface PrivateSlot {
@@ -92,7 +93,8 @@ export default function AgendaPage() {
     fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
   }, [selectedDateStr]);
 
-  const dayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek);
+  const userIsKids = session?.user.isKids || false;
+  const dayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && gc.isKids === userIsKids);
   const dayBookings = bookings.filter((b) => b.date === selectedDateStr);
   const dayEvents = events.filter((e) => e.date === selectedDateStr);
   const privateBookings = dayBookings.filter((b) => b.type === "PRIVATE");

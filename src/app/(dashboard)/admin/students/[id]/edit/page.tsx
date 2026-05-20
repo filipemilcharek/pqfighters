@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StudentAvatar } from "@/components/student-avatar";
 import { BeltVisual } from "@/components/belt-visual";
-import { BELTS } from "@/lib/utils";
+import { getBeltsForType } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
 
 interface Student {
@@ -40,6 +40,7 @@ export default function EditStudentPage() {
   const [monthlyDueDay, setMonthlyDueDay] = useState<string>("");
   const [lastPaymentDate, setLastPaymentDate] = useState<string>("");
   const [modalities, setModalities] = useState<string[]>(["GRAPPLING"]);
+  const [isKids, setIsKids] = useState(false);
   const [resetPassword, setResetPassword] = useState("");
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export default function EditStudentPage() {
           setDegrees(data.degrees);
           setPhotoUrl(data.photoUrl);
           setModalities((data.modalities || "GRAPPLING").split(","));
+          setIsKids(data.isKids || false);
           setInitialCheckins(String(data.initialCheckins || 0));
           setMonthlyDueDay(data.monthlyDueDay ? String(data.monthlyDueDay) : "");
           setLastPaymentDate(
@@ -93,7 +95,7 @@ export default function EditStudentPage() {
       newPhotoUrl = uploadData.url;
     }
 
-    const body: Record<string, unknown> = { studentType, belt, degrees, photoUrl: newPhotoUrl, modalities: modalities.join(","), initialCheckins: Number(initialCheckins) || 0 };
+    const body: Record<string, unknown> = { studentType, belt, degrees, photoUrl: newPhotoUrl, modalities: modalities.join(","), isKids, initialCheckins: Number(initialCheckins) || 0 };
     if (monthlyDueDay) {
       body.monthlyDueDay = Number(monthlyDueDay);
     } else {
@@ -193,6 +195,19 @@ export default function EditStudentPage() {
           <option value="COLETIVA">Coletiva</option>
           <option value="PARTICULAR">Particular</option>
         </Select>
+        <label className="flex items-center gap-3 cursor-pointer mt-4">
+          <input
+            type="checkbox"
+            checked={isKids}
+            onChange={(e) => {
+              setIsKids(e.target.checked);
+              setBelt("BRANCA");
+              setDegrees(0);
+            }}
+            className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500"
+          />
+          <span className="text-sm text-zinc-200">Aluno Kids</span>
+        </label>
       </Card>
 
       {/* Modalidades */}
@@ -237,7 +252,7 @@ export default function EditStudentPage() {
               value={belt}
               onChange={(e) => { setBelt(e.target.value); setDegrees(0); }}
             >
-              {BELTS.map((b) => (
+              {getBeltsForType(isKids).map((b) => (
                 <option key={b} value={b}>{b}</option>
               ))}
             </Select>

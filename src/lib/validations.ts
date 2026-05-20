@@ -12,6 +12,7 @@ export const registerSchema = z.object({
   studentType: z.enum(["PARTICULAR", "COLETIVA"]),
   modalities: z.string().optional(),
   photoUrl: z.string().optional().nullable(),
+  isKids: z.boolean().optional(),
 });
 
 export const slotSchema = z.object({
@@ -28,6 +29,7 @@ export const groupClassSchema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
   endTime: z.string().regex(/^\d{2}:\d{2}$/),
   capacity: z.number().min(1),
+  isKids: z.boolean().optional(),
 });
 
 export const bookingSchema = z.object({
@@ -49,12 +51,21 @@ export const notificationSchema = z.object({
   message: z.string().min(2),
 });
 
+const ALL_BELTS = [
+  "BRANCA", "AZUL", "ROXA", "MARROM", "PRETA",
+  "CINZA_BRANCA", "CINZA", "CINZA_PRETA",
+  "AMARELA_BRANCA", "AMARELA", "AMARELA_PRETA",
+  "LARANJA_BRANCA", "LARANJA", "LARANJA_PRETA",
+  "VERDE_BRANCA", "VERDE", "VERDE_PRETA",
+] as const;
+
 export const updateStudentSchema = z.object({
   name: z.string().min(2).optional(),
   studentType: z.enum(["PARTICULAR", "COLETIVA"]).optional(),
-  belt: z.enum(["BRANCA", "AZUL", "ROXA", "MARROM", "PRETA"]).optional(),
+  belt: z.enum(ALL_BELTS).optional(),
   degrees: z.number().min(0).max(4).optional(),
   modalities: z.string().optional(),
+  isKids: z.boolean().optional(),
   initialCheckins: z.number().min(0).optional(),
   photoUrl: z.string().optional().nullable(),
   monthlyDueDay: z.number().min(1).max(31).optional().nullable(),
