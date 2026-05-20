@@ -24,6 +24,7 @@ import {
   X,
   Search,
   CalendarPlus,
+  Trash2,
 } from "lucide-react";
 import { DAY_NAMES } from "@/lib/utils";
 
@@ -184,6 +185,14 @@ export default function AdminAgendaPage() {
     }
   }
 
+  async function handleDeleteBooking(bookingId: string) {
+    if (!confirm("Remover este agendamento?")) return;
+    const res = await fetch(`/api/bookings/${bookingId}`, { method: "DELETE" });
+    if (res.ok) {
+      setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+    }
+  }
+
   const filteredStudents = students.filter((s) =>
     s.name.toLowerCase().includes(modalSearch.toLowerCase())
   );
@@ -300,7 +309,16 @@ export default function AdminAgendaPage() {
                       {classBookings.map((b) => (
                         <div key={b.id} className="flex items-center justify-between text-sm">
                           <span className="text-zinc-300">{b.user?.name}</span>
-                          {statusBadge(b)}
+                          <div className="flex items-center gap-2">
+                            {statusBadge(b)}
+                            <button
+                              onClick={() => handleDeleteBooking(b.id)}
+                              className="text-zinc-600 hover:text-red-400 transition-colors"
+                              title="Remover agendamento"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -339,9 +357,20 @@ export default function AdminAgendaPage() {
                       <User size={12} />
                       {slot.user?.name}
                     </span>
-                    {booking ? statusBadge(booking) : (
-                      <Badge variant="default">Pendente</Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {booking ? statusBadge(booking) : (
+                        <Badge variant="default">Pendente</Badge>
+                      )}
+                      {booking && (
+                        <button
+                          onClick={() => handleDeleteBooking(booking.id)}
+                          className="text-zinc-600 hover:text-red-400 transition-colors"
+                          title="Remover agendamento"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </Card>
               );
@@ -368,7 +397,16 @@ export default function AdminAgendaPage() {
                         <User size={12} />
                         {booking.user?.name}
                       </span>
-                      {statusBadge(booking)}
+                      <div className="flex items-center gap-2">
+                        {statusBadge(booking)}
+                        <button
+                          onClick={() => handleDeleteBooking(booking.id)}
+                          className="text-zinc-600 hover:text-red-400 transition-colors"
+                          title="Remover agendamento"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <Button
