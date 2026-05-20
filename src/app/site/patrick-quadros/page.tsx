@@ -28,7 +28,7 @@ const CONQUISTAS = [
 
 const STATS = [
   { label: "Vitórias", value: "12", detail: "5 KO/TKO • 4 Sub • 2 Dec" },
-  { label: "Altura", value: "1.85m", detail: "Meio-Pesado (93kg)" },
+  { label: "Altura", value: "1.88m", detail: "Meio-Pesado (93kg)" },
   { label: "Modalidades", value: "4", detail: "MMA • BJJ • Grappling • No-Gi" },
 ];
 
