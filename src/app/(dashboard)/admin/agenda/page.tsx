@@ -311,30 +311,19 @@ export default function AdminAgendaPage() {
                       {classBookings.map((b) => (
                         <div key={b.id} className="flex items-center justify-between text-sm">
                           <span className="text-zinc-300">{b.user?.name}</span>
-                          <div className="flex items-center gap-2">
-                            {statusBadge(b)}
-                            <button
-                              onClick={() => handleDeleteBooking(b.id)}
-                              className="text-zinc-600 hover:text-red-400 transition-colors"
-                              title="Remover agendamento"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
+                          {statusBadge(b)}
                         </div>
                       ))}
                     </div>
                   )}
-                  {classBookings.length < gc.capacity && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => { setModalTarget({ type: "GROUP", groupClass: gc }); setModalSearch(""); }}
-                    >
-                      <CalendarPlus size={14} className="mr-1.5" />
-                      Agendar Aluno
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => { setModalTarget({ type: "GROUP", groupClass: gc }); setModalSearch(""); }}
+                  >
+                    <Users size={14} className="mr-1.5" />
+                    Gerenciar Alunos
+                  </Button>
                 </Card>
               );
             })}
@@ -359,21 +348,20 @@ export default function AdminAgendaPage() {
                       <User size={12} />
                       {slot.user?.name}
                     </span>
-                    <div className="flex items-center gap-2">
-                      {booking ? statusBadge(booking) : (
-                        <Badge variant="default">Pendente</Badge>
-                      )}
-                      {booking && (
-                        <button
-                          onClick={() => handleDeleteBooking(booking.id)}
-                          className="text-zinc-600 hover:text-red-400 transition-colors"
-                          title="Remover agendamento"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      )}
-                    </div>
+                    {booking ? statusBadge(booking) : (
+                      <Badge variant="default">Pendente</Badge>
+                    )}
                   </div>
+                  {booking && (
+                    <div className="mt-2">
+                      <button
+                        onClick={() => handleDeleteBooking(booking.id)}
+                        className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                      >
+                        Remover agendamento
+                      </button>
+                    </div>
+                  )}
                 </Card>
               );
             })}
@@ -394,19 +382,20 @@ export default function AdminAgendaPage() {
                     <Badge variant="warning">Aberto</Badge>
                   </div>
                   {booking ? (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-zinc-300 flex items-center gap-1.5">
-                        <User size={12} />
-                        {booking.user?.name}
-                      </span>
-                      <div className="flex items-center gap-2">
+                    <div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-zinc-300 flex items-center gap-1.5">
+                          <User size={12} />
+                          {booking.user?.name}
+                        </span>
                         {statusBadge(booking)}
+                      </div>
+                      <div className="mt-2">
                         <button
                           onClick={() => handleDeleteBooking(booking.id)}
-                          className="text-zinc-600 hover:text-red-400 transition-colors"
-                          title="Remover agendamento"
+                          className="text-xs text-red-400 hover:text-red-300 transition-colors"
                         >
-                          <Trash2 size={14} />
+                          Remover agendamento
                         </button>
                       </div>
                     </div>
@@ -439,76 +428,130 @@ export default function AdminAgendaPage() {
       </div>
 
       {/* Student selection modal */}
-      {modalTarget && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setModalTarget(null)}>
-          <div
-            className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-md max-h-[80vh] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal header */}
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-              <div>
-                <h3 className="text-lg font-semibold text-zinc-50">Agendar Aluno</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">
-                  {modalTarget.type === "PRIVATE"
-                    ? `Particular ${modalTarget.slot.startTime} - ${modalTarget.slot.endTime}`
-                    : `${modalTarget.groupClass.name} ${modalTarget.groupClass.startTime} - ${modalTarget.groupClass.endTime}`
-                  }
-                  {" | "}{format(selectedDate, "d/MM/yyyy")}
-                </p>
-              </div>
-              <button onClick={() => setModalTarget(null)} className="text-zinc-400 hover:text-zinc-200">
-                <X size={20} />
-              </button>
-            </div>
+      {modalTarget && (() => {
+        const modalBookings = modalTarget.type === "GROUP"
+          ? getBookingsForClass(modalTarget.groupClass.id)
+          : (() => { const b = getBookingForSlot(modalTarget.slot.id); return b ? [b] : []; })();
+        const bookedStudentIds = new Set(modalBookings.map((b) => b.user?.id).filter(Boolean));
+        const availableStudents = filteredStudents.filter((s) => !bookedStudentIds.has(s.id));
+        const isFull = modalTarget.type === "GROUP" && modalBookings.length >= modalTarget.groupClass.capacity;
 
-            {/* Search */}
-            <div className="p-4 border-b border-zinc-800">
-              <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-                <input
-                  type="text"
-                  placeholder="Buscar aluno..."
-                  value={modalSearch}
-                  onChange={(e) => setModalSearch(e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-50 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-                  autoFocus
-                />
+        return (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setModalTarget(null)}>
+            <div
+              className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-md max-h-[80vh] flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal header */}
+              <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+                <div>
+                  <h3 className="text-lg font-semibold text-zinc-50">Gerenciar Alunos</h3>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    {modalTarget.type === "PRIVATE"
+                      ? `Particular ${modalTarget.slot.startTime} - ${modalTarget.slot.endTime}`
+                      : `${modalTarget.groupClass.name} ${modalTarget.groupClass.startTime} - ${modalTarget.groupClass.endTime}`
+                    }
+                    {" | "}{format(selectedDate, "d/MM/yyyy")}
+                  </p>
+                </div>
+                <button onClick={() => setModalTarget(null)} className="text-zinc-400 hover:text-zinc-200">
+                  <X size={20} />
+                </button>
               </div>
-            </div>
 
-            {/* Student list */}
-            <div className="overflow-y-auto flex-1 p-3 space-y-2">
-              {filteredStudents.length === 0 ? (
-                <p className="text-center text-zinc-500 text-sm py-4">Nenhum aluno encontrado</p>
-              ) : (
-                filteredStudents.map((s) => (
-                  <button
-                    key={s.id}
-                    disabled={bookingStudent !== null}
-                    onClick={() => handleBookForStudent(s.id)}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-colors text-left disabled:opacity-50"
-                  >
-                    <StudentAvatar name={s.name} photoUrl={s.photoUrl} size={40} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-zinc-50 truncate">{s.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs text-zinc-400">{modalityLabel(s.modalities)}</span>
-                        <Badge variant={s.studentType === "PARTICULAR" ? "success" : "default"}>
-                          {s.studentType === "PARTICULAR" ? "Particular" : "Coletiva"}
-                        </Badge>
+              <div className="overflow-y-auto flex-1">
+                {/* Booked students */}
+                {modalBookings.length > 0 && (
+                  <div className="p-3 border-b border-zinc-800">
+                    <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-2">
+                      Agendados ({modalBookings.length}{modalTarget.type === "GROUP" ? `/${modalTarget.groupClass.capacity}` : ""})
+                    </p>
+                    <div className="space-y-2">
+                      {modalBookings.map((b) => (
+                        <div
+                          key={b.id}
+                          className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50 border border-zinc-800"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-zinc-50 truncate">{b.user?.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {statusBadge(b)}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteBooking(b.id)}
+                            className="text-red-400 hover:text-red-300 transition-colors p-1 shrink-0"
+                            title="Remover agendamento"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Add students section */}
+                {!isFull && (
+                  <>
+                    <div className="p-4 border-b border-zinc-800">
+                      <p className="text-xs font-medium text-zinc-400 uppercase tracking-wide mb-2">Adicionar aluno</p>
+                      <div className="relative">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                        <input
+                          type="text"
+                          placeholder="Buscar aluno..."
+                          value={modalSearch}
+                          onChange={(e) => setModalSearch(e.target.value)}
+                          className="w-full bg-zinc-800 border border-zinc-700 rounded-lg pl-9 pr-3 py-2 text-sm text-zinc-50 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                          autoFocus
+                        />
                       </div>
                     </div>
-                    {bookingStudent === s.id && (
-                      <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                    )}
-                  </button>
-                ))
-              )}
+
+                    <div className="p-3 space-y-2">
+                      {availableStudents.length === 0 ? (
+                        <p className="text-center text-zinc-500 text-sm py-4">
+                          {modalSearch ? "Nenhum aluno encontrado" : "Todos os alunos já estão agendados"}
+                        </p>
+                      ) : (
+                        availableStudents.map((s) => (
+                          <button
+                            key={s.id}
+                            disabled={bookingStudent !== null}
+                            onClick={() => handleBookForStudent(s.id)}
+                            className="w-full flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-colors text-left disabled:opacity-50"
+                          >
+                            <StudentAvatar name={s.name} photoUrl={s.photoUrl} size={40} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-zinc-50 truncate">{s.name}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs text-zinc-400">{modalityLabel(s.modalities)}</span>
+                                <Badge variant={s.studentType === "PARTICULAR" ? "success" : "default"}>
+                                  {s.studentType === "PARTICULAR" ? "Particular" : "Coletiva"}
+                                </Badge>
+                              </div>
+                            </div>
+                            {bookingStudent === s.id && (
+                              <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                            )}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {isFull && modalBookings.length > 0 && (
+                  <div className="p-4">
+                    <p className="text-xs text-zinc-500 text-center">Aula lotada. Remova um aluno para adicionar outro.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
