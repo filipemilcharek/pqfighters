@@ -80,7 +80,7 @@ export default function AdminAgendaPage() {
   const [loading, setLoading] = useState(false);
 
   // Modal state
-  const [modalSlot, setModalSlot] = useState<PrivateSlot | null>(null);
+  const [modalTarget, setModalTarget] = useState<{ type: "PRIVATE"; slot: PrivateSlot } | { type: "GROUP"; groupClass: GroupClass } | null>(null);
   const [modalSearch, setModalSearch] = useState("");
   const [bookingStudent, setBookingStudent] = useState<string | null>(null);
 
@@ -151,21 +151,28 @@ export default function AdminAgendaPage() {
       });
   }
 
-  async function handleBookForStudent(studentId: string, slot: PrivateSlot) {
+  async function handleBookForStudent(studentId: string) {
+    if (!modalTarget) return;
     setBookingStudent(studentId);
     try {
+      const body: Record<string, string> = {
+        date: selectedDateStr,
+        userId: studentId,
+      };
+      if (modalTarget.type === "PRIVATE") {
+        body.type = "PRIVATE";
+        body.privateSlotId = modalTarget.slot.id;
+      } else {
+        body.type = "GROUP";
+        body.groupClassId = modalTarget.groupClass.id;
+      }
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "PRIVATE",
-          privateSlotId: slot.id,
-          date: selectedDateStr,
-          userId: studentId,
-        }),
+        body: JSON.stringify(body),
       });
       if (res.ok) {
-        setModalSlot(null);
+        setModalTarget(null);
         setModalSearch("");
         refetchBookings();
       } else {
@@ -288,8 +295,8 @@ export default function AdminAgendaPage() {
                       {classBookings.length}/{gc.capacity}
                     </span>
                   </div>
-                  {classBookings.length > 0 ? (
-                    <div className="space-y-1.5">
+                  {classBookings.length > 0 && (
+                    <div className="space-y-1.5 mb-3">
                       {classBookings.map((b) => (
                         <div key={b.id} className="flex items-center justify-between text-sm">
                           <span className="text-zinc-300">{b.user?.name}</span>
@@ -297,8 +304,16 @@ export default function AdminAgendaPage() {
                         </div>
                       ))}
                     </div>
-                  ) : (
-                    <p className="text-xs text-zinc-500">Nenhum aluno agendado</p>
+                  )}
+                  {classBookings.length < gc.capacity && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => { setModalTarget({ type: "GROUP", groupClass: gc }); setModalSearch(""); }}
+                    >
+                      <CalendarPlus size={14} className="mr-1.5" />
+                      Agendar Aluno
+                    </Button>
                   )}
                 </Card>
               );
@@ -359,7 +374,7 @@ export default function AdminAgendaPage() {
                     <Button
                       size="sm"
                       variant="secondary"
-                      onClick={() => { setModalSlot(slot); setModalSearch(""); }}
+                      onClick={() => { setModalTarget({ type: "PRIVATE", slot }); setModalSearch(""); }}
                     >
                       <CalendarPlus size={14} className="mr-1.5" />
                       Agendar Aluno
@@ -384,8 +399,8 @@ export default function AdminAgendaPage() {
       </div>
 
       {/* Student selection modal */}
-      {modalSlot && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setModalSlot(null)}>
+      {modalTarget && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setModalTarget(null)}>
           <div
             className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-md max-h-[80vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
@@ -395,10 +410,14 @@ export default function AdminAgendaPage() {
               <div>
                 <h3 className="text-lg font-semibold text-zinc-50">Agendar Aluno</h3>
                 <p className="text-xs text-zinc-400 mt-0.5">
-                  {modalSlot.startTime} - {modalSlot.endTime} | {format(selectedDate, "d/MM/yyyy")}
+                  {modalTarget.type === "PRIVATE"
+                    ? `Particular ${modalTarget.slot.startTime} - ${modalTarget.slot.endTime}`
+                    : `${modalTarget.groupClass.name} ${modalTarget.groupClass.startTime} - ${modalTarget.groupClass.endTime}`
+                  }
+                  {" | "}{format(selectedDate, "d/MM/yyyy")}
                 </p>
               </div>
-              <button onClick={() => setModalSlot(null)} className="text-zinc-400 hover:text-zinc-200">
+              <button onClick={() => setModalTarget(null)} className="text-zinc-400 hover:text-zinc-200">
                 <X size={20} />
               </button>
             </div>
@@ -427,7 +446,7 @@ export default function AdminAgendaPage() {
                   <button
                     key={s.id}
                     disabled={bookingStudent !== null}
-                    onClick={() => handleBookForStudent(s.id, modalSlot)}
+                    onClick={() => handleBookForStudent(s.id)}
                     className="w-full flex items-center gap-3 p-3 rounded-lg bg-zinc-800/50 border border-zinc-800 hover:bg-zinc-800 hover:border-zinc-700 transition-colors text-left disabled:opacity-50"
                   >
                     <StudentAvatar name={s.name} photoUrl={s.photoUrl} size={40} />
