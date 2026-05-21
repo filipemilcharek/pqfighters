@@ -78,14 +78,19 @@ export async function PATCH(
   } else if (data.lastGraduationDate && typeof data.lastGraduationDate === "string") {
     data.lastGraduationDate = new Date(data.lastGraduationDate as string);
   }
+  if (data.lastBeltChangeDate === null) {
+    // Allow explicitly clearing
+  } else if (data.lastBeltChangeDate && typeof data.lastBeltChangeDate === "string") {
+    data.lastBeltChangeDate = new Date(data.lastBeltChangeDate as string);
+  }
 
-  // Reset belt progress if explicitly requested
+  // Reset belt progress if explicitly requested (overrides manual date)
   if (data.resetBeltProgress) {
     data.lastBeltChangeDate = new Date();
     delete data.resetBeltProgress;
   }
 
-  // Reset degree progress if explicitly requested
+  // Reset degree progress if explicitly requested (overrides manual date)
   if (data.resetDegreeProgress) {
     data.lastGraduationDate = new Date();
     delete data.resetDegreeProgress;

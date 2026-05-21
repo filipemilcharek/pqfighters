@@ -71,6 +71,7 @@ export const updateStudentSchema = z.object({
   monthlyDueDay: z.number().min(1).max(31).optional().nullable(),
   lastPaymentDate: z.string().optional().nullable(),
   lastGraduationDate: z.string().optional().nullable(),
+  lastBeltChangeDate: z.string().optional().nullable(),
   resetBeltProgress: z.boolean().optional(),
   resetDegreeProgress: z.boolean().optional(),
 });

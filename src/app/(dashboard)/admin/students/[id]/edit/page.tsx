@@ -21,6 +21,7 @@ interface Student {
   monthlyDueDay: number | null;
   lastPaymentDate: string | null;
   lastGraduationDate: string | null;
+  lastBeltChangeDate: string | null;
 }
 
 export default function EditStudentPage() {
@@ -39,6 +40,8 @@ export default function EditStudentPage() {
   const [initialCheckins, setInitialCheckins] = useState<string>("0");
   const [monthlyDueDay, setMonthlyDueDay] = useState<string>("");
   const [lastPaymentDate, setLastPaymentDate] = useState<string>("");
+  const [lastGraduationDate, setLastGraduationDate] = useState<string>("");
+  const [lastBeltChangeDate, setLastBeltChangeDate] = useState<string>("");
   const [modalities, setModalities] = useState<string[]>(["GRAPPLING"]);
   const [isKids, setIsKids] = useState(false);
   const [originalBelt, setOriginalBelt] = useState("");
@@ -66,6 +69,16 @@ export default function EditStudentPage() {
           setLastPaymentDate(
             data.lastPaymentDate
               ? new Date(data.lastPaymentDate).toISOString().split("T")[0]
+              : ""
+          );
+          setLastGraduationDate(
+            data.lastGraduationDate
+              ? new Date(data.lastGraduationDate).toISOString().split("T")[0]
+              : ""
+          );
+          setLastBeltChangeDate(
+            data.lastBeltChangeDate
+              ? new Date(data.lastBeltChangeDate).toISOString().split("T")[0]
               : ""
           );
         }
@@ -114,6 +127,8 @@ export default function EditStudentPage() {
     } else {
       body.lastPaymentDate = null;
     }
+    body.lastGraduationDate = lastGraduationDate || null;
+    body.lastBeltChangeDate = lastBeltChangeDate || null;
 
     const res = await fetch(`/api/students/${id}`, {
       method: "PATCH",
@@ -311,29 +326,23 @@ export default function EditStudentPage() {
 
           </form>
 
-          {student.lastGraduationDate && (
-            <div className="mt-4 flex items-center justify-between text-sm">
-              <p className="text-zinc-400">
-                Última graduação: {new Date(student.lastGraduationDate).toLocaleDateString("pt-BR")}
-              </p>
-              <button
-                type="button"
-                onClick={async () => {
-                  const res = await fetch(`/api/students/${id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ lastGraduationDate: null }),
-                  });
-                  if (res.ok) {
-                    setStudent((prev) => prev ? { ...prev, lastGraduationDate: null } : prev);
-                  }
-                }}
-                className="text-xs text-red-400 hover:text-red-300 underline"
-              >
-                Limpar data
-              </button>
-            </div>
-          )}
+          <div className="mt-4 space-y-4">
+            <Input
+              label="Última graduação (grau)"
+              type="date"
+              value={lastGraduationDate}
+              onChange={(e) => setLastGraduationDate(e.target.value)}
+            />
+            <Input
+              label="Última troca de faixa"
+              type="date"
+              value={lastBeltChangeDate}
+              onChange={(e) => setLastBeltChangeDate(e.target.value)}
+            />
+            <p className="text-xs text-zinc-500">
+              Estas datas controlam a contagem de presenças para progressão. Deixe em branco para contar desde o início.
+            </p>
+          </div>
         </Card>
       )}
 
