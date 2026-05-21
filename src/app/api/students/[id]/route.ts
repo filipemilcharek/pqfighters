@@ -67,11 +67,6 @@ export async function PATCH(
     );
   }
 
-  const current = await prisma.user.findUnique({
-    where: { id: params.id },
-    select: { belt: true, degrees: true },
-  });
-
   const data: Record<string, unknown> = { ...result.data };
 
   // Convert date strings to Date objects
@@ -84,20 +79,16 @@ export async function PATCH(
     data.lastGraduationDate = new Date(data.lastGraduationDate as string);
   }
 
-  // Auto-update lastBeltChangeDate when belt actually changes
-  if (current && result.data.belt !== undefined && result.data.belt !== current.belt) {
+  // Reset belt progress if explicitly requested
+  if (data.resetBeltProgress) {
     data.lastBeltChangeDate = new Date();
-    // Belt change also resets degree tracking
-    data.lastGraduationDate = null;
+    delete data.resetBeltProgress;
   }
 
-  // Auto-update lastGraduationDate when degrees change
-  if (current && result.data.degrees !== undefined) {
-    if (result.data.degrees > current.degrees) {
-      data.lastGraduationDate = new Date();
-    } else if (result.data.degrees < current.degrees) {
-      data.lastGraduationDate = null;
-    }
+  // Reset degree progress if explicitly requested
+  if (data.resetDegreeProgress) {
+    data.lastGraduationDate = new Date();
+    delete data.resetDegreeProgress;
   }
 
   const user = await prisma.user.update({

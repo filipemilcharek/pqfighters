@@ -43,6 +43,8 @@ export default function EditStudentPage() {
   const [isKids, setIsKids] = useState(false);
   const [originalBelt, setOriginalBelt] = useState("");
   const [originalDegrees, setOriginalDegrees] = useState(0);
+  const [resetBeltProgress, setResetBeltProgress] = useState(false);
+  const [resetDegreeProgress, setResetDegreeProgress] = useState(false);
   const [resetPassword, setResetPassword] = useState("");
 
   useEffect(() => {
@@ -100,6 +102,8 @@ export default function EditStudentPage() {
     }
 
     const body: Record<string, unknown> = { studentType, belt, degrees, photoUrl: newPhotoUrl, modalities: modalities.join(","), isKids, initialCheckins: Number(initialCheckins) || 0 };
+    if (resetBeltProgress) body.resetBeltProgress = true;
+    if (resetDegreeProgress) body.resetDegreeProgress = true;
     if (monthlyDueDay) {
       body.monthlyDueDay = Number(monthlyDueDay);
     } else {
@@ -261,9 +265,15 @@ export default function EditStudentPage() {
               ))}
             </Select>
             {belt !== originalBelt && (
-              <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md px-3 py-2">
-                Trocar a faixa reseta o progresso para a próxima faixa.
-              </p>
+              <label className="flex items-start gap-3 cursor-pointer text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md px-3 py-2">
+                <input
+                  type="checkbox"
+                  checked={resetBeltProgress}
+                  onChange={(e) => setResetBeltProgress(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500 shrink-0"
+                />
+                <span>Resetar progresso para a próxima faixa (marque se for uma promoção real, desmarque se for apenas ajuste cadastral)</span>
+              </label>
             )}
 
             <div>
@@ -286,10 +296,16 @@ export default function EditStudentPage() {
                   </button>
                 ))}
               </div>
-              {degrees !== originalDegrees && belt === originalBelt && (
-                <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md px-3 py-2 mt-2">
-                  Alterar o grau reseta o progresso para o próximo grau.
-                </p>
+              {degrees !== originalDegrees && (
+                <label className="flex items-start gap-3 cursor-pointer text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-md px-3 py-2 mt-2">
+                  <input
+                    type="checkbox"
+                    checked={resetDegreeProgress}
+                    onChange={(e) => setResetDegreeProgress(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500 shrink-0"
+                  />
+                  <span>Resetar progresso para o próximo grau (marque se for uma promoção real, desmarque se for apenas ajuste cadastral)</span>
+                </label>
               )}
             </div>
 
