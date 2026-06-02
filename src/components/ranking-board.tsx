@@ -34,12 +34,16 @@ function presColor(position: number): string {
 
 export function RankingBoard({ compact = false }: { compact?: boolean }) {
   const [ranking, setRanking] = useState<RankedStudent[]>([]);
+  const [monthLabel, setMonthLabel] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/ranking")
       .then((r) => r.json())
-      .then(setRanking)
+      .then((data) => {
+        setRanking(data.ranked || []);
+        setMonthLabel(data.monthLabel || "");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -62,6 +66,11 @@ export function RankingBoard({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className="space-y-2">
+      {monthLabel && (
+        <p className={`${compact ? "text-xs" : "text-sm"} text-zinc-400 text-center capitalize`}>
+          {monthLabel}
+        </p>
+      )}
       {/* Top 2 */}
       <div className="grid grid-cols-2 gap-2">
         {top2.map((student, i) => {

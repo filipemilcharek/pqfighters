@@ -42,6 +42,7 @@ export default function TimerPage() {
   const [finished, setFinished] = useState(false);
   const [blinkVisible, setBlinkVisible] = useState(true);
   const [ranking, setRanking] = useState<RankedStudent[]>([]);
+  const [rankingMonth, setRankingMonth] = useState("");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const blinkRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastConfigRef = useRef(0);
@@ -71,7 +72,10 @@ export default function TimerPage() {
   useEffect(() => {
     fetch("/api/ranking")
       .then((r) => r.json())
-      .then((data) => setRanking(Array.isArray(data) ? data : []));
+      .then((data) => {
+        setRanking(Array.isArray(data?.ranked) ? data.ranked : Array.isArray(data) ? data : []);
+        if (data?.monthLabel) setRankingMonth(data.monthLabel);
+      });
   }, []);
 
   const stop = useCallback(() => {
@@ -247,7 +251,13 @@ export default function TimerPage() {
 
       {/* Ranking — single row of boxes */}
       {ranking.length > 0 && (
-        <div className="mt-6 sm:mt-10 flex items-stretch gap-2 sm:gap-3 overflow-x-auto px-4 pb-2 max-w-full">
+        <div className="mt-6 sm:mt-10">
+          {rankingMonth && (
+            <h2 className="text-center text-lg sm:text-2xl font-bold text-zinc-50 uppercase tracking-wider mb-3 sm:mb-4">
+              Ranking {rankingMonth}
+            </h2>
+          )}
+        <div className="flex items-stretch gap-2 sm:gap-3 overflow-x-auto px-4 pb-2 max-w-full">
           {ranking.map((student, i) => {
             const pos = i + 1;
             const nameParts = student.name.split(" ");
@@ -284,6 +294,7 @@ export default function TimerPage() {
               </div>
             );
           })}
+        </div>
         </div>
       )}
     </div>

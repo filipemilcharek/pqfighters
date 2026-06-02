@@ -9,14 +9,17 @@ export async function GET() {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
+  // Mês vigente no fuso de Brasília (UTC-3)
+  const now = new Date(Date.now() - 3 * 60 * 60 * 1000);
+  const monthPrefix = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+
   const users = await prisma.user.findMany({
     where: { role: "STUDENT", status: "APPROVED" },
     select: {
       id: true,
-      initialCheckins: true,
       _count: {
         select: {
-          bookings: { where: { checkinStatus: "PRESENTE" } },
+          bookings: { where: { checkinStatus: "PRESENTE", date: { startsWith: monthPrefix } } },
         },
       },
     },
@@ -25,8 +28,9 @@ export async function GET() {
   const ranked = users
     .map((u) => ({
       id: u.id,
-      presences: u._count.bookings + u.initialCheckins,
+      presences: u._count.bookings,
     }))
+    .filter((u) => u.presences > 0)
     .sort((a, b) => b.presences - a.presences);
 
   const position = ranked.findIndex((u) => u.id === session.user.id) + 1;

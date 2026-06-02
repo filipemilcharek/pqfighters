@@ -9,6 +9,10 @@ export async function GET() {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
+  // Mês vigente no fuso de Brasília (UTC-3)
+  const now = new Date(Date.now() - 3 * 60 * 60 * 1000);
+  const monthPrefix = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+
   const users = await prisma.user.findMany({
     where: { role: "STUDENT", status: "APPROVED" },
     select: {
@@ -17,10 +21,9 @@ export async function GET() {
       photoUrl: true,
       belt: true,
       degrees: true,
-      initialCheckins: true,
       _count: {
         select: {
-          bookings: { where: { checkinStatus: "PRESENTE" } },
+          bookings: { where: { checkinStatus: "PRESENTE", date: { startsWith: monthPrefix } } },
         },
       },
     },
@@ -33,10 +36,13 @@ export async function GET() {
       photoUrl: u.photoUrl,
       belt: u.belt,
       degrees: u.degrees,
-      presences: u._count.bookings + u.initialCheckins,
+      presences: u._count.bookings,
     }))
+    .filter((u) => u.presences > 0)
     .sort((a, b) => b.presences - a.presences)
     .slice(0, 10);
 
-  return NextResponse.json(ranked);
+  const monthLabel = now.toLocaleDateString("pt-BR", { month: "long", year: "numeric", timeZone: "UTC" });
+
+  return NextResponse.json({ ranked, monthLabel });
 }
