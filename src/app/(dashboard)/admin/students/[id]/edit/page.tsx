@@ -31,7 +31,7 @@ export default function EditStudentPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [studentType, setStudentType] = useState("COLETIVA");
+  const [studentType, setStudentType] = useState("ESSENCIAL");
   const [belt, setBelt] = useState("");
   const [degrees, setDegrees] = useState(0);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
@@ -57,7 +57,7 @@ export default function EditStudentPage() {
       .then((data) => {
         if (!data.error) {
           setStudent(data);
-          setStudentType(data.studentType || "COLETIVA");
+          setStudentType(data.studentType || "ESSENCIAL");
           setBelt(data.belt);
           setOriginalBelt(data.belt);
           setDegrees(data.degrees);
@@ -217,8 +217,9 @@ export default function EditStudentPage() {
           value={studentType}
           onChange={(e) => setStudentType(e.target.value)}
         >
-          <option value="COLETIVA">Coletiva</option>
-          <option value="PARTICULAR">Particular</option>
+          <option value="ESSENCIAL">Essencial</option>
+          <option value="PRO">Pro</option>
+          <option value="PREMIUM">Premium</option>
         </Select>
         <label className="flex items-center gap-3 cursor-pointer mt-4">
           <input
@@ -348,8 +349,8 @@ export default function EditStudentPage() {
         </Card>
       )}
 
-      {/* Créditos Mensais (only PARTICULAR) */}
-      {studentType === "PARTICULAR" && (
+      {/* Créditos Mensais (PRO e PREMIUM) */}
+      {(studentType === "PREMIUM" || studentType === "PRO") && (
         <Card className="mb-6">
           <h2 className="text-lg font-semibold mb-4 text-zinc-50">Créditos Mensais</h2>
           <p className="text-sm text-zinc-400 mb-4">

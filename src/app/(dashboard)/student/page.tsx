@@ -27,7 +27,7 @@ import {
   CalendarDays,
   RefreshCw,
 } from "lucide-react";
-import { DAY_NAMES, getBeltsForType } from "@/lib/utils";
+import { DAY_NAMES, getBeltsForType, getPlanLabel, isPremiumOrPro } from "@/lib/utils";
 import { Trophy } from "lucide-react";
 
 interface BeltRequirement {
@@ -115,7 +115,7 @@ export default function StudentHome() {
     fetch("/api/group-classes").then((r) => r.json()).then(setGroupClasses);
     fetch("/api/events").then((r) => r.json()).then(setEvents);
     fetch("/api/belt-requirements").then((r) => r.json()).then(setRequirements);
-    if (session?.user.studentType === "PARTICULAR") {
+    if (isPremiumOrPro(session?.user.studentType || "")) {
       fetch("/api/credits").then((r) => r.json()).then(setCredits);
     }
     fetch("/api/ranking/my-position").then((r) => r.json()).then(setRankPosition).catch(() => {});
@@ -278,7 +278,7 @@ export default function StudentHome() {
         setRescheduleInfo(null);
         setRescheduleDate("");
         fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
-        if (session?.user.studentType === "PARTICULAR") {
+        if (isPremiumOrPro(session?.user.studentType || "")) {
           fetch("/api/credits").then((r) => r.json()).then(setCredits);
         }
       } else {
@@ -384,7 +384,7 @@ export default function StudentHome() {
               </div>
               <div className="mt-3">
                 <p className="text-sm text-zinc-400">
-                  Plano: {user.studentType === "PARTICULAR" ? "Particular + Coletiva" : "Coletiva"}
+                  Plano: {getPlanLabel(user.studentType)}
                 </p>
               </div>
             </div>
@@ -446,7 +446,7 @@ export default function StudentHome() {
       ) : (
         <Card className="mb-6">
           <p className="text-sm text-zinc-400">
-            Plano: {user.studentType === "PARTICULAR" ? "Particular + Coletiva" : "Coletiva"}
+            Plano: {getPlanLabel(user.studentType)}
           </p>
           <p className="text-2xl font-bold text-zinc-50 mt-2">{checkins} presenças</p>
         </Card>

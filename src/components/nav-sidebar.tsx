@@ -21,6 +21,7 @@ import {
   UserCheck,
   Trophy,
   Timer,
+  ArrowUpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StudentAvatar } from "./student-avatar";
@@ -39,6 +40,7 @@ const adminLinks = [
   { href: "/admin/ranking", label: "Ranking", icon: Trophy },
   { href: "/admin/timer", label: "Timer", icon: Timer },
   { href: "/admin/approvals", label: "Aprovações", icon: UserCheck },
+  { href: "/admin/plan-upgrades", label: "Solicitações de Plano", icon: ArrowUpCircle },
 ];
 
 const studentLinks = [

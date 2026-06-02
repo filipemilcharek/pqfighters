@@ -14,7 +14,7 @@ model User {
   passwordHash       String
   role               String    @default("STUDENT") // ADMIN | STUDENT
   status             String    @default("PENDING") // PENDING | APPROVED
-  studentType        String    @default("COLETIVA") // PARTICULAR | COLETIVA
+  studentType        String    @default("ESSENCIAL") // ESSENCIAL | PRO | PREMIUM
   belt               String    @default("BRANCA")
   degrees            Int       @default(0)
   initialCheckins    Int       @default(0)
@@ -34,7 +34,8 @@ model User {
   createdNotifs     Notification[]
   notificationReads NotificationRead[]
   rescheduleLogs    RescheduleLog[]
-  graduationLogs    GraduationLog[]
+  graduationLogs      GraduationLog[]
+  planUpgradeRequests PlanUpgradeRequest[]
 }
 
 model PrivateSlot {
@@ -127,6 +128,20 @@ model NotificationRead {
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([notificationId, userId])
+}
+
+model PlanUpgradeRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  plan        String   // Essencial | Pro | Premium | Kids
+  frequency   String   // mensal, trimestral, semestral, anual, etc.
+  details     String?  // frequência semanal ou pacote (ex: "2x_semana", "pacote_5_aulas")
+  price       String   // valor formatado
+  status      String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  readByAdmin Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model GraduationLog {

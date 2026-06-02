@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { DAY_NAMES } from "@/lib/utils";
+import { DAY_NAMES, isPremiumOrPro } from "@/lib/utils";
 
 interface Slot {
   id: string;
@@ -37,7 +37,7 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(false);
   const [credits, setCredits] = useState<{ monthlyCredits: number; used: number; remaining: number } | null>(null);
 
-  const isParticular = session?.user.studentType === "PARTICULAR";
+  const isParticular = isPremiumOrPro(session?.user.studentType || "");
   const hasGrappling = (session?.user.modalities || "GRAPPLING").includes("GRAPPLING");
 
   useEffect(() => {

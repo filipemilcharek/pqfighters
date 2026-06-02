@@ -33,7 +33,7 @@ async function main() {
       email: "pqfighters@gmail.com",
       passwordHash,
       role: "ADMIN",
-      studentType: "PARTICULAR",
+      studentType: "PREMIUM",
       belt: "PRETA",
       degrees: 0,
     },

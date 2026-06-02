@@ -14,7 +14,7 @@ export default function RegisterPage() {
     name: "",
     email: "",
     password: "",
-    studentType: "COLETIVA",
+    studentType: "ESSENCIAL",
   });
   const [modalities, setModalities] = useState<string[]>(["GRAPPLING"]);
   const [isKids, setIsKids] = useState(false);
@@ -159,8 +159,9 @@ export default function RegisterPage() {
                 setForm({ ...form, studentType: e.target.value })
               }
             >
-              <option value="COLETIVA">Coletiva</option>
-              <option value="PARTICULAR">Particular</option>
+              <option value="ESSENCIAL">Essencial</option>
+              <option value="PRO">Pro</option>
+              <option value="PREMIUM">Premium</option>
             </Select>
 
             <div>

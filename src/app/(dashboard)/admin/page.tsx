@@ -6,10 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { BeltIcon } from "@/components/belt-icon";
 import { StudentAvatar } from "@/components/student-avatar";
 import { Button } from "@/components/ui/button";
-import { Users, CheckCircle, Calendar, Pencil, RefreshCw, Check } from "lucide-react";
+import { Users, CheckCircle, Calendar, Pencil, RefreshCw, Check, UserPlus, ArrowUpCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DAY_NAMES } from "@/lib/utils";
+import { DAY_NAMES, getPlanLabel, isPremiumOrPro } from "@/lib/utils";
 
 interface RescheduleLog {
   id: string;
@@ -65,15 +65,18 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [students, setStudents] = useState<Student[]>([]);
   const [rescheduleLogs, setRescheduleLogs] = useState<RescheduleLog[]>([]);
+  const [pendingCounts, setPendingCounts] = useState<{ pendingStudents: number; pendingUpgrades: number }>({ pendingStudents: 0, pendingUpgrades: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/students").then((r) => r.json()),
-      fetch("/api/reschedule-logs").then((r) => r.json()),
-    ]).then(([studentsData, logsData]) => {
-      setStudents(studentsData);
+      fetch("/api/students").then((r) => r.json()).catch(() => []),
+      fetch("/api/reschedule-logs").then((r) => r.json()).catch(() => []),
+      fetch("/api/admin/pending-counts").then((r) => r.ok ? r.json() : { pendingStudents: 0, pendingUpgrades: 0 }).catch(() => ({ pendingStudents: 0, pendingUpgrades: 0 })),
+    ]).then(([studentsData, logsData, counts]) => {
+      setStudents(Array.isArray(studentsData) ? studentsData : []);
       setRescheduleLogs(Array.isArray(logsData) ? logsData : []);
+      if (counts && typeof counts.pendingStudents === "number") setPendingCounts(counts);
     }).finally(() => setLoading(false));
   }, []);
 
@@ -92,7 +95,7 @@ export default function AdminDashboard() {
 
   const totalStudents = students.length;
   const particular = students.filter(
-    (s) => s.studentType === "PARTICULAR"
+    (s) => isPremiumOrPro(s.studentType)
   ).length;
   const totalCheckins = students.reduce(
     (sum, s) => sum + s._count.bookings + s.initialCheckins,
@@ -142,6 +145,41 @@ export default function AdminDashboard() {
           </div>
         </Card>
       </div>
+
+      {(pendingCounts.pendingStudents > 0 || pendingCounts.pendingUpgrades > 0) && (
+        <div className="space-y-3 mb-6">
+          {pendingCounts.pendingStudents > 0 && (
+            <Link href="/admin/approvals">
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/15 transition-colors cursor-pointer">
+                <UserPlus size={20} className="text-amber-400 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-zinc-50">
+                    {pendingCounts.pendingStudents === 1
+                      ? "1 novo aluno aguardando aprovação"
+                      : `${pendingCounts.pendingStudents} novos alunos aguardando aprovação`}
+                  </p>
+                </div>
+                <Badge variant="warning">{pendingCounts.pendingStudents}</Badge>
+              </div>
+            </Link>
+          )}
+          {pendingCounts.pendingUpgrades > 0 && (
+            <Link href="/admin/plan-upgrades">
+              <div className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/15 transition-colors cursor-pointer">
+                <ArrowUpCircle size={20} className="text-blue-400 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-zinc-50">
+                    {pendingCounts.pendingUpgrades === 1
+                      ? "1 solicitação de upgrade de plano"
+                      : `${pendingCounts.pendingUpgrades} solicitações de upgrade de plano`}
+                  </p>
+                </div>
+                <Badge variant="default">{pendingCounts.pendingUpgrades}</Badge>
+              </div>
+            </Link>
+          )}
+        </div>
+      )}
 
       {rescheduleLogs.some((l) => !l.readByAdmin) && (
         <Card className="mb-6">
@@ -290,10 +328,10 @@ export default function AdminDashboard() {
                     <td className="py-3 px-2 sm:px-3 hidden sm:table-cell">
                       <Badge
                         variant={
-                          s.studentType === "PARTICULAR" ? "success" : "default"
+                          isPremiumOrPro(s.studentType) ? "success" : "default"
                         }
                       >
-                        {s.studentType}
+                        {getPlanLabel(s.studentType)}
                       </Badge>
                     </td>
                     <td className="py-3 px-2 sm:px-3 hidden sm:table-cell">

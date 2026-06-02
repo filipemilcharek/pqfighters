@@ -64,3 +64,17 @@ export const DAY_NAMES = [
 export function cn(...classes: (string | boolean | undefined | null)[]) {
   return classes.filter(Boolean).join(" ");
 }
+
+export const PLAN_LABELS: Record<string, string> = {
+  ESSENCIAL: "Essencial",
+  PRO: "Pro",
+  PREMIUM: "Premium",
+};
+
+export function getPlanLabel(studentType: string): string {
+  return PLAN_LABELS[studentType] || studentType;
+}
+
+export function isPremiumOrPro(studentType: string): boolean {
+  return studentType === "PREMIUM" || studentType === "PRO";
+}

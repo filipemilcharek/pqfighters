@@ -23,7 +23,7 @@ import {
   CalendarCheck,
   RefreshCw,
 } from "lucide-react";
-import { DAY_NAMES } from "@/lib/utils";
+import { DAY_NAMES, isPremiumOrPro } from "@/lib/utils";
 
 interface Booking {
   id: string;
@@ -85,7 +85,7 @@ export default function AgendaPage() {
     fetch("/api/bookings").then((r) => r.json()).then(setBookings);
     fetch("/api/group-classes").then((r) => r.json()).then(setGroupClasses);
     fetch("/api/events").then((r) => r.json()).then(setEvents);
-    if (session?.user.studentType === "PARTICULAR") {
+    if (isPremiumOrPro(session?.user.studentType || "")) {
       fetch("/api/credits").then((r) => r.json()).then(setCredits);
     }
   }, [session?.user.studentType]);
@@ -193,7 +193,7 @@ export default function AgendaPage() {
       }
       const booking = await res.json();
       setBookings((prev) => [...prev, booking]);
-      if (session?.user.studentType === "PARTICULAR") {
+      if (isPremiumOrPro(session?.user.studentType || "")) {
         fetch("/api/credits").then((r) => r.json()).then(setCredits);
       }
     } catch {
@@ -226,7 +226,7 @@ export default function AgendaPage() {
         setRescheduleInfo(null);
         setRescheduleDate("");
         fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
-        if (session?.user.studentType === "PARTICULAR") {
+        if (isPremiumOrPro(session?.user.studentType || "")) {
           fetch("/api/credits").then((r) => r.json()).then(setCredits);
         }
       } else {
@@ -247,7 +247,7 @@ export default function AgendaPage() {
       setBookings((prev) => prev.filter((b) => b.id !== bookingId));
       // Refetch slots and credits
       fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
-      if (session?.user.studentType === "PARTICULAR") {
+      if (isPremiumOrPro(session?.user.studentType || "")) {
         fetch("/api/credits").then((r) => r.json()).then(setCredits);
       }
     } else {

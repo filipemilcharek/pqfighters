@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StudentAvatar } from "@/components/student-avatar";
 import { Check, X } from "lucide-react";
+import { getPlanLabel, isPremiumOrPro } from "@/lib/utils";
 
 interface PendingStudent {
   id: string;
@@ -75,8 +76,8 @@ export default function ApprovalsPage() {
                   <p className="font-medium text-zinc-50 truncate">{s.name}</p>
                   <p className="text-xs text-zinc-400 truncate">{s.email}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge variant={s.studentType === "PARTICULAR" ? "success" : "default"}>
-                      {s.studentType === "PARTICULAR" ? "Particular" : "Coletiva"}
+                    <Badge variant={isPremiumOrPro(s.studentType) ? "success" : "default"}>
+                      {getPlanLabel(s.studentType)}
                     </Badge>
                     {s.isKids && <Badge variant="warning">Kids</Badge>}
                     <span className="text-xs text-zinc-500">

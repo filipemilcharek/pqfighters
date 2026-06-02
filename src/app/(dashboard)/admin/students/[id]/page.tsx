@@ -10,6 +10,7 @@ import { BeltVisual, BeltProgress } from "@/components/belt-visual";
 import { DegreeProgress } from "@/components/degree-progress";
 import { getBeltsForType } from "@/lib/utils";
 import { ArrowLeft, CheckCircle, XCircle, Clock, Pencil, Plus, Trash2 } from "lucide-react";
+import { getPlanLabel, isPremiumOrPro } from "@/lib/utils";
 import Link from "next/link";
 
 interface Booking {
@@ -258,8 +259,8 @@ export default function StudentProfilePage() {
           <div>
             <p className="text-zinc-400">Tipo de Plano</p>
             <div className="flex items-center gap-2">
-              <Badge variant={student.studentType === "PARTICULAR" ? "success" : "default"}>
-                {student.studentType}
+              <Badge variant={isPremiumOrPro(student.studentType) ? "success" : "default"}>
+                {getPlanLabel(student.studentType)}
               </Badge>
               {student.isKids && <Badge variant="warning">Kids</Badge>}
             </div>

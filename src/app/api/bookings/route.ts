@@ -58,10 +58,10 @@ export async function POST(req: NextRequest) {
   // Admin can book for another user
   const bookingUserId = (session.user.role === "ADMIN" && targetUserId) ? targetUserId : session.user.id;
 
-  // Rule: COLETIVA students can only book GROUP classes (skip for admin booking on behalf)
-  if (type === "PRIVATE" && session.user.role !== "ADMIN" && session.user.studentType === "COLETIVA") {
+  // Rule: ESSENCIAL students can only book GROUP classes (skip for admin booking on behalf)
+  if (type === "PRIVATE" && session.user.role !== "ADMIN" && session.user.studentType === "ESSENCIAL") {
     return NextResponse.json(
-      { error: "Alunos de aula coletiva não podem agendar aulas particulares" },
+      { error: "Alunos do plano Essencial não podem agendar aulas particulares" },
       { status: 403 }
     );
   }
