@@ -195,7 +195,7 @@ export function BeltProgress({
   return (
     <div className="mt-3">
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-zinc-500">
+        <span className="text-xs text-content-muted">
           Progresso para <span className="font-semibold" style={{ color: nextColor }}>{nextLabel}</span>
         </span>
         {showCount && (
@@ -206,7 +206,7 @@ export function BeltProgress({
       </div>
       <div
         className="relative w-full rounded-full overflow-hidden"
-        style={{ height, backgroundColor: "#27272a" }}
+        style={{ height, backgroundColor: "#e4e4e7" }}
       >
         <div
           className="h-full rounded-full transition-all duration-700"
@@ -225,7 +225,7 @@ export function BeltProgress({
         )}
       </div>
       {showCount && (
-        <p className="text-xs text-zinc-400 mt-1.5">
+        <p className="text-xs text-content-secondary mt-1.5">
           {checkins >= requiredClasses
             ? "Meta atingida! Aluno apto para promoção de faixa."
             : `Faltam ${requiredClasses - checkins} aulas para atingir a meta.`}

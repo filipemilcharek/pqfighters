@@ -151,9 +151,9 @@ export default function GroupClassesPage() {
           type="checkbox"
           checked={form.isKids}
           onChange={(e) => setForm({ ...form, isKids: e.target.checked })}
-          className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500"
+          className="w-4 h-4 rounded border-border bg-surface-tertiary text-accent focus:ring-accent"
         />
-        <span className="text-sm text-zinc-200">Aula Kids</span>
+        <span className="text-sm text-content-primary">Aula Kids</span>
       </label>
     </>
   );
@@ -161,7 +161,7 @@ export default function GroupClassesPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-zinc-50">Aulas</h1>
+        <h1 className="text-2xl font-bold text-content-primary">Aulas</h1>
         <Button onClick={() => { setForm(emptyForm); setCreateModalOpen(true); }}>Nova Aula</Button>
       </div>
 
@@ -169,24 +169,24 @@ export default function GroupClassesPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-800">
-                <th className="text-left py-2 px-2 text-zinc-400">Nome</th>
-                <th className="text-left py-2 px-2 text-zinc-400">Dia</th>
-                <th className="text-left py-2 px-2 text-zinc-400">Horário</th>
-                <th className="text-left py-2 px-2 text-zinc-400">Capacidade</th>
-                <th className="text-left py-2 px-2 text-zinc-400">Tipo</th>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 px-2 text-content-secondary">Nome</th>
+                <th className="text-left py-2 px-2 text-content-secondary">Dia</th>
+                <th className="text-left py-2 px-2 text-content-secondary">Horário</th>
+                <th className="text-left py-2 px-2 text-content-secondary">Capacidade</th>
+                <th className="text-left py-2 px-2 text-content-secondary">Tipo</th>
                 <th className="text-left py-2 px-2"></th>
               </tr>
             </thead>
             <tbody>
               {classes.map((gc) => (
-                <tr key={gc.id} className="border-b border-zinc-800 hover:bg-zinc-800">
-                  <td className="py-2 px-2 font-medium text-zinc-50">{gc.name}</td>
-                  <td className="py-2 px-2 text-zinc-50">{DAY_NAMES[gc.dayOfWeek]}</td>
-                  <td className="py-2 px-2 text-zinc-50">
+                <tr key={gc.id} className="border-b border-border hover:bg-surface-tertiary">
+                  <td className="py-2 px-2 font-medium text-content-primary">{gc.name}</td>
+                  <td className="py-2 px-2 text-content-primary">{DAY_NAMES[gc.dayOfWeek]}</td>
+                  <td className="py-2 px-2 text-content-primary">
                     {gc.startTime} - {gc.endTime}
                   </td>
-                  <td className="py-2 px-2 text-zinc-50">{gc.capacity} alunos</td>
+                  <td className="py-2 px-2 text-content-primary">{gc.capacity} alunos</td>
                   <td className="py-2 px-2">
                     <div className="flex items-center gap-1">
                       <Badge variant={(gc.classType || "GROUP") === "SEMI_PRIVATE" ? "warning" : "default"}>
@@ -199,7 +199,7 @@ export default function GroupClassesPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => openEdit(gc)}
-                        className="text-zinc-400 hover:text-zinc-200"
+                        className="text-content-secondary hover:text-content-primary"
                       >
                         <Pencil size={16} />
                       </button>
@@ -215,7 +215,7 @@ export default function GroupClassesPage() {
               ))}
               {classes.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-zinc-500">
+                  <td colSpan={6} className="py-8 text-center text-content-muted">
                     Nenhuma aula cadastrada
                   </td>
                 </tr>

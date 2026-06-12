@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 
 export async function POST(req: NextRequest) {
-  const { email } = await req.json();
-  if (!email) {
+  const { email, tenantSlug } = await req.json();
+  if (!email || !tenantSlug) {
+    return NextResponse.json({ status: "UNKNOWN" });
+  }
+
+  const prisma = await getTenantPrisma(tenantSlug);
+  if (!prisma) {
     return NextResponse.json({ status: "UNKNOWN" });
   }
 

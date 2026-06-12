@@ -53,16 +53,16 @@ export default function ApprovalsPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-8 text-zinc-500">Carregando...</div>;
+    return <div className="text-center py-8 text-content-muted">Carregando...</div>;
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6 text-zinc-50">Aprovações de Cadastro</h1>
+      <h1 className="text-2xl font-bold mb-6 text-content-primary">Aprovações de Cadastro</h1>
 
       {students.length === 0 ? (
         <Card className="!p-8">
-          <p className="text-zinc-400 text-sm text-center">
+          <p className="text-content-secondary text-sm text-center">
             Nenhum cadastro pendente de aprovação.
           </p>
         </Card>
@@ -73,20 +73,20 @@ export default function ApprovalsPage() {
               <div className="flex items-center gap-4">
                 <StudentAvatar name={s.name} photoUrl={s.photoUrl} size={48} />
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-zinc-50 truncate">{s.name}</p>
-                  <p className="text-xs text-zinc-400 truncate">{s.email}</p>
+                  <p className="font-medium text-content-primary truncate">{s.name}</p>
+                  <p className="text-xs text-content-secondary truncate">{s.email}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant={isPremiumOrPro(s.studentType) ? "success" : "default"}>
                       {getPlanLabel(s.studentType)}
                     </Badge>
                     {s.isKids && <Badge variant="warning">Kids</Badge>}
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-content-muted">
                       {(s.modalities || "GRAPPLING").split(",").map((m) =>
                         m === "GRAPPLING" ? "Grappling" : "MMA"
                       ).join(", ")}
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-content-muted mt-1">
                     Cadastrado em {new Date(s.createdAt).toLocaleDateString("pt-BR")}
                   </p>
                 </div>

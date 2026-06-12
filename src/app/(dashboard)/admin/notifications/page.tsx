@@ -43,22 +43,22 @@ export default function NotificationsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-zinc-50">Notificações</h1>
+        <h1 className="text-2xl font-bold text-content-primary">Notificações</h1>
         <Button onClick={() => setModalOpen(true)}>Nova Notificação</Button>
       </div>
 
       <div className="grid gap-4">
         {notifications.map((n) => (
           <Card key={n.id}>
-            <h3 className="font-semibold text-zinc-50">{n.title}</h3>
-            <p className="text-sm text-zinc-300 mt-1">{n.message}</p>
-            <p className="text-xs text-zinc-500 mt-2">
+            <h3 className="font-semibold text-content-primary">{n.title}</h3>
+            <p className="text-sm text-content-secondary mt-1">{n.message}</p>
+            <p className="text-xs text-content-muted mt-2">
               {new Date(n.createdAt).toLocaleDateString("pt-BR")}
             </p>
           </Card>
         ))}
         {notifications.length === 0 && (
-          <p className="text-center text-zinc-500 py-8">
+          <p className="text-center text-content-muted py-8">
             Nenhuma notificação enviada
           </p>
         )}
@@ -77,11 +77,11 @@ export default function NotificationsPage() {
             required
           />
           <div>
-            <label className="block text-sm font-medium text-zinc-50 mb-1">
+            <label className="block text-sm font-medium text-content-primary mb-1">
               Mensagem
             </label>
             <textarea
-              className="w-full rounded-md border border-zinc-800 bg-zinc-800 px-3 py-2 text-sm text-zinc-50 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
+              className="w-full rounded-md border border-border bg-surface-tertiary px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40"
               rows={4}
               value={form.message}
               onChange={(e) =>

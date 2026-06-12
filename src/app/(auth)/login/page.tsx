@@ -1,35 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
-import Image from "next/image";
+import { Logo } from "@/components/logo";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tenantSlug = searchParams.get("tenant") || "";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [tenantName, setTenantName] = useState("");
+  const [tenantLogoUrl, setTenantLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (tenantSlug) {
+      fetch(`/api/tenant-info?slug=${encodeURIComponent(tenantSlug)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.name) setTenantName(data.name);
+          if (data.logoUrl) setTenantLogoUrl(data.logoUrl);
+          if (data.primaryColor) {
+            document.documentElement.style.setProperty("--color-accent", data.primaryColor);
+          }
+          if (data.secondaryColor) {
+            document.documentElement.style.setProperty("--color-accent-dark", data.secondaryColor);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [tenantSlug]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (!tenantSlug) {
+      setError("Tenant nao identificado. Use o link fornecido pelo seu CT.");
+      return;
+    }
+
     setLoading(true);
 
-    // Check if account is pending approval
     const checkRes = await fetch("/api/auth/check-status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, tenantSlug }),
     });
     const checkData = await checkRes.json();
     if (checkData.status === "PENDING") {
-      setError("Seu cadastro está aguardando aprovação do professor.");
+      setError("Seu cadastro esta aguardando aprovacao do professor.");
       setLoading(false);
       return;
     }
@@ -37,11 +64,12 @@ export default function LoginPage() {
     const result = await signIn("credentials", {
       email,
       password,
+      tenantSlug,
       redirect: false,
     });
 
     if (result?.error) {
-      setError("Email ou senha inválidos");
+      setError("Email ou senha invalidos");
       setLoading(false);
       return;
     }
@@ -57,19 +85,31 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#09090b] px-4">
-      <div className="w-full max-w-md">
-        <Card>
-          <div className="flex flex-col items-center mb-8">
-            <Image src="/logo.png" alt="PQ" width={72} height={72} />
-            <h1 className="text-3xl font-bold text-zinc-50 tracking-tight font-teko uppercase mt-3">
-              PQ <span className="text-accent">FIGHTERS</span>
-            </h1>
-            <p className="text-zinc-400 text-sm mt-1">
-              Centro de Treinamento
-            </p>
-          </div>
+    <Card>
+      <div className="flex flex-col items-center mb-8">
+        <Logo size={72} logoUrl={tenantLogoUrl} />
+        {tenantName ? (
+          <h1 className="text-2xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+            {tenantName}
+          </h1>
+        ) : (
+          <h1 className="text-3xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+            faix<span className="text-accent font-extrabold">app</span>reta
+          </h1>
+        )}
+        <p className="text-content-muted text-sm mt-1">
+          {tenantName ? <>Powered by faix<span className="font-bold">app</span>reta</> : "Centro de Treinamento"}
+        </p>
+      </div>
 
+      {!tenantSlug ? (
+        <div className="text-center">
+          <p className="text-sm text-content-secondary mb-4">
+            Use o link fornecido pelo seu Centro de Treinamento para acessar o sistema.
+          </p>
+        </div>
+      ) : (
+        <>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Email"
@@ -84,12 +124,12 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••"
+              placeholder="******"
               required
             />
 
             {error && (
-              <p className="text-sm text-red-400 text-center">{error}</p>
+              <p className="text-sm text-red-500 text-center">{error}</p>
             )}
 
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
@@ -97,23 +137,35 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-zinc-500 mt-6">
-            Não tem conta?{" "}
-            <Link href="/register" className="text-orange-500 hover:text-orange-400 transition-colors">
+          <p className="text-center text-sm text-content-muted mt-6">
+            Nao tem conta?{" "}
+            <Link href={`/register?tenant=${tenantSlug}`} className="text-accent hover:text-accent-dark transition-colors">
               Cadastre-se
             </Link>
           </p>
-          <p className="text-center text-sm text-zinc-600 mt-3">
+          <p className="text-center text-sm text-content-muted mt-3">
             Esqueceu sua senha?{" "}
             <button
               type="button"
               onClick={() => alert("Entre em contato com o professor para redefinir sua senha.")}
-              className="text-zinc-400 hover:text-zinc-300 underline transition-colors"
+              className="text-content-secondary hover:text-content-primary underline transition-colors"
             >
               Clique aqui
             </button>
           </p>
-        </Card>
+        </>
+      )}
+    </Card>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-surface-primary px-4">
+      <div className="w-full max-w-md">
+        <Suspense fallback={<div className="text-center text-content-muted">Carregando...</div>}>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );
