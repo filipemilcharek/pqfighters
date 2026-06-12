@@ -1,305 +1,164 @@
-import Image from "next/image";
+import { 
+  Users, 
+  Calendar, 
+  Trophy, 
+  Smartphone, 
+  Bell, 
+  CheckCircle2,
+  ChevronRight,
+  ShieldCheck,
+  Zap,
+  Timer,
+  ClipboardCheck
+} from "lucide-react";
 
-const FILOSOFIA = [
+const FUNCIONALIDADES = [
   {
-    num: "01",
-    nome: "Simplicidade que funciona",
-    desc: "Ensinamos menos para que você entenda mais e aplique melhor. O simples bem feito vence o complexo mal feito.",
+    icon: <Users className="w-6 h-6 text-red-600" />,
+    titulo: "Controle de Alunos",
+    descricao: "Gestão completa de perfis, histórico de treinos e documentos de forma simplificada."
   },
   {
-    num: "02",
-    nome: "Repetição com propósito",
-    desc: "A repetição cria memória muscular, confiança e precisão. Cada repetição tem intenção e constrói um Jiu-Jitsu sólido.",
+    icon: <Calendar className="w-6 h-6 text-red-600" />,
+    titulo: "Agenda & Check-in",
+    descricao: "Sistema de reserva de aulas e gestão de horários do seu Centro de Treinamento."
   },
   {
-    num: "03",
-    nome: "Eficiência na prática",
-    desc: "Valorizamos o tempo no tatame. Cada treino é planejado para gerar evolução real, com máximo aprendizado.",
+    icon: <ClipboardCheck className="w-6 h-6 text-red-600" />,
+    titulo: "Chamada Digital",
+    descricao: "Controle de presença automatizado e rápido direto pelo painel do professor."
   },
   {
-    num: "04",
-    nome: "Mente forte, Jiu-Jitsu forte",
-    desc: "Controle emocional, disciplina e foco são tão importantes quanto técnica e força.",
+    icon: <Trophy className="w-6 h-6 text-red-600" />,
+    titulo: "Graduações & Faixas",
+    descricao: "Acompanhe a evolução de cada aluno e os requisitos para a próxima graduação."
   },
   {
-    num: "05",
-    nome: "Evolução sempre",
-    desc: "Nunca paramos no que já sabemos. Nosso compromisso é com a sua melhor versão, dentro e fora do tatame.",
+    icon: <Smartphone className="w-6 h-6 text-red-600" />,
+    titulo: "App do Aluno",
+    descricao: "Seu aluno agenda aulas e vê sua evolução direto no celular. Experiência premium."
   },
+  {
+    icon: <Timer className="w-6 h-6 text-red-600" />,
+    titulo: "Cronômetro Integrado",
+    descricao: "Timer profissional para controle de rounds e treinos específicos no tatame."
+  }
 ];
 
-const PRINCIPIOS = [
-  { nome: "Objetividade", desc: "Técnicas com propósito claro e aplicabilidade real." },
-  { nome: "Progressão", desc: "Do básico ao avançado, respeitando o tempo e a base de cada um." },
-  { nome: "Eficiência", desc: "Economia de energia e movimentos que geram máximo resultado." },
-  { nome: "Adaptabilidade", desc: "Entender para se adaptar a qualquer oponente e situação." },
-  { nome: "Inteligência", desc: "Mais que força: tomar boas decisões é o que define o resultado." },
-  { nome: "Disciplina", desc: "Constância, foco e mentalidade são tão importantes quanto a técnica." },
+const PLANOS = [
+  {
+    nome: "Plano Profissional",
+    preco: "99,90",
+    precoOriginal: "149,90",
+    features: [
+      "Gestão de Alunos Ilimitada",
+      "Agenda de Aulas & Check-in",
+      "Chamada Digital Automatizada",
+      "Sistema de Ranking & Evolução",
+      "App do Aluno Premium",
+      "Cronômetro de Tatame",
+      "Suporte Prioritário"
+    ],
+    cta: "Aproveitar Oferta",
+    destaque: true
+  }
 ];
 
-const ESTRUTURA_AULA = [
-  { nome: "Aquecimento", min: 10, desc: "Preparação física específica, mobilidade e prevenção de lesões." },
-  { nome: "Técnica", min: 20, desc: "Ensino detalhado com demonstração e pontos-chave." },
-  { nome: "Drills", min: 15, desc: "Exercícios para fixação, timing e precisão." },
-  { nome: "Sparring", min: 10, desc: "Aplicação em situações reais de luta." },
-  { nome: "Fechamento", min: 5, desc: "Alongamento e revisão." },
-];
-
-const VALORES = [
-  { nome: "União", desc: "Juntos somos mais fortes. Aqui, ninguém treina sozinho." },
-  { nome: "Respeito", desc: "Dentro e fora do tatame, tratamos todos com honra e humildade." },
-  { nome: "Disciplina", desc: "Fazemos o certo, mesmo quando ninguém vê." },
-  { nome: "Foco", desc: "Mente no objetivo. Cada treino é um passo em direção à nossa melhor versão." },
-  { nome: "Compromisso", desc: "Prometemos, fazemos e entregamos." },
-];
-
-export default function LandingPage() {
+export default function InstitutionalPage() {
   return (
-    <>
-      {/* Hero */}
-      <section className="relative h-[90vh] min-h-[600px] flex items-center justify-center overflow-hidden">
-        <Image
-          src="/site/patrick-victory.jpg"
-          alt="PQ Fighters"
-          fill
-          className="object-cover object-top brightness-[0.3] grayscale"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#111111] via-transparent to-[#111111]" />
-        <div className="relative z-10 text-center px-4 max-w-3xl">
-          <Image
-            src="/logo.png"
-            alt="PQ Fighters"
-            width={80}
-            height={80}
-            className="mx-auto mb-6"
-          />
-          <h1 className="font-teko text-5xl sm:text-7xl md:text-8xl font-bold uppercase leading-[0.9] text-white">
-            PQ <span className="text-accent">Fighters</span>
-          </h1>
-          <p className="font-teko text-xl sm:text-2xl uppercase tracking-[0.3em] text-zinc-400 mt-3">
-            Grappling & Jiu-Jitsu
-          </p>
-          <p className="text-accent font-semibold tracking-widest uppercase text-sm mt-6">
-            Disciplina. Evolução. Propósito.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-            <a
-              href="https://wa.me/5551985092214?text=Ol%C3%A1%2C%20gostaria%20de%20agendar%20uma%20aula%20experimental!"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-accent hover:bg-accent-dark text-white px-8 py-3 rounded-md font-semibold transition-colors text-sm uppercase tracking-wider"
-            >
-              Agende Sua Aula Experimental
-            </a>
-            <a
-              href="/patrick-quadros"
-              className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white px-8 py-3 rounded-md font-semibold transition-colors text-sm uppercase tracking-wider"
-            >
-              Conheça o Professor
-            </a>
+    <div className="flex flex-col">
+      {/* ... Hero Section ... */}
+      <section className="relative min-h-[80vh] flex items-center pt-20 overflow-hidden bg-black">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(220,38,38,0.15),transparent_70%)]" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 grid lg:grid-cols-2 gap-12 items-center text-center lg:text-left">
+          <div className="text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/10 border border-red-600/20 text-red-500 text-xs font-bold uppercase tracking-widest mb-6">
+              <Zap className="w-3 h-3" /> Oferta Especial de Lançamento
+            </div>
+            <h1 className="font-teko text-7xl sm:text-8xl md:text-9xl font-bold uppercase leading-[0.8] text-white mb-6">
+              DO TATAME PARA O <span className="text-red-600">DIGITAL</span>
+            </h1>
+            <p className="text-zinc-400 text-xl md:text-2xl max-w-xl mx-auto lg:mx-0 leading-relaxed mb-10">
+              O <span className="text-white font-bold italic underline decoration-red-600 decoration-4">faixappreta</span> é o braço direito do professor. Gestão completa, app para alunos e controle total do seu CT.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <button className="bg-red-600 hover:bg-red-700 text-white px-10 py-4 rounded-full font-bold text-lg transition-all shadow-xl shadow-red-600/20 uppercase tracking-wider">
+                Assinar Agora
+              </button>
+              <button className="border border-white/20 hover:bg-white/5 text-white px-10 py-4 rounded-full font-bold text-lg transition-all uppercase tracking-wider">
+                Ver Funcionalidades
+              </button>
+            </div>
+          </div>
+          <div className="relative hidden lg:block">
+            <div className="aspect-[4/3] rounded-2xl border border-white/10 bg-zinc-900/50 backdrop-blur-sm p-4 relative group">
+              <div className="w-full h-full bg-zinc-800 rounded-lg flex items-center justify-center border border-white/5 overflow-hidden">
+                <span className="text-zinc-500 font-teko text-2xl uppercase tracking-widest">Visualize seu CT aqui</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Filosofia */}
-      <section className="py-20 sm:py-28 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto">
-          <p className="font-teko text-accent text-lg uppercase tracking-widest mb-2">
-            01 — Filosofia
-          </p>
-          <h2 className="font-teko text-4xl sm:text-5xl font-bold uppercase text-white leading-tight">
-            Filosofia do Método
-          </h2>
-          <p className="text-zinc-400 mt-4 max-w-2xl text-lg leading-relaxed">
-            O método do PQ Fighters é baseado na simplicidade, eficiência e
-            repetição inteligente. Ensinamos o que realmente funciona, eliminando
-            o excesso e valorizando a essência do Jiu-Jitsu.
-          </p>
-          <div className="mt-12 space-y-0">
-            {FILOSOFIA.map((item) => (
-              <div
-                key={item.num}
-                className="flex gap-5 py-6 border-b border-white/5 group"
-              >
-                <span className="font-teko text-3xl sm:text-4xl font-bold text-accent/30 group-hover:text-accent transition-colors italic leading-none pt-1">
-                  {item.num}
-                </span>
-                <div>
-                  <h3 className="text-white font-semibold text-lg">
-                    {item.nome}
-                  </h3>
-                  <p className="text-zinc-500 mt-1 leading-relaxed">
-                    {item.desc}
-                  </p>
+      {/* ... Rest of sections ... */}
+      
+      {/* Planos */}
+      <section id="planos" className="py-32 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="font-teko text-6xl font-bold uppercase text-white mb-4">Invista no seu CT</h2>
+          <p className="text-zinc-500 text-lg mb-16">Aproveite nossa oferta por tempo limitado.</p>
+          
+          <div className="flex justify-center">
+            {PLANOS.map((p, i) => (
+              <div key={i} className={`max-w-md w-full p-10 rounded-[2.5rem] border ${p.destaque ? 'border-red-600 bg-red-600/5 relative' : 'border-white/5 bg-zinc-900/50'} flex flex-col`}>
+                <div className="mb-8">
+                  <h3 className="text-zinc-400 font-bold uppercase tracking-widest text-sm mb-4">{p.nome}</h3>
+                  <div className="flex flex-col items-center">
+                    <span className="text-zinc-500 text-xl line-through mb-1">R$ {p.precoOriginal}</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-zinc-500 text-2xl font-medium">R$</span>
+                      <span className="text-white text-7xl font-teko font-bold">{p.preco}</span>
+                      <span className="text-zinc-500">/mês</span>
+                    </div>
+                  </div>
                 </div>
+                <ul className="space-y-4 mb-10 text-left flex-1">
+                  {p.features.map((f, fi) => (
+                    <li key={fi} className="flex items-center gap-3 text-zinc-400 text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-red-600 shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <button className={`w-full py-4 rounded-full font-bold uppercase tracking-widest transition-all ${p.destaque ? 'bg-red-600 text-white shadow-lg shadow-red-600/20 hover:bg-red-700' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                  {p.cta}
+                </button>
               </div>
             ))}
           </div>
-          <p className="text-zinc-600 italic mt-8 text-sm">
-            &ldquo;Nossa filosofia é transformar conhecimento em resultado e
-            disciplina em caráter.&rdquo;
-          </p>
-        </div>
-      </section>
-
-      {/* Principios */}
-      <section className="py-20 sm:py-28 px-4 sm:px-6 bg-[#0d0d0d]">
-        <div className="max-w-5xl mx-auto">
-          <p className="font-teko text-accent text-lg uppercase tracking-widest mb-2">
-            02 — Sistema
-          </p>
-          <h2 className="font-teko text-4xl sm:text-5xl font-bold uppercase text-white leading-tight">
-            Sistema Progressivo
-          </h2>
-          <p className="font-teko text-xl text-zinc-500 uppercase tracking-wider mt-1">
-            White Monkey
-          </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-            {PRINCIPIOS.map((p) => (
-              <div
-                key={p.nome}
-                className="border border-white/5 rounded-lg p-6 hover:border-accent/20 transition-colors"
-              >
-                <h3 className="text-white font-semibold">{p.nome}</h3>
-                <p className="text-zinc-500 text-sm mt-2 leading-relaxed">
-                  {p.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-          <p className="text-zinc-600 italic mt-10 text-sm">
-            &ldquo;Técnica sem estratégia é movimento. Estratégia sem técnica é
-            intenção. A união dos dois transforma intenção em vitória.&rdquo;
-          </p>
-        </div>
-      </section>
-
-      {/* Foto break */}
-      <section className="relative h-[40vh] min-h-[300px] overflow-hidden">
-        <Image
-          src="/site/patrick-mma-3.jpg"
-          alt="PQ Fighters em ação"
-          fill
-          className="object-cover object-center brightness-[0.25] grayscale"
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <blockquote className="font-teko text-2xl sm:text-4xl font-bold uppercase text-white text-center px-4 leading-snug max-w-2xl">
-            O simples bem feito{" "}
-            <span className="text-accent">vence</span> o complexo mal feito
-          </blockquote>
-        </div>
-      </section>
-
-      {/* Estrutura das Aulas */}
-      <section className="py-20 sm:py-28 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto">
-          <p className="font-teko text-accent text-lg uppercase tracking-widest mb-2">
-            03 — Treinos
-          </p>
-          <h2 className="font-teko text-4xl sm:text-5xl font-bold uppercase text-white leading-tight">
-            Estrutura das Aulas
-          </h2>
-          <p className="text-zinc-400 mt-4 max-w-2xl">
-            60 minutos planejados para oferecer o melhor aprendizado de forma
-            organizada, dinâmica e eficiente.
-          </p>
-          <div className="mt-12 flex flex-col gap-4">
-            {ESTRUTURA_AULA.map((etapa, i) => (
-              <div
-                key={etapa.nome}
-                className="flex items-start gap-4 sm:gap-6"
-              >
-                <div className="w-16 sm:w-20 shrink-0 text-right">
-                  <span className="font-teko text-2xl sm:text-3xl font-bold text-accent">
-                    {etapa.min}&apos;
-                  </span>
-                </div>
-                <div
-                  className="flex-1 border-l border-white/10 pl-4 sm:pl-6 pb-4"
-                  style={{
-                    borderColor:
-                      i === ESTRUTURA_AULA.length - 1
-                        ? "transparent"
-                        : undefined,
-                  }}
-                >
-                  <h3 className="text-white font-semibold">{etapa.nome}</h3>
-                  <p className="text-zinc-500 text-sm mt-1">{etapa.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Cultura */}
-      <section className="py-20 sm:py-28 px-4 sm:px-6 bg-[#0d0d0d]">
-        <div className="max-w-5xl mx-auto">
-          <p className="font-teko text-accent text-lg uppercase tracking-widest mb-2">
-            04 — Cultura
-          </p>
-          <h2 className="font-teko text-4xl sm:text-5xl font-bold uppercase text-white leading-tight">
-            Cultura da Equipe
-          </h2>
-          <p className="text-zinc-400 mt-4 max-w-2xl leading-relaxed">
-            Somos uma família que cresce junto, se apoia e se desafia todos os
-            dias. Nossos valores guiam nossas atitudes dentro e fora dos
-            tatames.
-          </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px mt-12 bg-white/5 rounded-lg overflow-hidden">
-            {VALORES.map((v) => (
-              <div key={v.nome} className="bg-[#0d0d0d] p-6">
-                <h3 className="font-teko text-2xl font-bold uppercase text-white">
-                  {v.nome}
-                </h3>
-                <p className="text-zinc-500 text-sm mt-2 leading-relaxed">
-                  {v.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-          <p className="text-zinc-600 italic mt-10 text-sm">
-            &ldquo;Vestimos essa camisa com orgulho e representamos o PQ
-            Fighters em tudo que fazemos.&rdquo;
-          </p>
         </div>
       </section>
 
       {/* CTA Final */}
-      <section className="relative py-24 sm:py-32 px-4 sm:px-6 overflow-hidden">
-        <Image
-          src="/site/patrick-adcc.jpg"
-          alt="PQ Fighters"
-          fill
-          className="object-cover brightness-[0.15] grayscale"
-        />
-        <div className="relative z-10 max-w-3xl mx-auto text-center">
-          <h2 className="font-teko text-4xl sm:text-6xl font-bold uppercase text-white leading-tight">
-            Pronto para <span className="text-accent">evoluir</span>?
+      <section id="contato" className="py-32 px-4 sm:px-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-red-600/10 blur-[120px] rounded-full -bottom-1/2 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96" />
+        <div className="max-w-4xl mx-auto bg-zinc-900 border border-white/10 rounded-[3rem] p-12 md:p-20 text-center relative z-10">
+          <ShieldCheck className="w-16 h-16 text-red-600 mx-auto mb-8" />
+          <h2 className="font-teko text-5xl md:text-7xl font-bold uppercase text-white mb-6">
+            Pronto para levar seu CT ao próximo nível?
           </h2>
-          <p className="text-zinc-400 mt-4 max-w-lg mx-auto leading-relaxed">
-            Faça parte do PQ Fighters. Disciplina, técnica e mentalidade para
-            sua melhor versão dentro e fora do tatame.
+          <p className="text-zinc-400 text-xl mb-12 leading-relaxed">
+            Profissionalize sua gestão com o <span className="text-white font-bold italic">faixappreta</span>.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-            <a
-              href="https://wa.me/5551985092214?text=Ol%C3%A1%2C%20gostaria%20de%20agendar%20uma%20aula%20experimental!"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-accent hover:bg-accent-dark text-white px-8 py-3 rounded-md font-semibold transition-colors text-sm uppercase tracking-wider"
-            >
-              Agende Sua Aula Experimental
-            </a>
-            <a
-              href="/patrick-quadros"
-              className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white px-8 py-3 rounded-md font-semibold transition-colors text-sm uppercase tracking-wider"
-            >
-              Conheça o Professor
-            </a>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            <button className="bg-red-600 hover:bg-red-700 text-white px-12 py-5 rounded-full font-bold text-xl transition-all shadow-2xl shadow-red-600/40 uppercase tracking-widest">
+              Começar Agora
+            </button>
+            <button className="flex items-center justify-center gap-2 text-white font-bold uppercase tracking-widest hover:text-red-500 transition-colors">
+              Falar com suporte <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }
