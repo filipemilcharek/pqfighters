@@ -21,20 +21,20 @@ export function DegreeProgress({
   const fillWidth = `${Math.round(progress * 100)}%`;
 
   return (
-    <div className="mb-3 border-t border-zinc-800 pt-3 mt-3">
+    <div className="mb-3 border-t border-border pt-3 mt-3">
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-xs text-zinc-500">
-          Progresso para <span className="font-semibold text-zinc-300">{nextDegree}° grau</span>
+        <span className="text-xs text-content-muted">
+          Progresso para <span className="font-semibold text-content-secondary">{nextDegree}° grau</span>
         </span>
         {showCount && (
-          <span className="text-xs font-medium text-zinc-400">
+          <span className="text-xs font-medium text-content-secondary">
             {checkins} / {requiredClasses} · {Math.round(progress * 100)}%
           </span>
         )}
       </div>
       <div
         className="relative w-full rounded-full overflow-hidden"
-        style={{ height, backgroundColor: "#27272a" }}
+        style={{ height, backgroundColor: "#e4e4e7" }}
       >
         <div
           className="h-full rounded-full transition-all duration-700"
@@ -53,7 +53,7 @@ export function DegreeProgress({
         )}
       </div>
       {showCount && (
-        <p className="text-xs text-zinc-400 mt-1.5">
+        <p className="text-xs text-content-secondary mt-1.5">
           {checkins >= requiredClasses
             ? `Meta atingida! Aluno apto para o ${nextDegree}° grau.`
             : `Faltam ${requiredClasses - checkins} aulas para o ${nextDegree}° grau.`}

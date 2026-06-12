@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -8,6 +8,9 @@ export async function GET() {
   if (!session) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   // Mês vigente no fuso de Brasília (UTC-3)
   const now = new Date(Date.now() - 3 * 60 * 60 * 1000);

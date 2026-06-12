@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -8,6 +8,9 @@ export async function GET() {
   if (!session) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -33,6 +36,9 @@ export async function PATCH(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const body = await req.json();
   const data: Record<string, unknown> = {};

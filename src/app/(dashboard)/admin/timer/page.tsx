@@ -28,10 +28,10 @@ function medalEmoji(position: number): string | null {
 
 function badgeClass(position: number): string {
   switch (position) {
-    case 1: return "bg-yellow-500 text-zinc-900";
-    case 2: return "bg-gray-300 text-zinc-900";
-    case 3: return "bg-amber-700 text-zinc-900";
-    default: return "bg-white text-zinc-900";
+    case 1: return "bg-yellow-500 text-content-primary";
+    case 2: return "bg-gray-300 text-content-primary";
+    case 3: return "bg-amber-700 text-content-primary";
+    default: return "bg-white text-content-primary";
   }
 }
 
@@ -181,7 +181,7 @@ export default function TimerPage() {
 
   // Colors: green when idle/finished, red when running
   const hasTime = remaining > 0 || lastConfigRef.current > 0 || finished;
-  const timerColor = running ? "text-red-500" : hasTime ? "text-emerald-500" : "text-zinc-700";
+  const timerColor = running ? "text-red-500" : hasTime ? "text-emerald-500" : "text-content-muted";
   const glowColor = running
     ? "0 0 40px rgba(239,68,68,0.5), 0 0 80px rgba(239,68,68,0.25)"
     : hasTime
@@ -195,7 +195,7 @@ export default function TimerPage() {
       {/* Close button */}
       <button
         onClick={() => router.push("/admin")}
-        className="absolute top-3 right-3 z-10 text-zinc-600 hover:text-zinc-400 transition-colors"
+        className="absolute top-3 right-3 z-10 text-content-muted hover:text-content-secondary transition-colors"
       >
         <X size={24} />
       </button>
@@ -219,22 +219,22 @@ export default function TimerPage() {
           <button
             key={opt.seconds}
             onClick={() => addTime(opt.seconds)}
-            className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-base sm:text-lg font-bold bg-zinc-900 text-zinc-400 border-2 border-zinc-800 hover:border-zinc-600 hover:text-zinc-200 transition-all"
+            className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-base sm:text-lg font-bold bg-surface-secondary text-content-secondary border-2 border-border hover:border-border hover:text-content-primary transition-all"
           >
             {opt.label}
           </button>
         ))}
 
-        <div className="w-px h-6 sm:h-8 bg-zinc-800" />
+        <div className="w-px h-6 sm:h-8 bg-surface-tertiary" />
 
         <button
           onClick={togglePlay}
           disabled={!canPlay}
           className={`flex items-center px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold transition-all ${
             !canPlay
-              ? "bg-zinc-900 text-zinc-700 border-2 border-zinc-800 cursor-not-allowed"
+              ? "bg-surface-secondary text-content-muted border-2 border-border cursor-not-allowed"
               : running
-              ? "bg-zinc-800 text-zinc-300 border-2 border-zinc-700 hover:bg-zinc-700"
+              ? "bg-surface-tertiary text-content-secondary border-2 border-border hover:bg-surface-tertiary"
               : "bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500/40 hover:bg-emerald-500/30"
           }`}
         >
@@ -243,7 +243,7 @@ export default function TimerPage() {
 
         <button
           onClick={reset}
-          className="flex items-center px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold bg-zinc-900 text-zinc-400 border-2 border-zinc-800 hover:text-zinc-200 hover:border-zinc-600 transition-all"
+          className="flex items-center px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold bg-surface-secondary text-content-secondary border-2 border-border hover:text-content-primary hover:border-border transition-all"
         >
           <RotateCcw size={16} />
         </button>
@@ -253,7 +253,7 @@ export default function TimerPage() {
       {ranking.length > 0 && (
         <div className="mt-6 sm:mt-10">
           {rankingMonth && (
-            <h2 className="text-center text-lg sm:text-2xl font-bold text-zinc-50 uppercase tracking-wider mb-3 sm:mb-4">
+            <h2 className="text-center text-lg sm:text-2xl font-bold text-content-primary uppercase tracking-wider mb-3 sm:mb-4">
               Ranking {rankingMonth}
             </h2>
           )}
@@ -269,11 +269,11 @@ export default function TimerPage() {
               ? "border-gray-400/60"
               : pos === 3
               ? "border-amber-700/60"
-              : "border-zinc-800";
+              : "border-border";
             return (
               <div
                 key={student.id}
-                className={`shrink-0 flex flex-col items-center justify-between rounded-lg border-2 bg-zinc-900/80 px-3 sm:px-4 py-2 sm:py-3 w-[72px] sm:w-[88px] ${borderClass}`}
+                className={`shrink-0 flex flex-col items-center justify-between rounded-lg border-2 bg-surface-secondary/80 px-3 sm:px-4 py-2 sm:py-3 w-[72px] sm:w-[88px] ${borderClass}`}
               >
                 {medalEmoji(pos) ? (
                   <span className="text-lg sm:text-xl leading-none">{medalEmoji(pos)}</span>
@@ -283,12 +283,12 @@ export default function TimerPage() {
                   </div>
                 )}
                 <div className="mt-1.5 text-center min-w-0 w-full">
-                  <p className="text-[11px] sm:text-xs font-bold text-zinc-100 truncate">{firstName}</p>
+                  <p className="text-[11px] sm:text-xs font-bold text-content-primary truncate">{firstName}</p>
                   {lastName && (
-                    <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">{lastName}</p>
+                    <p className="text-[10px] sm:text-[11px] text-content-secondary truncate">{lastName}</p>
                   )}
                 </div>
-                <p className="mt-1.5 text-[11px] sm:text-xs text-zinc-500 font-semibold">
+                <p className="mt-1.5 text-[11px] sm:text-xs text-content-muted font-semibold">
                   {student.presences} <span className="hidden sm:inline">pres.</span>
                 </p>
               </div>

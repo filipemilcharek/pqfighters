@@ -13,6 +13,7 @@ declare module "next-auth" {
       degrees: number;
       isKids: boolean;
       photoUrl?: string | null;
+      tenantSlug: string;
     };
   }
 
@@ -27,6 +28,7 @@ declare module "next-auth" {
     degrees: number;
     isKids: boolean;
     photoUrl?: string | null;
+    tenantSlug: string;
   }
 }
 
@@ -40,5 +42,6 @@ declare module "next-auth/jwt" {
     degrees: number;
     isKids: boolean;
     photoUrl?: string | null;
+    tenantSlug: string;
   }
 }

@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "./prisma";
+import { getTenantPrisma } from "./tenant-prisma";
 import "../types";
 
 export const authOptions: NextAuthOptions = {
@@ -11,11 +11,19 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Senha", type: "password" },
+        tenantSlug: { label: "Tenant", type: "text" },
       },
       async authorize(credentials) {
         try {
-          if (!credentials?.email || !credentials?.password) {
+          if (!credentials?.email || !credentials?.password || !credentials?.tenantSlug) {
             console.log("[auth] missing credentials");
+            return null;
+          }
+
+          const tenantSlug = credentials.tenantSlug;
+          const prisma = await getTenantPrisma(tenantSlug);
+          if (!prisma) {
+            console.log("[auth] tenant not found:", tenantSlug);
             return null;
           }
 
@@ -28,14 +36,12 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          console.log("[auth] user found:", user.email, "hash:", user.passwordHash?.substring(0, 10));
+          console.log("[auth] user found:", user.email, "tenant:", tenantSlug);
 
           const isValid = await bcrypt.compare(
             credentials.password,
             user.passwordHash
           );
-
-          console.log("[auth] bcrypt result:", isValid);
 
           if (!isValid) return null;
 
@@ -50,6 +56,7 @@ export const authOptions: NextAuthOptions = {
             degrees: user.degrees,
             isKids: user.isKids,
             photoUrl: user.photoUrl,
+            tenantSlug,
           };
         } catch (err) {
           console.error("[auth] error:", err);
@@ -70,6 +77,7 @@ export const authOptions: NextAuthOptions = {
         token.degrees = user.degrees;
         token.isKids = user.isKids;
         token.photoUrl = user.photoUrl;
+        token.tenantSlug = user.tenantSlug;
       }
       return token;
     },
@@ -82,6 +90,7 @@ export const authOptions: NextAuthOptions = {
       session.user.degrees = token.degrees;
       session.user.isKids = token.isKids;
       session.user.photoUrl = token.photoUrl;
+      session.user.tenantSlug = token.tenantSlug;
       return session;
     },
   },

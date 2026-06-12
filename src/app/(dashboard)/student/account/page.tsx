@@ -100,10 +100,10 @@ const ALL_PLANS: Record<string, PlanDef> = { ...PLANS, ...KIDS_PLANS };
 
 const colorMap: Record<string, { card: string; badge: string; icon: string; selected: string }> = {
   orange: {
-    card: "border-orange-500/30 hover:border-orange-500/60",
-    badge: "bg-orange-500/10 text-orange-400",
-    icon: "text-orange-400",
-    selected: "border-orange-500 bg-orange-500/5",
+    card: "border-accent/30 hover:border-accent/60",
+    badge: "bg-accent/10 text-accent",
+    icon: "text-accent",
+    selected: "border-accent bg-accent/5",
   },
   blue: {
     card: "border-blue-500/30 hover:border-blue-500/60",
@@ -274,13 +274,13 @@ export default function AccountPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6 text-zinc-50">Minha Conta</h1>
+      <h1 className="text-2xl font-bold mb-6 text-content-primary">Minha Conta</h1>
 
       <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Foto de Perfil</h2>
+        <h2 className="text-lg font-semibold mb-4 text-content-primary">Foto de Perfil</h2>
         <div className="flex items-center gap-4 mb-4">
           <StudentAvatar name={session.user.name} photoUrl={displayPhoto} size={64} />
-          <label className="cursor-pointer inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 px-3 py-1.5 text-sm bg-zinc-800 text-zinc-200 border border-zinc-700 hover:bg-zinc-700">
+          <label className="cursor-pointer inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 px-3 py-1.5 text-sm bg-surface-tertiary text-content-primary border border-border hover:bg-surface-tertiary">
             {displayPhoto ? "Alterar foto" : "Adicionar foto"}
             <input
               type="file"
@@ -301,7 +301,7 @@ export default function AccountPage() {
       </Card>
 
       <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Alterar Senha</h2>
+        <h2 className="text-lg font-semibold mb-4 text-content-primary">Alterar Senha</h2>
         <form onSubmit={handleChangePassword} className="space-y-4">
           <Input
             label="Senha atual"
@@ -340,17 +340,17 @@ export default function AccountPage() {
 
       {/* Plan Upgrade Section */}
       <div className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Planos</h2>
+        <h2 className="text-lg font-semibold mb-4 text-content-primary">Planos</h2>
 
         {pendingRequest && (
           <Card className="mb-4 border-l-4 border-l-amber-500">
             <div className="flex items-center gap-3">
               <Clock size={18} className="text-amber-400 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-zinc-50">
+                <p className="text-sm font-medium text-content-primary">
                   Solicitação pendente: Plano {pendingRequest.plan}
                 </p>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-content-secondary">
                   {pendingRequest.price} - Aguardando aprovação do professor
                 </p>
               </div>
@@ -384,24 +384,24 @@ export default function AccountPage() {
                 }}
                 disabled={!!pendingRequest}
                 className={`text-left p-4 rounded-xl border-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  isSelected ? colors.selected : `border-zinc-800 ${!pendingRequest ? colors.card : ""}`
+                  isSelected ? colors.selected : `border-border ${!pendingRequest ? colors.card : ""}`
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Icon size={20} className={colors.icon} />
-                  <span className="font-bold text-zinc-50">{planName}</span>
+                  <span className="font-bold text-content-primary">{planName}</span>
                 </div>
-                <p className="text-xs text-zinc-400">{plan.description}</p>
+                <p className="text-xs text-content-secondary">{plan.description}</p>
                 {plan.options.length > 1 && (
                   <div className="flex items-center justify-between mt-3">
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${colors.badge}`}>
                       {plan.options.length} opções
                     </span>
-                    <ChevronRight size={14} className={`text-zinc-600 transition-transform ${isSelected ? "rotate-90" : ""}`} />
+                    <ChevronRight size={14} className={`text-content-muted transition-transform ${isSelected ? "rotate-90" : ""}`} />
                   </div>
                 )}
                 {plan.options.length === 1 && (
-                  <p className="text-sm font-bold text-zinc-50 mt-3">{plan.options[0].price}</p>
+                  <p className="text-sm font-bold text-content-primary mt-3">{plan.options[0].price}</p>
                 )}
               </button>
             );
@@ -413,7 +413,7 @@ export default function AccountPage() {
           return ALL_PLANS[selectedPlan]?.options.length > 1;
         })() && (
           <Card className="mt-4">
-            <h3 className="text-sm font-semibold text-zinc-50 mb-3">
+            <h3 className="text-sm font-semibold text-content-primary mb-3">
               Escolha a frequência - {selectedPlan}
             </h3>
             <div className="space-y-2">
@@ -429,19 +429,19 @@ export default function AccountPage() {
                     }}
                     className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all text-left ${
                       isOptionSelected
-                        ? "border-orange-500 bg-orange-500/5"
-                        : "border-zinc-800 hover:border-zinc-600"
+                        ? "border-accent bg-accent/5"
+                        : "border-border hover:border-border"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                        isOptionSelected ? "border-orange-500 bg-orange-500" : "border-zinc-600"
+                        isOptionSelected ? "border-accent bg-accent" : "border-border"
                       }`}>
                         {isOptionSelected && <Check size={10} className="text-white" />}
                       </div>
-                      <span className="text-sm text-zinc-50">{option.label}</span>
+                      <span className="text-sm text-content-primary">{option.label}</span>
                     </div>
-                    <span className="text-sm font-bold text-zinc-50">{option.price}</span>
+                    <span className="text-sm font-bold text-content-primary">{option.price}</span>
                   </button>
                 );
               });

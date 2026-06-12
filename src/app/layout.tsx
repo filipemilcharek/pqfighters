@@ -7,8 +7,8 @@ const teko = Teko({ subsets: ["latin"], variable: "--font-teko" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  title: "PQ - Centro de Treinamento",
-  description: "Sistema de agendamento de aulas de Jiu-Jitsu",
+  title: "faixappreta - Centro de Treinamento",
+  description: "Sistema de gestao para centros de treinamento de Jiu-Jitsu",
 };
 
 export default function RootLayout({

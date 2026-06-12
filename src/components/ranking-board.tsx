@@ -16,10 +16,10 @@ interface RankedStudent {
 
 function badgeClass(position: number): string {
   switch (position) {
-    case 1: return "bg-yellow-500 text-zinc-900";
-    case 2: return "bg-gray-300 text-zinc-900";
-    case 3: return "bg-amber-700 text-zinc-900";
-    default: return "bg-white text-zinc-900";
+    case 1: return "bg-yellow-500 text-content-primary";
+    case 2: return "bg-gray-300 text-content-primary";
+    case 3: return "bg-amber-700 text-content-primary";
+    default: return "bg-white text-content-primary";
   }
 }
 
@@ -28,7 +28,7 @@ function presColor(position: number): string {
     case 1: return "text-yellow-400";
     case 2: return "text-gray-300";
     case 3: return "text-amber-600";
-    default: return "text-zinc-400";
+    default: return "text-content-secondary";
   }
 }
 
@@ -48,12 +48,12 @@ export function RankingBoard({ compact = false }: { compact?: boolean }) {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-4 text-zinc-500">Carregando...</div>;
+    return <div className="text-center py-4 text-content-muted">Carregando...</div>;
   }
 
   if (ranking.length === 0) {
     return (
-      <p className="text-zinc-400 text-sm text-center py-4">
+      <p className="text-content-secondary text-sm text-center py-4">
         Nenhum aluno com presenças registradas
       </p>
     );
@@ -67,7 +67,7 @@ export function RankingBoard({ compact = false }: { compact?: boolean }) {
   return (
     <div className="space-y-2">
       {monthLabel && (
-        <p className={`${compact ? "text-xs" : "text-sm"} text-zinc-400 text-center capitalize`}>
+        <p className={`${compact ? "text-xs" : "text-sm"} text-content-secondary text-center capitalize`}>
           {monthLabel}
         </p>
       )}
@@ -78,7 +78,7 @@ export function RankingBoard({ compact = false }: { compact?: boolean }) {
           const isChampion = pos === 1;
           const border = isChampion
             ? "border-2 border-yellow-500/30 bg-gradient-to-b from-yellow-500/5 to-transparent"
-            : "border border-zinc-700";
+            : "border border-border";
 
           return (
             <Card key={student.id} className={`!p-0 overflow-hidden ${border}`}>
@@ -92,7 +92,7 @@ export function RankingBoard({ compact = false }: { compact?: boolean }) {
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     {isChampion && <Trophy size={compact ? 12 : 18} className="text-yellow-400 shrink-0" />}
-                    <p className={`${compact ? "text-xs" : "text-lg"} font-bold text-zinc-50 truncate`}>{student.name}</p>
+                    <p className={`${compact ? "text-xs" : "text-lg"} font-bold text-content-primary truncate`}>{student.name}</p>
                   </div>
                   <p className={`${compact ? "text-[10px]" : "text-xs"} ${presColor(pos)} font-semibold mt-0.5`}>
                     {student.presences} {student.presences === 1 ? "presença" : "presenças"}
@@ -117,7 +117,7 @@ export function RankingBoard({ compact = false }: { compact?: boolean }) {
                     {pos}
                   </div>
                 </div>
-                <p className={`font-semibold ${compact ? "text-[11px]" : "text-sm"} text-zinc-50 truncate w-full`}>{student.name}</p>
+                <p className={`font-semibold ${compact ? "text-[11px]" : "text-sm"} text-content-primary truncate w-full`}>{student.name}</p>
                 <p className={`${compact ? "text-[10px]" : "text-xs"} ${presColor(pos)} font-semibold`}>
                   {student.presences} {student.presences === 1 ? "presença" : "presenças"}
                 </p>

@@ -23,23 +23,26 @@ function createPrismaClient(): PrismaClient {
 const prisma = createPrismaClient();
 
 async function main() {
-  const passwordHash = await bcrypt.hash("pq@portoalegre", 10);
+  const email = process.env.ADMIN_EMAIL || "admin@faixappreta.com.br";
+  const password = process.env.ADMIN_PASSWORD || "faixappreta123";
+  const passwordHash = await bcrypt.hash(password, 10);
 
   await prisma.user.upsert({
-    where: { email: "pqfighters@gmail.com" },
+    where: { email },
     update: {},
     create: {
-      name: "Patrick",
-      email: "pqfighters@gmail.com",
+      name: "Admin",
+      email,
       passwordHash,
       role: "ADMIN",
+      status: "APPROVED",
       studentType: "PREMIUM",
       belt: "PRETA",
       degrees: 0,
     },
   });
 
-  console.log("Seed completed: pqfighters@gmail.com / pq@portoalegre");
+  console.log(`Seed completed: ${email}`);
 }
 
 main()

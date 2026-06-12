@@ -104,8 +104,8 @@ export default function BeltRequirementsPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-zinc-50 mb-2">Requisitos de Graduação</h1>
-      <p className="text-sm text-zinc-400 mb-6">
+      <h1 className="text-2xl font-bold text-content-primary mb-2">Requisitos de Graduação</h1>
+      <p className="text-sm text-content-secondary mb-6">
         Configure a quantidade de aulas necessárias para avançar de faixa e de grau.
       </p>
 
@@ -129,7 +129,7 @@ export default function BeltRequirementsPage() {
       <form onSubmit={handleSave}>
         {/* Belt requirements */}
         <Card className="mb-6">
-          <h2 className="text-lg font-semibold text-zinc-50 mb-4">Requisitos por Faixa</h2>
+          <h2 className="text-lg font-semibold text-content-primary mb-4">Requisitos por Faixa</h2>
           <div className="space-y-5">
             {promotionBelts.map((belt) => (
               <div key={belt} className="flex items-center gap-4">
@@ -156,8 +156,8 @@ export default function BeltRequirementsPage() {
 
         {/* Degree requirements */}
         <Card className="mb-6">
-          <h2 className="text-lg font-semibold text-zinc-50 mb-4">Requisitos por Grau</h2>
-          <p className="text-xs text-zinc-400 mb-4">
+          <h2 className="text-lg font-semibold text-content-primary mb-4">Requisitos por Grau</h2>
+          <p className="text-xs text-content-secondary mb-4">
             Aulas necessárias para cada grau dentro de cada faixa.
           </p>
           <div className="space-y-6">
@@ -165,7 +165,7 @@ export default function BeltRequirementsPage() {
               <div key={belt}>
                 <div className="flex items-center gap-2 mb-3">
                   <BeltIcon belt={belt} size={20} />
-                  <span className="text-sm font-medium text-zinc-300">
+                  <span className="text-sm font-medium text-content-secondary">
                     {isKids ? (KIDS_BELT_LABELS[belt] || belt) : belt}
                   </span>
                 </div>
@@ -200,7 +200,7 @@ export default function BeltRequirementsPage() {
             {saving ? "Salvando..." : "Salvar"}
           </Button>
           {saved && (
-            <span className="text-sm text-orange-500">Salvo com sucesso!</span>
+            <span className="text-sm text-accent">Salvo com sucesso!</span>
           )}
         </div>
       </form>

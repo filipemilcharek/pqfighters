@@ -69,19 +69,19 @@ export function ChangePasswordModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-md p-6 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
+      <div className="bg-surface-primary border border-border rounded-xl w-full max-w-md p-6 relative shadow-lg">
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 text-zinc-500 hover:text-zinc-300"
+          className="absolute top-4 right-4 text-content-muted hover:text-content-primary"
         >
           <X size={20} />
         </button>
 
-        <h2 className="text-lg font-semibold text-zinc-50 mb-4">Alterar Senha</h2>
+        <h2 className="text-lg font-semibold text-content-primary mb-4">Alterar Senha</h2>
 
         {success ? (
-          <p className="text-emerald-400 text-sm text-center py-4">
+          <p className="text-emerald-600 text-sm text-center py-4">
             Senha alterada com sucesso!
           </p>
         ) : (

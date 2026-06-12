@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { bookingSchema } from "@/lib/validations";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -9,6 +9,9 @@ export async function GET(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
@@ -42,6 +45,9 @@ export async function POST(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const body = await req.json();
   const result = bookingSchema.safeParse(body);
