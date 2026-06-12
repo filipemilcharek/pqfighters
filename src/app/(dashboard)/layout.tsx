@@ -1,4 +1,5 @@
 import { NavSidebar } from "@/components/nav-sidebar";
+import { TenantThemeProvider } from "@/components/tenant-theme";
 
 export default function DashboardLayout({
   children,
@@ -6,9 +7,11 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-[#09090b]">
-      <NavSidebar />
-      <main className="flex-1 min-w-0 p-4 lg:p-8 pt-16 lg:pt-8">{children}</main>
-    </div>
+    <TenantThemeProvider>
+      <div className="flex min-h-screen bg-surface-primary">
+        <NavSidebar />
+        <main className="flex-1 min-w-0 p-4 lg:p-8 pt-16 lg:pt-8">{children}</main>
+      </div>
+    </TenantThemeProvider>
   );
 }

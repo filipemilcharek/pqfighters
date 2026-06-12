@@ -8,7 +8,7 @@ export default function RankingPage() {
     <div>
       <div className="flex items-center gap-3 mb-6">
         <Trophy size={28} className="text-yellow-400" />
-        <h1 className="text-2xl font-bold text-zinc-50">Ranking de Presenças</h1>
+        <h1 className="text-2xl font-bold text-content-primary">Ranking de Presenças</h1>
       </div>
       <RankingBoard />
     </div>

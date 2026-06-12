@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import Image from "next/image";
+import { Logo } from "@/components/logo";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Clock,
@@ -26,27 +26,28 @@ import {
 import { cn } from "@/lib/utils";
 import { StudentAvatar } from "./student-avatar";
 import { useState } from "react";
+import { useTenantInfo } from "./tenant-theme";
 
 const adminLinks = [
   { href: "/admin", label: "Dashboard", icon: Home },
-  { href: "/admin/slots", label: "Horários Particulares", icon: Clock },
+  { href: "/admin/slots", label: "Horarios Particulares", icon: Clock },
   { href: "/admin/group-classes", label: "Aulas", icon: BookOpen },
   { href: "/admin/events", label: "Eventos", icon: CalendarDays },
-  { href: "/admin/notifications", label: "Notificações", icon: Bell },
+  { href: "/admin/notifications", label: "Notificacoes", icon: Bell },
   { href: "/admin/agenda", label: "Agenda do Dia", icon: CalendarDays },
   { href: "/admin/roll-call", label: "Chamada", icon: ClipboardList },
-  { href: "/admin/attendance", label: "Presenças", icon: ClipboardCheck },
+  { href: "/admin/attendance", label: "Presencas", icon: ClipboardCheck },
   { href: "/admin/belt-requirements", label: "Requisitos de Faixa", icon: Award },
   { href: "/admin/ranking", label: "Ranking", icon: Trophy },
   { href: "/admin/timer", label: "Timer", icon: Timer },
-  { href: "/admin/approvals", label: "Aprovações", icon: UserCheck },
-  { href: "/admin/plan-upgrades", label: "Solicitações de Plano", icon: ArrowUpCircle },
+  { href: "/admin/approvals", label: "Aprovacoes", icon: UserCheck },
+  { href: "/admin/plan-upgrades", label: "Solicitacoes de Plano", icon: ArrowUpCircle },
 ];
 
 const studentLinks = [
-  { href: "/student", label: "Início", icon: Home },
+  { href: "/student", label: "Inicio", icon: Home },
   { href: "/student/agenda", label: "Minha Agenda", icon: CalendarDays },
-  { href: "/student/graduations", label: "Graduações", icon: Award },
+  { href: "/student/graduations", label: "Graduacoes", icon: Award },
   { href: "/student/account", label: "Minha Conta", icon: UserCog },
 ];
 
@@ -55,6 +56,7 @@ export function NavSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const tenantInfo = useTenantInfo();
 
   if (!session) return null;
 
@@ -62,17 +64,19 @@ export function NavSidebar() {
   const links = isAdmin ? adminLinks : studentLinks;
   const homePath = isAdmin ? "/admin" : "/student";
   const isHome = pathname === homePath;
+  const tenantLogoUrl = tenantInfo?.logoUrl || null;
+  const tenantName = tenantInfo?.name;
 
   const sidebar = (
     <div className="flex flex-col h-full">
-      <div className="p-5 border-b border-zinc-800">
+      <div className="p-5 border-b border-border">
         <div className="flex items-center gap-3">
-          <Image src="/logo.png" alt="PQ" width={40} height={40} />
-          <span className="text-2xl font-bold text-zinc-50 tracking-tight font-teko uppercase">
-            PQ <span className="text-accent">FIGHTERS</span>
+          <Logo size={40} logoUrl={tenantLogoUrl} />
+          <span className="text-2xl font-bold text-content-primary tracking-tight font-teko uppercase">
+            {tenantName || <>faix<span className="text-accent font-extrabold">app</span>reta</>}
           </span>
         </div>
-        <div className="flex items-center gap-2 mt-3 text-sm text-zinc-400">
+        <div className="flex items-center gap-2 mt-3 text-sm text-content-secondary">
           <StudentAvatar
             name={session.user.name}
             photoUrl={session.user.photoUrl}
@@ -94,8 +98,8 @@ export function NavSidebar() {
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 mb-1",
                 isActive
-                  ? "bg-orange-500/10 text-orange-500 font-semibold"
-                  : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-50"
+                  ? "bg-accent/10 text-accent font-semibold"
+                  : "text-content-secondary hover:bg-surface-tertiary hover:text-content-primary"
               )}
             >
               <Icon size={18} />
@@ -105,13 +109,13 @@ export function NavSidebar() {
         })}
       </nav>
 
-      <div className="p-3 border-t border-zinc-800 space-y-1">
+      <div className="p-3 border-t border-border space-y-1">
         <button
           onClick={async () => {
             await signOut({ redirect: false });
             window.location.href = "/login";
           }}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-zinc-500 hover:bg-zinc-800 hover:text-zinc-50 w-full transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-content-muted hover:bg-surface-tertiary hover:text-content-primary w-full transition-colors"
         >
           <LogOut size={18} />
           Sair
@@ -123,17 +127,17 @@ export function NavSidebar() {
   return (
     <>
       {/* Mobile top bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex items-center gap-2 p-3 lg:hidden bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-800">
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center gap-2 p-3 lg:hidden bg-surface-primary/95 backdrop-blur-sm border-b border-border">
         <div className="flex items-center gap-2">
-          <Image src="/logo.png" alt="PQ" width={28} height={28} />
-          <span className="text-lg font-bold text-zinc-50 tracking-tight font-teko uppercase">
-            PQ <span className="text-accent">FIGHTERS</span>
+          <Logo size={28} logoUrl={tenantLogoUrl} />
+          <span className="text-lg font-bold text-content-primary tracking-tight font-teko uppercase">
+            {tenantName || <>faix<span className="text-accent font-extrabold">app</span>reta</>}
           </span>
         </div>
         {!isHome ? (
           <button
             onClick={() => router.back()}
-            className="p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-400 hover:text-zinc-50 transition-colors ml-auto"
+            className="p-2 bg-surface-secondary border border-border rounded-lg text-content-secondary hover:text-content-primary transition-colors ml-auto"
           >
             <ArrowLeft size={20} />
           </button>
@@ -141,7 +145,7 @@ export function NavSidebar() {
         <button
           onClick={() => setOpen(!open)}
           className={cn(
-            "p-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-400 hover:text-zinc-50 transition-colors",
+            "p-2 bg-surface-secondary border border-border rounded-lg text-content-secondary hover:text-content-primary transition-colors",
             isHome && "ml-auto"
           )}
         >
@@ -151,14 +155,14 @@ export function NavSidebar() {
 
       {open && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 lg:hidden"
           onClick={() => setOpen(false)}
         />
       )}
 
       <aside
         className={cn(
-          "fixed top-0 left-0 z-40 h-full w-64 bg-zinc-900 border-r border-zinc-800 transform transition-transform lg:translate-x-0 lg:relative lg:z-auto lg:h-screen lg:shrink-0",
+          "fixed top-0 left-0 z-40 h-full w-64 bg-surface-secondary border-r border-border transform transition-transform lg:translate-x-0 lg:relative lg:z-auto lg:h-screen lg:shrink-0",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >

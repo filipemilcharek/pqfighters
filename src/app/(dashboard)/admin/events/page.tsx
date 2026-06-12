@@ -50,7 +50,7 @@ export default function EventsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-zinc-50">Eventos</h1>
+        <h1 className="text-2xl font-bold text-content-primary">Eventos</h1>
         <Button onClick={() => setModalOpen(true)}>Novo Evento</Button>
       </div>
 
@@ -59,12 +59,12 @@ export default function EventsPage() {
           <Card key={event.id}>
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-semibold text-zinc-50">{event.title}</h3>
-                <p className="text-sm text-zinc-400 mt-1">
+                <h3 className="font-semibold text-content-primary">{event.title}</h3>
+                <p className="text-sm text-content-secondary mt-1">
                   {new Date(event.date + "T12:00:00").toLocaleDateString("pt-BR")}
                 </p>
                 {event.description && (
-                  <p className="text-sm text-zinc-300 mt-2">
+                  <p className="text-sm text-content-secondary mt-2">
                     {event.description}
                   </p>
                 )}
@@ -79,7 +79,7 @@ export default function EventsPage() {
           </Card>
         ))}
         {events.length === 0 && (
-          <p className="text-center text-zinc-500 py-8">
+          <p className="text-center text-content-muted py-8">
             Nenhum evento cadastrado
           </p>
         )}
@@ -105,11 +105,11 @@ export default function EventsPage() {
             required
           />
           <div>
-            <label className="block text-sm font-medium text-zinc-50 mb-1">
+            <label className="block text-sm font-medium text-content-primary mb-1">
               Descrição
             </label>
             <textarea
-              className="w-full rounded-md border border-zinc-800 bg-zinc-800 px-3 py-2 text-sm text-zinc-50 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/50"
+              className="w-full rounded-md border border-border bg-surface-tertiary px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40"
               rows={3}
               value={form.description}
               onChange={(e) =>

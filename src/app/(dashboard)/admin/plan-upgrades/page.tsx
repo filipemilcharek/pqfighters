@@ -66,19 +66,19 @@ export default function PlanUpgradesPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-8 text-zinc-500">Carregando...</div>;
+    return <div className="text-center py-8 text-content-muted">Carregando...</div>;
   }
 
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
         <ArrowUpCircle size={28} className="text-blue-400" />
-        <h1 className="text-2xl font-bold text-zinc-50">Solicitações de Plano</h1>
+        <h1 className="text-2xl font-bold text-content-primary">Solicitações de Plano</h1>
       </div>
 
       {requests.length === 0 ? (
         <Card className="!p-8">
-          <p className="text-zinc-400 text-sm text-center">
+          <p className="text-content-secondary text-sm text-center">
             Nenhuma solicitação de plano pendente.
           </p>
         </Card>
@@ -89,8 +89,8 @@ export default function PlanUpgradesPage() {
               <div className="flex items-center gap-4">
                 <StudentAvatar name={r.user.name} photoUrl={r.user.photoUrl} size={48} />
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-zinc-50 truncate">{r.user.name}</p>
-                  <p className="text-xs text-zinc-400 truncate">{r.user.email}</p>
+                  <p className="font-medium text-content-primary truncate">{r.user.name}</p>
+                  <p className="text-xs text-content-secondary truncate">{r.user.email}</p>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <Badge variant="default">
                       Atual: {getPlanLabel(r.user.studentType)}
@@ -98,12 +98,12 @@ export default function PlanUpgradesPage() {
                     <Badge variant="success">
                       Plano {r.plan}
                     </Badge>
-                    <span className="text-xs text-zinc-400">
+                    <span className="text-xs text-content-secondary">
                       {r.frequency}{r.details ? ` - ${formatDetails(r.details)}` : ""}
                     </span>
-                    <span className="text-sm font-bold text-zinc-50">{r.price}</span>
+                    <span className="text-sm font-bold text-content-primary">{r.price}</span>
                   </div>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-content-muted mt-1">
                     Solicitado em {new Date(r.createdAt).toLocaleDateString("pt-BR")}
                   </p>
                 </div>

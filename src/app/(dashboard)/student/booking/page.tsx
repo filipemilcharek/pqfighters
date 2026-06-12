@@ -118,7 +118,7 @@ export default function BookingPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6 text-zinc-50">Agendar Aula</h1>
+      <h1 className="text-2xl font-bold mb-6 text-content-primary">Agendar Aula</h1>
 
       <Card className="mb-6">
         <Input
@@ -132,7 +132,7 @@ export default function BookingPage() {
           }}
         />
         {selectedDay !== null && (
-          <p className="text-sm text-zinc-400 mt-2">
+          <p className="text-sm text-content-secondary mt-2">
             {DAY_NAMES[selectedDay]}
           </p>
         )}
@@ -154,7 +154,7 @@ export default function BookingPage() {
           {isParticular && (
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-semibold text-zinc-50">
+                <h2 className="text-lg font-semibold text-content-primary">
                   Aulas Particulares
                 </h2>
                 {credits && credits.monthlyCredits > 0 && (
@@ -164,7 +164,7 @@ export default function BookingPage() {
                 )}
               </div>
               {filteredSlots.length === 0 ? (
-                <p className="text-zinc-400 text-sm">
+                <p className="text-content-secondary text-sm">
                   Nenhum horário particular disponível neste dia
                 </p>
               ) : (
@@ -173,7 +173,7 @@ export default function BookingPage() {
                     <Card key={slot.id} className="!p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-zinc-50">
+                          <p className="font-medium text-content-primary">
                             {slot.startTime} - {slot.endTime}
                           </p>
                           <Badge variant="success">Particular</Badge>
@@ -194,9 +194,9 @@ export default function BookingPage() {
           )}
 
           {hasGrappling && <div>
-            <h2 className="text-lg font-semibold mb-3 text-zinc-50">Aulas Coletivas</h2>
+            <h2 className="text-lg font-semibold mb-3 text-content-primary">Aulas Coletivas</h2>
             {filteredClasses.length === 0 ? (
-              <p className="text-zinc-400 text-sm">
+              <p className="text-content-secondary text-sm">
                 Nenhuma aula coletiva neste dia
               </p>
             ) : (
@@ -205,8 +205,8 @@ export default function BookingPage() {
                   <Card key={gc.id} className="!p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-zinc-50">{gc.name}</p>
-                        <p className="text-sm text-zinc-400">
+                        <p className="font-medium text-content-primary">{gc.name}</p>
+                        <p className="text-sm text-content-secondary">
                           {gc.startTime} - {gc.endTime}
                         </p>
                         <Badge>Coletiva - {gc.capacity} vagas</Badge>
@@ -227,14 +227,14 @@ export default function BookingPage() {
 
           {filteredSemiPrivate.length > 0 && (
             <div>
-              <h2 className="text-lg font-semibold mb-3 text-zinc-50">Aulas Semi-Particulares</h2>
+              <h2 className="text-lg font-semibold mb-3 text-content-primary">Aulas Semi-Particulares</h2>
               <div className="grid gap-3">
                 {filteredSemiPrivate.map((gc) => (
                   <Card key={gc.id} className="!p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-zinc-50">{gc.name}</p>
-                        <p className="text-sm text-zinc-400">
+                        <p className="font-medium text-content-primary">{gc.name}</p>
+                        <p className="text-sm text-content-secondary">
                           {gc.startTime} - {gc.endTime}
                         </p>
                         <Badge variant="warning">Semi-Particular - {gc.capacity} vagas</Badge>

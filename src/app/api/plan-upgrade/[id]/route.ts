@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -12,6 +12,9 @@ export async function PATCH(
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const { id } = await params;
 
@@ -45,6 +48,9 @@ export async function DELETE(
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const { id } = await params;
 
