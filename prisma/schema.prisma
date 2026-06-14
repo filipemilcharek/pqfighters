@@ -145,6 +145,30 @@ model PlanUpgradeRequest {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Plan {
+  id          String       @id @default(cuid())
+  name        String
+  description String
+  iconHint    String       @default("Star")
+  color       String       @default("orange")
+  isKids      Boolean      @default(false)
+  isActive    Boolean      @default(true)
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  options     PlanOption[]
+}
+
+model PlanOption {
+  id        String  @id @default(cuid())
+  planId    String
+  frequency String
+  details   String?
+  label     String
+  price     String
+  sortOrder Int     @default(0)
+  plan      Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+}
+
 model GraduationLog {
   id        String   @id @default(cuid())
   userId    String

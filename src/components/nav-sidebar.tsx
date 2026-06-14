@@ -22,6 +22,7 @@ import {
   Trophy,
   Timer,
   ArrowUpCircle,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StudentAvatar } from "./student-avatar";
@@ -41,12 +42,14 @@ const adminLinks = [
   { href: "/admin/timer", label: "Timer", icon: Timer },
   { href: "/admin/approvals", label: "Aprovações", icon: UserCheck },
   { href: "/admin/plan-upgrades", label: "Solicitações de Plano", icon: ArrowUpCircle },
+  { href: "/admin/plans", label: "Planos", icon: CreditCard },
 ];
 
 const studentLinks = [
   { href: "/student", label: "Início", icon: Home },
   { href: "/student/agenda", label: "Minha Agenda", icon: CalendarDays },
   { href: "/student/graduations", label: "Graduações", icon: Award },
+  { href: "/student/plans", label: "Planos", icon: CreditCard },
   { href: "/student/account", label: "Minha Conta", icon: UserCog },
 ];
 

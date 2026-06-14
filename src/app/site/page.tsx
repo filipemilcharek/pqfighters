@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import { Star, Sparkles, Crown, type LucideIcon } from "lucide-react";
 
 const FILOSOFIA = [
   {
@@ -53,7 +55,20 @@ const VALORES = [
   { nome: "Compromisso", desc: "Prometemos, fazemos e entregamos." },
 ];
 
-export default function LandingPage() {
+const iconMap: Record<string, LucideIcon> = { Star, Sparkles, Crown };
+
+const colorMap: Record<string, { border: string; icon: string; badge: string }> = {
+  orange: { border: "border-orange-500/30 hover:border-orange-500/60", icon: "text-orange-400", badge: "bg-orange-500/10 text-orange-400" },
+  blue: { border: "border-blue-500/30 hover:border-blue-500/60", icon: "text-blue-400", badge: "bg-blue-500/10 text-blue-400" },
+  amber: { border: "border-amber-500/30 hover:border-amber-500/60", icon: "text-amber-400", badge: "bg-amber-500/10 text-amber-400" },
+};
+
+export default async function LandingPage() {
+  const plans = await prisma.plan.findMany({
+    where: { isActive: true, isKids: false },
+    include: { options: { orderBy: { sortOrder: "asc" } } },
+    orderBy: { sortOrder: "asc" },
+  });
   return (
     <>
       {/* Hero */}
@@ -265,6 +280,65 @@ export default function LandingPage() {
           </p>
         </div>
       </section>
+
+      {/* Planos */}
+      {plans.length > 0 && (
+        <section className="py-20 sm:py-28 px-4 sm:px-6">
+          <div className="max-w-5xl mx-auto">
+            <p className="font-teko text-accent text-lg uppercase tracking-widest mb-2">
+              05 — Planos
+            </p>
+            <h2 className="font-teko text-4xl sm:text-5xl font-bold uppercase text-white leading-tight">
+              Nossos Planos
+            </h2>
+            <p className="text-zinc-400 mt-4 max-w-2xl leading-relaxed">
+              Escolha o plano ideal para a sua jornada. Clique em uma opcao para
+              conversar diretamente pelo WhatsApp.
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+              {plans.map((plan) => {
+                const Icon = iconMap[plan.iconHint] || Star;
+                const colors = colorMap[plan.color] || colorMap.orange;
+                return (
+                  <div
+                    key={plan.id}
+                    className={`border-2 rounded-xl p-6 transition-colors ${colors.border}`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon size={22} className={colors.icon} />
+                      <h3 className="text-xl font-bold text-white">{plan.name}</h3>
+                    </div>
+                    <p className="text-sm text-zinc-400 mb-4">{plan.description}</p>
+                    <div className="space-y-2">
+                      {plan.options.map((opt) => {
+                        const msg = encodeURIComponent(
+                          `Ola, tenho interesse no plano ${plan.name} - ${opt.label} (${opt.price})`
+                        );
+                        return (
+                          <a
+                            key={opt.id}
+                            href={`https://wa.me/5551985092214?text=${msg}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between p-3 rounded-lg border border-white/5 hover:border-accent/30 hover:bg-white/[0.02] transition-colors group"
+                          >
+                            <span className="text-sm text-zinc-300 group-hover:text-white transition-colors">
+                              {opt.label}
+                            </span>
+                            <span className="text-sm font-bold text-white">
+                              {opt.price}
+                            </span>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Final */}
       <section className="relative py-24 sm:py-32 px-4 sm:px-6 overflow-hidden">
