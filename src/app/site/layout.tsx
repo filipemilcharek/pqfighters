@@ -58,14 +58,14 @@ function Footer() {
   return (
     <footer className="border-t border-white/5 bg-black py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div>
+        <div className="flex flex-wrap justify-between gap-12 max-w-5xl mx-auto">
+          <div className="max-w-xs">
             <a href="/" className="flex items-center gap-2 mb-4">
               <div className="w-9 h-9 bg-red-600 rounded-lg flex items-center justify-center font-teko text-xl font-bold text-white">
                 FP
               </div>
               <span className="font-teko text-2xl font-bold uppercase tracking-tight text-white">
-                faix<span className="text-red-600">app</span>reta
+                faix<span className="text-red-600">appreta</span>
               </span>
             </a>
             <p className="text-zinc-500 text-sm leading-relaxed">
@@ -74,50 +74,48 @@ function Footer() {
               Feito por quem entende o tatame.
             </p>
           </div>
-          <div className="grid grid-cols-2 md:col-span-2 gap-8 md:gap-12">
-            <div>
-              <h4 className="text-white font-semibold uppercase tracking-widest text-sm mb-4">
-                Navegação
-              </h4>
-              <ul className="space-y-3 text-zinc-500 text-sm">
-                <li>
-                  <a
-                    href="#funcionalidades"
-                    className="hover:text-white transition-colors"
-                  >
-                    Funcionalidades
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#planos"
-                    className="hover:text-white transition-colors"
-                  >
-                    Planos
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-white font-semibold uppercase tracking-widest text-sm mb-4">
-                Contato
-              </h4>
-              <ul className="space-y-3 text-zinc-500 text-sm">
-                <li>
-                  <a
-                    href={WHATSAPP_LINK}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-white transition-colors"
-                  >
-                    WhatsApp
-                  </a>
-                </li>
-              </ul>
-            </div>
+          <div>
+            <h4 className="text-white font-semibold uppercase tracking-widest text-sm mb-4">
+              Navegação
+            </h4>
+            <ul className="space-y-3 text-zinc-500 text-sm">
+              <li>
+                <a
+                  href="#funcionalidades"
+                  className="hover:text-white transition-colors"
+                >
+                  Funcionalidades
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#planos"
+                  className="hover:text-white transition-colors"
+                >
+                  Planos
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold uppercase tracking-widest text-sm mb-4">
+              Contato
+            </h4>
+            <ul className="space-y-3 text-zinc-500 text-sm">
+              <li>
+                <a
+                  href={WHATSAPP_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                >
+                  WhatsApp
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
-        <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 max-w-7xl mx-auto">
           <p className="text-zinc-600 text-sm">
             &copy; {new Date().getFullYear()} faixappreta. Todos os direitos
             reservados.

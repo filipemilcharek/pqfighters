@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StudentAvatar } from "@/components/student-avatar";
 import { Check, X } from "lucide-react";
-import { getPlanLabel, isPremiumOrPro } from "@/lib/utils";
+import { isPremiumOrPro, getPlanLabel } from "@/lib/utils";
 
 interface PendingStudent {
   id: string;
   name: string;
   email: string;
-  studentType: string;
   modalities: string;
+  studentType: string;
   isKids: boolean;
   photoUrl: string | null;
   createdAt: string;
