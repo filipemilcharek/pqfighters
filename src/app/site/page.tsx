@@ -2,6 +2,8 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { Star, Sparkles, Crown, type LucideIcon } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 const FILOSOFIA = [
   {
     num: "01",
