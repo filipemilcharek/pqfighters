@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
-import { Star, Sparkles, Crown, type LucideIcon } from "lucide-react";
+import { SitePlanCard } from "@/components/site-plan-card";
 
 export const dynamic = "force-dynamic";
 
@@ -57,20 +57,14 @@ const VALORES = [
   { nome: "Compromisso", desc: "Prometemos, fazemos e entregamos." },
 ];
 
-const iconMap: Record<string, LucideIcon> = { Star, Sparkles, Crown };
-
-const colorMap: Record<string, { border: string; icon: string; badge: string }> = {
-  orange: { border: "border-orange-500/30 hover:border-orange-500/60", icon: "text-orange-400", badge: "bg-orange-500/10 text-orange-400" },
-  blue: { border: "border-blue-500/30 hover:border-blue-500/60", icon: "text-blue-400", badge: "bg-blue-500/10 text-blue-400" },
-  amber: { border: "border-amber-500/30 hover:border-amber-500/60", icon: "text-amber-400", badge: "bg-amber-500/10 text-amber-400" },
-};
-
 export default async function LandingPage() {
-  const plans = await prisma.plan.findMany({
-    where: { isActive: true, isKids: false },
+  const allPlans = await prisma.plan.findMany({
+    where: { isActive: true },
     include: { options: { orderBy: { sortOrder: "asc" } } },
     orderBy: { sortOrder: "asc" },
   });
+  const plans = allPlans.filter((p) => !p.isKids);
+  const kidsPlans = allPlans.filter((p) => p.isKids);
   return (
     <>
       {/* Hero */}
@@ -275,6 +269,7 @@ export default async function LandingPage() {
                 </p>
               </div>
             ))}
+            <div className="bg-[#0d0d0d]" />
           </div>
           <p className="text-zinc-600 italic mt-10 text-sm">
             &ldquo;Vestimos essa camisa com orgulho e representamos o PQ
@@ -298,45 +293,32 @@ export default async function LandingPage() {
               conversar diretamente pelo WhatsApp.
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-              {plans.map((plan) => {
-                const Icon = iconMap[plan.iconHint] || Star;
-                const colors = colorMap[plan.color] || colorMap.orange;
-                return (
-                  <div
-                    key={plan.id}
-                    className={`border-2 rounded-xl p-6 transition-colors ${colors.border}`}
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <Icon size={22} className={colors.icon} />
-                      <h3 className="text-xl font-bold text-white">{plan.name}</h3>
-                    </div>
-                    <p className="text-sm text-zinc-400 mb-4">{plan.description}</p>
-                    <div className="space-y-2">
-                      {plan.options.map((opt) => {
-                        const msg = encodeURIComponent(
-                          `Ola, tenho interesse no plano ${plan.name} - ${opt.label} (${opt.price})`
-                        );
-                        return (
-                          <a
-                            key={opt.id}
-                            href={`https://wa.me/5551985092214?text=${msg}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-between p-3 rounded-lg border border-white/5 hover:border-accent/30 hover:bg-white/[0.02] transition-colors group"
-                          >
-                            <span className="text-sm text-zinc-300 group-hover:text-white transition-colors">
-                              {opt.label}
-                            </span>
-                            <span className="text-sm font-bold text-white">
-                              {opt.price}
-                            </span>
-                          </a>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
+              {plans.map((plan) => (
+                <SitePlanCard key={plan.id} plan={plan} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Planos Kids */}
+      {kidsPlans.length > 0 && (
+        <section className="py-20 sm:py-28 px-4 sm:px-6 bg-[#0d0d0d]">
+          <div className="max-w-5xl mx-auto">
+            <p className="font-teko text-accent text-lg uppercase tracking-widest mb-2">
+              06 — Kids
+            </p>
+            <h2 className="font-teko text-4xl sm:text-5xl font-bold uppercase text-white leading-tight">
+              Planos Kids
+            </h2>
+            <p className="text-zinc-400 mt-4 max-w-2xl leading-relaxed">
+              Modalidades para crianças e adolescentes. Disciplina e diversao
+              desde cedo.
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+              {kidsPlans.map((plan) => (
+                <SitePlanCard key={plan.id} plan={plan} kidsPrefix />
+              ))}
             </div>
           </div>
         </section>

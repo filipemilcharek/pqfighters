@@ -192,12 +192,12 @@ export default function AdminPlansPage() {
         value={planForm.iconHint}
         onChange={(e) => setPlanForm({ ...planForm, iconHint: e.target.value })}
       >
-        <option value="Star">Star</option>
-        <option value="Sparkles">Sparkles</option>
-        <option value="Crown">Crown</option>
+        <option value="Star">Estrela</option>
+        <option value="Sparkles">Brilho</option>
+        <option value="Crown">Coroa</option>
       </Select>
       <Select
-        label="Cor"
+        label="Cor do card"
         value={planForm.color}
         onChange={(e) => setPlanForm({ ...planForm, color: e.target.value })}
       >
@@ -206,7 +206,7 @@ export default function AdminPlansPage() {
         <option value="amber">Âmbar</option>
       </Select>
       <Input
-        label="Ordem"
+        label="Posição na lista (menor aparece primeiro)"
         type="number"
         value={String(planForm.sortOrder)}
         onChange={(e) => setPlanForm({ ...planForm, sortOrder: Number(e.target.value) })}
