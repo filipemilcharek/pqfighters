@@ -42,23 +42,18 @@ interface Student {
 function getPaymentStatus(
   monthlyDueDay: number | null,
   lastPaymentDate: string | null
-): { label: string; variant: "green" | "warning" | "danger" } | null {
+): { label: string; variant: "green" | "warning" | "danger"; daysInfo?: string } | null {
   if (!monthlyDueDay) return null;
+  if (!lastPaymentDate) return { label: "Atrasado", variant: "danger" };
 
   const now = new Date();
-  const currentMonth = now.getFullYear() * 12 + now.getMonth();
-
-  if (!lastPaymentDate) {
-    return { label: "Atrasado", variant: "danger" };
-  }
-
   const payment = new Date(lastPaymentDate);
-  const paymentMonth = payment.getFullYear() * 12 + payment.getMonth();
-  const diff = currentMonth - paymentMonth;
+  const diffMs = now.getTime() - payment.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diff <= 0) return { label: "Em dia", variant: "green" };
-  if (diff === 1) return { label: "Pendente", variant: "warning" };
-  return { label: "Atrasado", variant: "danger" };
+  if (diffDays <= 25) return { label: "Em dia", variant: "green", daysInfo: `${30 - diffDays} dias restantes` };
+  if (diffDays <= 30) return { label: "Pendente", variant: "warning", daysInfo: `Vence em ${30 - diffDays} dias` };
+  return { label: "Atrasado", variant: "danger", daysInfo: `${diffDays - 30} dias atrasado` };
 }
 
 export default function AdminDashboard() {

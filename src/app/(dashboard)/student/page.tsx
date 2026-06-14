@@ -109,6 +109,7 @@ export default function StudentHome() {
   const [rescheduleLoading, setRescheduleLoading] = useState(false);
   const [showOnlyMine, setShowOnlyMine] = useState(false);
   const [rankPosition, setRankPosition] = useState<{ position: number; total: number; presences: number } | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<{ label: string; variant: "green" | "warning" | "danger"; daysInfo?: string } | null>(null);
 
   useEffect(() => {
     fetch("/api/bookings").then((r) => r.json()).then(setBookings);
@@ -128,6 +129,18 @@ export default function StudentHome() {
         if (data.initialCheckins) setInitialCheckins(data.initialCheckins);
         if (data.lastGraduationDate) setLastGraduationDate(data.lastGraduationDate);
         if (data.lastBeltChangeDate) setLastBeltChangeDate(data.lastBeltChangeDate);
+        if (data.monthlyDueDay) {
+          if (!data.lastPaymentDate) {
+            setPaymentStatus({ label: "Atrasado", variant: "danger" });
+          } else {
+            const now = new Date();
+            const payment = new Date(data.lastPaymentDate);
+            const diffDays = Math.floor((now.getTime() - payment.getTime()) / (1000 * 60 * 60 * 24));
+            if (diffDays <= 25) setPaymentStatus({ label: "Em dia", variant: "green", daysInfo: `${30 - diffDays} dias restantes` });
+            else if (diffDays <= 30) setPaymentStatus({ label: "Pendente", variant: "warning", daysInfo: `Vence em ${30 - diffDays} dias` });
+            else setPaymentStatus({ label: "Atrasado", variant: "danger", daysInfo: `${diffDays - 30} dias atrasado` });
+          }
+        }
       })
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -345,6 +358,36 @@ export default function StudentHome() {
       </h1>
 
       <NotificationBanner />
+
+      {/* Payment status */}
+      {paymentStatus && (
+        <Card className={`mb-6 !p-4 border-l-4 ${
+          paymentStatus.variant === "green" ? "border-l-emerald-500" :
+          paymentStatus.variant === "warning" ? "border-l-amber-500" :
+          "border-l-red-500"
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-2.5 h-2.5 rounded-full ${
+                paymentStatus.variant === "green" ? "bg-emerald-500" :
+                paymentStatus.variant === "warning" ? "bg-amber-500" :
+                "bg-red-500"
+              }`} />
+              <div>
+                <p className="text-sm font-medium text-zinc-50">
+                  Pagamento: {paymentStatus.label}
+                </p>
+                {paymentStatus.daysInfo && (
+                  <p className="text-xs text-zinc-400">{paymentStatus.daysInfo}</p>
+                )}
+              </div>
+            </div>
+            <Badge variant={paymentStatus.variant === "green" ? "success" : paymentStatus.variant === "warning" ? "warning" : "danger"}>
+              {paymentStatus.label}
+            </Badge>
+          </div>
+        </Card>
+      )}
 
       {/* Upcoming events */}
       {upcomingEvents.length > 0 && (
