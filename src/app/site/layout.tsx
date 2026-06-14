@@ -74,45 +74,47 @@ function Footer() {
               Feito por quem entende o tatame.
             </p>
           </div>
-          <div>
-            <h4 className="text-white font-semibold uppercase tracking-widest text-sm mb-4">
-              Navegação
-            </h4>
-            <ul className="space-y-3 text-zinc-500 text-sm">
-              <li>
-                <a
-                  href="#funcionalidades"
-                  className="hover:text-white transition-colors"
-                >
-                  Funcionalidades
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#planos"
-                  className="hover:text-white transition-colors"
-                >
-                  Planos
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-white font-semibold uppercase tracking-widest text-sm mb-4">
-              Contato
-            </h4>
-            <ul className="space-y-3 text-zinc-500 text-sm">
-              <li>
-                <a
-                  href={WHATSAPP_LINK}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors"
-                >
-                  WhatsApp
-                </a>
-              </li>
-            </ul>
+          <div className="grid grid-cols-2 md:col-span-2 gap-8 md:gap-12">
+            <div>
+              <h4 className="text-white font-semibold uppercase tracking-widest text-sm mb-4">
+                Navegação
+              </h4>
+              <ul className="space-y-3 text-zinc-500 text-sm">
+                <li>
+                  <a
+                    href="#funcionalidades"
+                    className="hover:text-white transition-colors"
+                  >
+                    Funcionalidades
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#planos"
+                    className="hover:text-white transition-colors"
+                  >
+                    Planos
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold uppercase tracking-widest text-sm mb-4">
+                Contato
+              </h4>
+              <ul className="space-y-3 text-zinc-500 text-sm">
+                <li>
+                  <a
+                    href={WHATSAPP_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    WhatsApp
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
         <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">

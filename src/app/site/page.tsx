@@ -185,10 +185,10 @@ export default function SitePage() {
       <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(220,38,38,0.12),transparent_60%)]" />
         <div className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10 text-center">
-          <p className="text-red-500 font-bold uppercase tracking-[0.2em] text-sm mb-6">
+          <p className="text-red-500 font-bold uppercase tracking-[0.2em] text-sm mb-6 md:mt-6">
             Sistema de gestão para centros de treinamento
           </p>
-          <h1 className="font-teko text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold uppercase leading-[0.85] text-white mb-8">
+          <h1 className="font-teko text-6xl sm:text-7xl md:text-7xl lg:text-8xl font-bold uppercase leading-[0.85] text-white mb-8">
             Seu CT merece mais do que{" "}
             <span className="text-red-600">planilha e caderno</span>
           </h1>
@@ -272,7 +272,7 @@ export default function SitePage() {
                 <div className="hidden md:flex items-center justify-center">
                   <ArrowRight className="w-5 h-5 text-red-600" />
                 </div>
-                <div className="p-5 rounded-2xl bg-red-600/5 border border-red-600/20 text-white font-medium">
+                <div className="p-5 rounded-2xl bg-emerald-600/10 border border-emerald-600/20 text-white font-medium">
                   {item.depois}
                 </div>
               </div>
@@ -465,8 +465,8 @@ export default function SitePage() {
               <MessageCircle className="w-5 h-5" />
               Assinar pelo WhatsApp
             </a>
-            <p className="text-center text-zinc-600 text-sm mt-4">
-              Cancele quando quiser. Sem fidelidade.
+            <p className="text-center text-zinc-500 text-sm mt-4">
+              Valor promocional no plano anual
             </p>
           </div>
         </div>
@@ -513,12 +513,6 @@ export default function SitePage() {
             </a>
           </div>
           <div className="flex items-center justify-center gap-8 mt-12 text-zinc-600 text-sm">
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" /> Sem fidelidade
-            </span>
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4" /> Teste gratuito
-            </span>
             <span className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" /> Suporte humano
             </span>
