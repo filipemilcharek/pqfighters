@@ -116,7 +116,7 @@ async function main() {
   const kidsJJ = await prisma.plan.create({
     data: {
       name: "Jiu-Jitsu + No-Gi",
-      description: "Plano Unico (Jiu-Jitsu + No-Gi)",
+      description: "Plano Único (Jiu-Jitsu + No-Gi)",
       iconHint: "Sparkles",
       color: "blue",
       isKids: true,

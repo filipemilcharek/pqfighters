@@ -85,7 +85,7 @@ export function SitePlanCard({ plan, kidsPrefix }: { plan: Plan; kidsPrefix?: bo
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-zinc-500">
-                      {opts.length} {opts.length === 1 ? "opcao" : "opcoes"}
+                      {opts.length} {opts.length === 1 ? "opção" : "opções"}
                     </span>
                     <ChevronDown
                       size={14}

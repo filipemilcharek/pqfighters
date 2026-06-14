@@ -289,7 +289,7 @@ export default async function LandingPage() {
               Nossos Planos
             </h2>
             <p className="text-zinc-400 mt-4 max-w-2xl leading-relaxed">
-              Escolha o plano ideal para a sua jornada. Clique em uma opcao para
+              Escolha o plano ideal para a sua jornada. Clique em uma opção para
               conversar diretamente pelo WhatsApp.
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
@@ -312,7 +312,7 @@ export default async function LandingPage() {
               Planos Kids
             </h2>
             <p className="text-zinc-400 mt-4 max-w-2xl leading-relaxed">
-              Modalidades para crianças e adolescentes. Disciplina e diversao
+              Modalidades para crianças e adolescentes. Disciplina e diversão
               desde cedo.
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">

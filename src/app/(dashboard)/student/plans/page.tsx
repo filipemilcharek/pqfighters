@@ -98,7 +98,7 @@ export default function StudentPlansPage() {
 
     if (!res.ok) {
       const data = await res.json();
-      setUpgradeError(data.error || "Erro ao enviar solicitacao");
+      setUpgradeError(data.error || "Erro ao enviar solicitação");
       return;
     }
 
@@ -120,10 +120,10 @@ export default function StudentPlansPage() {
             <Clock size={18} className="text-amber-400 shrink-0" />
             <div>
               <p className="text-sm font-medium text-zinc-50">
-                Solicitacao pendente: Plano {pendingRequest.plan}
+                Solicitação pendente: Plano {pendingRequest.plan}
               </p>
               <p className="text-xs text-zinc-400">
-                {pendingRequest.price} - Aguardando aprovacao do professor
+                {pendingRequest.price} - Aguardando aprovação do professor
               </p>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function StudentPlansPage() {
       {upgradeSuccess && !pendingRequest && (
         <Card className="mb-4 border-l-4 border-l-emerald-500">
           <p className="text-sm text-emerald-400">
-            Solicitacao enviada com sucesso! O professor ira analisar em breve.
+            Solicitação enviada com sucesso! O professor irá analisar em breve.
           </p>
         </Card>
       )}
@@ -166,7 +166,7 @@ export default function StudentPlansPage() {
               {plan.options.length > 1 && (
                 <div className="flex items-center justify-between mt-3">
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${colors.badge}`}>
-                    {plan.options.length} opcoes
+                    {plan.options.length} opções
                   </span>
                   <ChevronRight size={14} className={`text-zinc-600 transition-transform ${isSelected ? "rotate-90" : ""}`} />
                 </div>
@@ -183,7 +183,7 @@ export default function StudentPlansPage() {
       {selectedPlanData && selectedPlanData.options.length > 1 && (
         <Card className="mt-4">
           <h3 className="text-sm font-semibold text-zinc-50 mb-3">
-            Escolha a frequencia - {selectedPlanData.name}
+            Escolha a frequência - {selectedPlanData.name}
           </h3>
           <div className="space-y-2">
             {selectedPlanData.options.map((option, i) => {

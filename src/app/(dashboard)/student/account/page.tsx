@@ -68,11 +68,11 @@ export default function AccountPage() {
     setPasswordSuccess(false);
 
     if (newPassword.length < 6) {
-      setPasswordError("Nova senha deve ter no minimo 6 caracteres");
+      setPasswordError("Nova senha deve ter no mínimo 6 caracteres");
       return;
     }
     if (newPassword !== confirmPassword) {
-      setPasswordError("As senhas nao coincidem");
+      setPasswordError("As senhas não coincidem");
       return;
     }
 
@@ -142,7 +142,7 @@ export default function AccountPage() {
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Minimo 6 caracteres"
+            placeholder="Mínimo 6 caracteres"
             required
             minLength={6}
           />
