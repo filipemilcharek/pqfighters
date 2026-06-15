@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prismaMaster } from "@/lib/prisma-master";
 import { verifySuperAdmin } from "@/lib/super-admin-auth";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 
 export async function GET(
   _req: NextRequest,
@@ -65,6 +66,29 @@ export async function PUT(
       ...(isActive !== undefined && { isActive }),
     },
   });
+
+  // Sync admin name/email in tenant DB
+  if (adminName !== undefined || adminEmail !== undefined) {
+    try {
+      const tenantPrisma = await getTenantPrisma(existing.slug);
+      if (tenantPrisma) {
+        const adminUser = await tenantPrisma.user.findFirst({
+          where: { email: existing.adminEmail, role: "ADMIN" },
+        });
+        if (adminUser) {
+          await tenantPrisma.user.update({
+            where: { id: adminUser.id },
+            data: {
+              ...(adminName !== undefined && { name: adminName }),
+              ...(adminEmail !== undefined && { email: adminEmail }),
+            },
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error syncing admin in tenant DB:", err);
+    }
+  }
 
   return NextResponse.json({
     ok: true,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 interface TenantInfo {
   name: string;
@@ -10,25 +10,20 @@ interface TenantInfo {
   secondaryColor: string;
 }
 
-let cachedTenantInfo: TenantInfo | null = null;
+const TenantInfoContext = createContext<TenantInfo | null>(null);
 
 export function TenantThemeProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
-  const [tenantInfo, setTenantInfo] = useState<TenantInfo | null>(cachedTenantInfo);
+  const [tenantInfo, setTenantInfo] = useState<TenantInfo | null>(null);
 
   useEffect(() => {
     const slug = session?.user?.tenantSlug;
     if (!slug) return;
-    if (cachedTenantInfo) {
-      setTenantInfo(cachedTenantInfo);
-      return;
-    }
 
     fetch(`/api/tenant-info?slug=${encodeURIComponent(slug)}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.primaryColor) {
-          cachedTenantInfo = data;
           setTenantInfo(data);
         }
       })
@@ -40,7 +35,6 @@ export function TenantThemeProvider({ children }: { children: React.ReactNode })
     const root = document.documentElement;
     root.style.setProperty("--color-accent", tenantInfo.primaryColor);
     root.style.setProperty("--color-accent-dark", tenantInfo.secondaryColor);
-    // Generate a lighter variant for hover/highlight
     root.style.setProperty("--color-accent-light", tenantInfo.primaryColor + "cc");
 
     return () => {
@@ -50,9 +44,13 @@ export function TenantThemeProvider({ children }: { children: React.ReactNode })
     };
   }, [tenantInfo]);
 
-  return <>{children}</>;
+  return (
+    <TenantInfoContext.Provider value={tenantInfo}>
+      {children}
+    </TenantInfoContext.Provider>
+  );
 }
 
 export function useTenantInfo() {
-  return cachedTenantInfo;
+  return useContext(TenantInfoContext);
 }
