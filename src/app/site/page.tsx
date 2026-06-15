@@ -288,8 +288,8 @@ export default function SitePage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="font-teko text-5xl sm:text-6xl font-bold uppercase text-white mb-4">
-              Não é genérico. É do{" "}
-              <span className="text-red-600">seu CT</span>.
+              Personalize{" "}
+              <span className="text-red-600">do seu jeito</span>.
             </h2>
             <p className="text-zinc-500 text-lg max-w-2xl mx-auto">
               Seu aluno não vai ver &ldquo;faixappreta&rdquo;. Vai ver a marca do seu CT — como se fosse um app feito só para ele.
