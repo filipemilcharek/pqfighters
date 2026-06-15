@@ -22,7 +22,7 @@ echo "Backup salvo: $BACKUP_DIR/$FILENAME ($(du -h "$BACKUP_DIR/$FILENAME" | cut
 
 echo ""
 echo "=== 2. Build da imagem Docker ==="
-docker build -t "$IMAGE" .
+docker build --platform linux/amd64 -t "$IMAGE" .
 
 echo ""
 echo "=== 3. Push da imagem ==="
