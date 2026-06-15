@@ -188,7 +188,7 @@ export default function SitePage() {
           <p className="text-red-500 font-bold uppercase tracking-[0.2em] text-sm mb-6 md:mt-6">
             Sistema de gestão para centros de treinamento
           </p>
-          <h1 className="font-teko text-6xl sm:text-7xl md:text-7xl lg:text-8xl font-bold uppercase leading-[0.85] text-white mb-8">
+          <h1 className="font-teko text-6xl sm:text-7xl md:text-[7.5rem] font-bold uppercase leading-[0.85] text-white mb-8">
             Seu CT merece mais do que{" "}
             <span className="text-red-600">planilha e caderno</span>
           </h1>
@@ -270,9 +270,9 @@ export default function SitePage() {
                   {item.antes}
                 </div>
                 <div className="hidden md:flex items-center justify-center">
-                  <ArrowRight className="w-5 h-5 text-red-600" />
+                  <ArrowRight className="w-5 h-5 text-emerald-500" />
                 </div>
-                <div className="p-5 rounded-2xl bg-emerald-600/10 border border-emerald-600/20 text-white font-medium">
+                <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-white font-medium">
                   {item.depois}
                 </div>
               </div>
