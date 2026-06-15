@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "PQ - Centro de Treinamento",
   description: "Sistema de agendamento de aulas de Jiu-Jitsu",
+  icons: {
+    icon: "/pq-pb.ico",
+  },
 };
 
 export default function RootLayout({

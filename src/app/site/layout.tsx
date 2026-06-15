@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: "PQ Fighters - Grappling & Jiu-Jitsu",
   description:
     "Disciplina. Evolução. Propósito. Centro de treinamento de Jiu-Jitsu e Grappling em Porto Alegre.",
+  icons: {
+    icon: "/pq-pb.ico",
+  },
 };
 
 function Header() {
