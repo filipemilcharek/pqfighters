@@ -18,5 +18,7 @@ export async function GET(req: NextRequest) {
     logoUrl: tenant.logoUrl,
     primaryColor: tenant.primaryColor,
     secondaryColor: tenant.secondaryColor,
+    enablePlans: tenant.enablePlans,
+    enableTimer: tenant.enableTimer,
   });
 }

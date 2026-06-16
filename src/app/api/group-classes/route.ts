@@ -14,7 +14,12 @@ export async function GET() {
   if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const classes = await prisma.groupClass.findMany({
-    include: { instructor: { select: { id: true, name: true } } },
+    include: {
+      instructor: { select: { id: true, name: true } },
+      enrollments: {
+        include: { user: { select: { id: true, name: true, photoUrl: true } } },
+      },
+    },
     orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
   });
   return NextResponse.json(classes);
@@ -44,6 +49,7 @@ export async function POST(req: NextRequest) {
       ...result.data,
       isKids: result.data.isKids || false,
       classType: result.data.classType || "GROUP",
+      fixedRoster: result.data.fixedRoster || false,
       instructorId: result.data.instructorId || session.user.id,
     },
   });

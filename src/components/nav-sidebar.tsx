@@ -11,6 +11,7 @@ import {
   CalendarDays,
   ClipboardCheck,
   ClipboardList,
+  CreditCard,
   Home,
   LogOut,
   Menu,
@@ -31,22 +32,24 @@ import { useTenantInfo } from "./tenant-theme";
 const adminLinks = [
   { href: "/admin", label: "Dashboard", icon: Home, ownerOnly: false },
   { href: "/admin/professors", label: "Professores", icon: Users, ownerOnly: true },
-  { href: "/admin/slots", label: "Horários Particulares", icon: Clock, ownerOnly: false },
-  { href: "/admin/group-classes", label: "Aulas", icon: BookOpen, ownerOnly: false },
-  { href: "/admin/events", label: "Eventos", icon: CalendarDays, ownerOnly: false },
-  { href: "/admin/notifications", label: "Notificações", icon: Bell, ownerOnly: false },
+  { href: "/admin/slots", label: "Aulas Particulares", icon: Clock, ownerOnly: false },
+  { href: "/admin/group-classes", label: "Aulas Coletivas", icon: BookOpen, ownerOnly: false },
   { href: "/admin/agenda", label: "Agenda do Dia", icon: CalendarDays, ownerOnly: false },
   { href: "/admin/roll-call", label: "Chamada", icon: ClipboardList, ownerOnly: false },
   { href: "/admin/attendance", label: "Presenças", icon: ClipboardCheck, ownerOnly: false },
   { href: "/admin/belt-requirements", label: "Requisitos de Faixa", icon: Award, ownerOnly: false },
   { href: "/admin/ranking", label: "Ranking", icon: Trophy, ownerOnly: false },
-  { href: "/admin/timer", label: "Timer", icon: Timer, ownerOnly: false },
+  { href: "/admin/timer", label: "Timer", icon: Timer, ownerOnly: false, featureFlag: "enableTimer" as const },
   { href: "/admin/approvals", label: "Aprovações", icon: UserCheck, ownerOnly: false },
+  { href: "/admin/plans", label: "Planos", icon: CreditCard, ownerOnly: false, featureFlag: "enablePlans" as const },
+  { href: "/admin/events", label: "Eventos", icon: CalendarDays, ownerOnly: false },
+  { href: "/admin/notifications", label: "Notificações", icon: Bell, ownerOnly: false },
 ];
 
 const studentLinks = [
   { href: "/student", label: "Início", icon: Home },
   { href: "/student/agenda", label: "Minha Agenda", icon: CalendarDays },
+  { href: "/student/plans", label: "Planos", icon: CreditCard, featureFlag: "enablePlans" as const },
   { href: "/student/graduations", label: "Graduações", icon: Award },
   { href: "/student/account", label: "Minha Conta", icon: UserCog },
 ];
@@ -63,8 +66,15 @@ export function NavSidebar() {
   const isAdmin = session.user.role === "ADMIN";
   const isOwner = session.user.isOwner;
   const links = isAdmin
-    ? adminLinks.filter((l) => !l.ownerOnly || isOwner)
-    : studentLinks;
+    ? adminLinks.filter((l) => {
+        if (l.ownerOnly && !isOwner) return false;
+        if (l.featureFlag && tenantInfo && !tenantInfo[l.featureFlag]) return false;
+        return true;
+      })
+    : studentLinks.filter((l) => {
+        if (l.featureFlag && tenantInfo && !tenantInfo[l.featureFlag]) return false;
+        return true;
+      });
   const homePath = isAdmin ? "/admin" : "/student";
   const isHome = pathname === homePath;
   const tenantLogoUrl = tenantInfo?.logoUrl || null;

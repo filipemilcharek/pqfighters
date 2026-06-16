@@ -16,10 +16,10 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
 
-  // Students see their bound slots + (PRO/PREMIUM only) unbound available slots
+  // Students see their bound slots + (PARTICULAR only) unbound available slots
   if (session.user.role === "STUDENT") {
     const date = searchParams.get("date");
-    const isParticular = session.user.studentType === "PREMIUM" || session.user.studentType === "PRO";
+    const isParticular = session.user.studentType === "PARTICULAR";
     const orFilter = isParticular
       ? [{ userId: session.user.id }, { userId: null, isAvailable: true }]
       : [{ userId: session.user.id }];

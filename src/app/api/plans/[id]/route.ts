@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getTenantPrisma, getTenantFlags } from "@/lib/tenant-prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-// Admin approves upgrade request
 export async function PATCH(
-  _req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
@@ -22,35 +21,30 @@ export async function PATCH(
   if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const { id } = await params;
+  const body = await req.json();
+  const { name, description, price, frequency, planType, monthlyCredits } = body;
 
-  const request = await prisma.planUpgradeRequest.update({
+  if (planType && !["COLETIVA", "PARTICULAR"].includes(planType)) {
+    return NextResponse.json({ error: "Tipo de plano inválido" }, { status: 400 });
+  }
+
+  const plan = await prisma.plan.update({
     where: { id },
-    data: { status: "APPROVED", readByAdmin: true },
-  });
-
-  // Buscar o Plan pelo planId (preferido) ou pelo nome (fallback)
-  const plan = request.planId
-    ? await prisma.plan.findUnique({ where: { id: request.planId } })
-    : await prisma.plan.findFirst({ where: { name: request.plan } });
-
-  const newStudentType = plan?.planType || "COLETIVA";
-  const newCredits = plan?.monthlyCredits ?? 0;
-
-  await prisma.user.update({
-    where: { id: request.userId },
     data: {
-      studentType: newStudentType,
-      monthlyCredits: newCredits,
-      planId: plan?.id || null,
+      ...(name !== undefined && { name }),
+      ...(description !== undefined && { description }),
+      ...(price !== undefined && { price }),
+      ...(frequency !== undefined && { frequency }),
+      ...(planType !== undefined && { planType }),
+      ...(monthlyCredits !== undefined && { monthlyCredits }),
     },
   });
 
-  return NextResponse.json(request);
+  return NextResponse.json(plan);
 }
 
-// Admin rejects upgrade request
 export async function DELETE(
-  _req: Request,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions);
@@ -68,10 +62,10 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const request = await prisma.planUpgradeRequest.update({
+  await prisma.plan.update({
     where: { id },
-    data: { status: "REJECTED", readByAdmin: true },
+    data: { isActive: false },
   });
 
-  return NextResponse.json(request);
+  return NextResponse.json({ ok: true });
 }

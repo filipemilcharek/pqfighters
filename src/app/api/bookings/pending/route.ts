@@ -52,6 +52,30 @@ export async function GET(req: NextRequest) {
         });
       }
     }
+
+    // Auto-create bookings for fixed roster group classes on this date
+    const fixedClasses = await prisma.groupClass.findMany({
+      where: { dayOfWeek, fixedRoster: true },
+      include: { enrollments: true },
+    });
+
+    for (const gc of fixedClasses) {
+      for (const enrollment of gc.enrollments) {
+        const exists = await prisma.booking.findFirst({
+          where: { userId: enrollment.userId, groupClassId: gc.id, date },
+        });
+        if (!exists) {
+          await prisma.booking.create({
+            data: {
+              userId: enrollment.userId,
+              type: "GROUP",
+              groupClassId: gc.id,
+              date,
+            },
+          });
+        }
+      }
+    }
   }
 
   // Non-owner professors only see bookings for their own classes/slots

@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Users, CheckCircle, Calendar, Pencil, RefreshCw, Check, UserPlus, ArrowUpCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DAY_NAMES, getPlanLabel, isPremiumOrPro } from "@/lib/utils";
+import { DAY_NAMES, getPlanLabel, isParticular } from "@/lib/utils";
+import { useTenantInfo } from "@/components/tenant-theme";
 
 interface RescheduleLog {
   id: string;
@@ -63,6 +64,7 @@ function getPaymentStatus(
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const tenantInfo = useTenantInfo();
   const [students, setStudents] = useState<Student[]>([]);
   const [rescheduleLogs, setRescheduleLogs] = useState<RescheduleLog[]>([]);
   const [pendingCounts, setPendingCounts] = useState<{ pendingStudents: number; pendingUpgrades: number }>({ pendingStudents: 0, pendingUpgrades: 0 });
@@ -95,7 +97,7 @@ export default function AdminDashboard() {
 
   const totalStudents = students.length;
   const particular = students.filter(
-    (s) => isPremiumOrPro(s.studentType)
+    (s) => isParticular(s.studentType)
   ).length;
   const totalCheckins = students.reduce(
     (sum, s) => sum + s._count.bookings + s.initialCheckins,
@@ -163,8 +165,8 @@ export default function AdminDashboard() {
               </div>
             </Link>
           )}
-          {pendingCounts.pendingUpgrades > 0 && (
-            <Link href="/admin/plan-upgrades">
+          {pendingCounts.pendingUpgrades > 0 && tenantInfo?.enablePlans !== false && (
+            <Link href="/admin/plans">
               <div className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/15 transition-colors cursor-pointer">
                 <ArrowUpCircle size={20} className="text-blue-400 shrink-0" />
                 <div className="flex-1">
@@ -328,7 +330,7 @@ export default function AdminDashboard() {
                     <td className="py-3 px-2 sm:px-3 hidden sm:table-cell">
                       <Badge
                         variant={
-                          isPremiumOrPro(s.studentType) ? "success" : "default"
+                          isParticular(s.studentType) ? "success" : "default"
                         }
                       >
                         {getPlanLabel(s.studentType)}

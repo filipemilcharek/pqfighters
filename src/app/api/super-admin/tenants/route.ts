@@ -20,6 +20,8 @@ export async function GET() {
       adminEmail: true,
       primaryColor: true,
       isActive: true,
+      enablePlans: true,
+      enableTimer: true,
       createdAt: true,
     },
   });

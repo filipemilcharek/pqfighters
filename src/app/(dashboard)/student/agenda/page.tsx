@@ -23,7 +23,7 @@ import {
   CalendarCheck,
   RefreshCw,
 } from "lucide-react";
-import { DAY_NAMES, isPremiumOrPro } from "@/lib/utils";
+import { DAY_NAMES, isParticular } from "@/lib/utils";
 
 interface Booking {
   id: string;
@@ -46,6 +46,8 @@ interface GroupClass {
   capacity: number;
   isKids: boolean;
   classType: string;
+  fixedRoster: boolean;
+  enrollments?: { userId: string }[];
 }
 
 interface PrivateSlot {
@@ -86,7 +88,7 @@ export default function AgendaPage() {
     fetch("/api/bookings").then((r) => r.json()).then(setBookings);
     fetch("/api/group-classes").then((r) => r.json()).then(setGroupClasses);
     fetch("/api/events").then((r) => r.json()).then(setEvents);
-    if (isPremiumOrPro(session?.user.studentType || "")) {
+    if (isParticular(session?.user.studentType || "")) {
       fetch("/api/credits").then((r) => r.json()).then(setCredits);
     }
   }, [session?.user.studentType]);
@@ -119,9 +121,12 @@ export default function AgendaPage() {
   }, [rescheduleDate]);
 
   const userIsKids = session?.user.isKids || false;
-  const isProOrPremium = isPremiumOrPro(session?.user.studentType || "");
-  const dayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && gc.isKids === userIsKids && (gc.classType || "GROUP") === "GROUP");
-  const daySemiPrivate = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && (gc.classType || "GROUP") === "SEMI_PRIVATE" && !gc.isKids);
+  const userId = session?.user.id;
+  const allDayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && gc.isKids === userIsKids);
+  // Fixed roster classes where student is enrolled (always show, no self-booking)
+  const fixedRosterClasses = allDayClasses.filter((gc) => gc.fixedRoster && gc.enrollments?.some((e) => e.userId === userId));
+  // Open classes (student can self-book)
+  const dayClasses = allDayClasses.filter((gc) => !gc.fixedRoster);
   const dayBookings = bookings.filter((b) => b.date === selectedDateStr);
   const dayEvents = events.filter((e) => e.date === selectedDateStr);
   const privateBookings = dayBookings.filter((b) => b.type === "PRIVATE");
@@ -145,7 +150,7 @@ export default function AgendaPage() {
     return (
       bookings.some((b) => b.date === dateStr) ||
       events.some((e) => e.date === dateStr) ||
-      groupClasses.some((gc) => gc.dayOfWeek === dow) ||
+      groupClasses.some((gc) => gc.dayOfWeek === dow && (!gc.fixedRoster || gc.enrollments?.some((e) => e.userId === userId))) ||
       mySlots.some((s) => s.dayOfWeek === dow && s.isAvailable)
     );
   }
@@ -196,7 +201,7 @@ export default function AgendaPage() {
       }
       const booking = await res.json();
       setBookings((prev) => [...prev, booking]);
-      if (isPremiumOrPro(session?.user.studentType || "")) {
+      if (isParticular(session?.user.studentType || "")) {
         fetch("/api/credits").then((r) => r.json()).then(setCredits);
       }
     } catch {
@@ -229,7 +234,7 @@ export default function AgendaPage() {
         setRescheduleInfo(null);
         setRescheduleDate("");
         fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
-        if (isPremiumOrPro(session?.user.studentType || "")) {
+        if (isParticular(session?.user.studentType || "")) {
           fetch("/api/credits").then((r) => r.json()).then(setCredits);
         }
       } else {
@@ -250,7 +255,7 @@ export default function AgendaPage() {
       setBookings((prev) => prev.filter((b) => b.id !== bookingId));
       // Refetch slots and credits
       fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
-      if (isPremiumOrPro(session?.user.studentType || "")) {
+      if (isParticular(session?.user.studentType || "")) {
         fetch("/api/credits").then((r) => r.json()).then(setCredits);
       }
     } else {
@@ -390,26 +395,18 @@ export default function AgendaPage() {
           </Card>
         ))}
 
-        {/* Semi-private classes for Pro/Premium */}
-        {isProOrPremium && daySemiPrivate.filter((gc) => {
-          if (!showOnlyMine) return true;
-          return !!getBookingForClass(gc.id);
-        }).map((gc) => {
+        {/* Fixed roster classes (enrolled by admin, no self-booking) */}
+        {(session?.user.modalities || "GRAPPLING").includes("GRAPPLING") && fixedRosterClasses.map((gc) => {
           const booking = getBookingForClass(gc.id);
-          const isBooked = !!booking;
           const isCheckedIn = booking?.checkedIn || false;
           const isToday = selectedDateStr === today;
-          const loading = actionLoading === gc.id || actionLoading === booking?.id;
+          const loading = actionLoading === booking?.id;
 
           return (
             <Card
               key={gc.id}
               className={`!p-4 border-l-4 transition-colors ${
-                isCheckedIn
-                  ? "border-l-emerald-500"
-                  : isBooked
-                  ? "border-l-accent"
-                  : "border-l-yellow-500"
+                isCheckedIn ? "border-l-emerald-500" : "border-l-accent"
               }`}
             >
               <div className="flex items-center justify-between">
@@ -422,71 +419,38 @@ export default function AgendaPage() {
                   </div>
                   <p className="font-medium text-content-primary">{gc.name}</p>
                   <div className="flex items-center gap-3 mt-2">
-                    <Badge variant="warning">Semi-Particular</Badge>
+                    <Badge variant="default">Turma Fixa</Badge>
                     {isCheckedIn && (
                       <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
                         <CheckCircle size={14} />
                         Presente
                       </span>
                     )}
-                    {isBooked && !isCheckedIn && (
+                    {!isCheckedIn && booking && (
                       <span className="flex items-center gap-1 text-accent text-xs font-medium">
                         <CalendarCheck size={14} />
-                        Agendado
+                        Matriculado
                       </span>
+                    )}
+                    {!booking && (
+                      <span className="text-xs text-content-muted">Matriculado</span>
                     )}
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  {!isBooked && (
-                    <Button
-                      size="sm"
-                      disabled={loading}
-                      onClick={() => handleBookAndCheckin(gc.id)}
-                    >
-                      {loading ? (
-                        "..."
-                      ) : isToday ? (
-                        <>
-                          <CheckCircle size={14} className="mr-1.5" />
-                          Check-in
-                        </>
-                      ) : (
-                        <>
-                          <CalendarCheck size={14} className="mr-1.5" />
-                          Agendar
-                        </>
-                      )}
-                    </Button>
-                  )}
-
-                  {isBooked && !isCheckedIn && (
-                    <>
-                      {isToday && (
-                        <Button
-                          size="sm"
-                          disabled={loading}
-                          onClick={() => handleCheckin(booking!.id)}
-                        >
-                          {loading ? "..." : (
-                            <>
-                              <CheckCircle size={14} className="mr-1.5" />
-                              Check-in
-                            </>
-                          )}
-                        </Button>
-                      )}
-                      <button
-                        onClick={() => handleCancel(booking!.id)}
-                        className="text-red-400 hover:text-red-300 p-1"
-                        title="Cancelar"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </>
-                  )}
-                </div>
+                {booking && !isCheckedIn && isToday && (
+                  <Button
+                    size="sm"
+                    disabled={!!loading}
+                    onClick={() => handleCheckin(booking.id)}
+                  >
+                    {loading ? "..." : (
+                      <>
+                        <CheckCircle size={14} className="mr-1.5" />
+                        Check-in
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             </Card>
           );
@@ -734,10 +698,7 @@ export default function AgendaPage() {
           const hasOpenSlots = showOnlyMine
             ? openSlotCards.some(({ booking }) => !!booking)
             : openSlotCards.length > 0;
-          const hasSemiPrivate = isProOrPremium && (showOnlyMine
-            ? daySemiPrivate.some((gc) => !!getBookingForClass(gc.id))
-            : daySemiPrivate.length > 0);
-          const hasContent = hasGroupClasses || hasSemiPrivate || privateSlotCards.length > 0 || hasOpenSlots || dayEvents.length > 0;
+          const hasContent = hasGroupClasses || fixedRosterClasses.length > 0 || privateSlotCards.length > 0 || hasOpenSlots || dayEvents.length > 0;
 
           if (!hasContent) return (
             <Card className="!p-8">

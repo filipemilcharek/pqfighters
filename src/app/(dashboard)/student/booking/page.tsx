@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { DAY_NAMES, isPremiumOrPro } from "@/lib/utils";
+import { DAY_NAMES, isParticular as checkParticular } from "@/lib/utils";
 
 interface Slot {
   id: string;
@@ -26,6 +26,7 @@ interface GroupClass {
   capacity: number;
   isKids: boolean;
   classType: string;
+  fixedRoster: boolean;
 }
 
 export default function BookingPage() {
@@ -38,7 +39,7 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(false);
   const [credits, setCredits] = useState<{ monthlyCredits: number; used: number; remaining: number } | null>(null);
 
-  const isParticular = isPremiumOrPro(session?.user.studentType || "");
+  const isParticular = checkParticular(session?.user.studentType || "");
   const hasGrappling = (session?.user.modalities || "GRAPPLING").includes("GRAPPLING");
 
   useEffect(() => {
@@ -66,10 +67,7 @@ export default function BookingPage() {
 
   const userIsKids = session?.user.isKids || false;
   const filteredClasses = selectedDay !== null
-    ? groupClasses.filter((gc) => gc.dayOfWeek === selectedDay && gc.isKids === userIsKids && gc.classType === "GROUP")
-    : [];
-  const filteredSemiPrivate = selectedDay !== null && isParticular
-    ? groupClasses.filter((gc) => gc.dayOfWeek === selectedDay && gc.classType === "SEMI_PRIVATE" && !gc.isKids)
+    ? groupClasses.filter((gc) => gc.dayOfWeek === selectedDay && gc.isKids === userIsKids && !gc.fixedRoster)
     : [];
 
   async function bookPrivate(slotId: string) {
@@ -225,33 +223,6 @@ export default function BookingPage() {
             )}
           </div>}
 
-          {filteredSemiPrivate.length > 0 && (
-            <div>
-              <h2 className="text-lg font-semibold mb-3 text-content-primary">Aulas Semi-Particulares</h2>
-              <div className="grid gap-3">
-                {filteredSemiPrivate.map((gc) => (
-                  <Card key={gc.id} className="!p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-content-primary">{gc.name}</p>
-                        <p className="text-sm text-content-secondary">
-                          {gc.startTime} - {gc.endTime}
-                        </p>
-                        <Badge variant="warning">Semi-Particular - {gc.capacity} vagas</Badge>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => bookGroup(gc.id)}
-                        disabled={loading}
-                      >
-                        Agendar
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
         </>
       )}
     </div>

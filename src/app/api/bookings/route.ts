@@ -64,10 +64,10 @@ export async function POST(req: NextRequest) {
   // Admin can book for another user
   const bookingUserId = (session.user.role === "ADMIN" && targetUserId) ? targetUserId : session.user.id;
 
-  // Rule: ESSENCIAL students can only book GROUP classes (skip for admin booking on behalf)
-  if (type === "PRIVATE" && session.user.role !== "ADMIN" && session.user.studentType === "ESSENCIAL") {
+  // Rule: COLETIVA students can only book GROUP classes (skip for admin booking on behalf)
+  if (type === "PRIVATE" && session.user.role !== "ADMIN" && session.user.studentType === "COLETIVA") {
     return NextResponse.json(
-      { error: "Alunos do plano Essencial não podem agendar aulas particulares" },
+      { error: "Alunos do plano Coletiva não podem agendar aulas particulares" },
       { status: 403 }
     );
   }
@@ -227,10 +227,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Rule: SEMI_PRIVATE classes can only be booked by Pro/Premium students
-  if (groupClass.classType === "SEMI_PRIVATE" && session.user.role !== "ADMIN" && session.user.studentType === "ESSENCIAL") {
+  // Fixed roster classes: students can't self-book, only admin can
+  if (groupClass.fixedRoster && session.user.role !== "ADMIN") {
     return NextResponse.json(
-      { error: "Aulas semi-particulares são exclusivas para alunos dos planos Pro e Premium" },
+      { error: "Esta aula é de turma fixa. O professor gerencia os alunos." },
       { status: 403 }
     );
   }

@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS "User" (
     "passwordHash" TEXT NOT NULL,
     "role" TEXT NOT NULL DEFAULT 'STUDENT',
     "status" TEXT NOT NULL DEFAULT 'PENDING',
-    "studentType" TEXT NOT NULL DEFAULT 'ESSENCIAL',
+    "studentType" TEXT NOT NULL DEFAULT 'COLETIVA',
+    "planId" TEXT,
     "belt" TEXT NOT NULL DEFAULT 'BRANCA',
     "degrees" INTEGER NOT NULL DEFAULT 0,
     "initialCheckins" INTEGER NOT NULL DEFAULT 0,
@@ -45,9 +46,19 @@ CREATE TABLE IF NOT EXISTS "GroupClass" (
     "capacity" INTEGER NOT NULL,
     "isKids" INTEGER NOT NULL DEFAULT 0,
     "classType" TEXT NOT NULL DEFAULT 'GROUP',
+    "fixedRoster" INTEGER NOT NULL DEFAULT 0,
     "instructorId" TEXT,
     CONSTRAINT "GroupClass_instructorId_fkey" FOREIGN KEY ("instructorId") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS "GroupClassEnrollment" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "groupClassId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    CONSTRAINT "GroupClassEnrollment_groupClassId_fkey" FOREIGN KEY ("groupClassId") REFERENCES "GroupClass" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "GroupClassEnrollment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "GroupClassEnrollment_groupClassId_userId_key" ON "GroupClassEnrollment"("groupClassId", "userId");
 
 CREATE TABLE IF NOT EXISTS "Booking" (
     "id" TEXT NOT NULL PRIMARY KEY,
@@ -112,6 +123,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS "NotificationRead_notificationId_userId_key" O
 CREATE TABLE IF NOT EXISTS "PlanUpgradeRequest" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "userId" TEXT NOT NULL,
+    "planId" TEXT,
     "plan" TEXT NOT NULL,
     "frequency" TEXT NOT NULL,
     "details" TEXT,
@@ -120,6 +132,18 @@ CREATE TABLE IF NOT EXISTS "PlanUpgradeRequest" (
     "readByAdmin" INTEGER NOT NULL DEFAULT 0,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "PlanUpgradeRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS "Plan" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL DEFAULT '',
+    "price" TEXT NOT NULL,
+    "frequency" TEXT NOT NULL,
+    "planType" TEXT NOT NULL,
+    "monthlyCredits" INTEGER NOT NULL DEFAULT 0,
+    "isActive" INTEGER NOT NULL DEFAULT 1,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS "GraduationLog" (

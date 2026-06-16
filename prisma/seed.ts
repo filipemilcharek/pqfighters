@@ -36,7 +36,7 @@ async function main() {
       passwordHash,
       role: "ADMIN",
       status: "APPROVED",
-      studentType: "PREMIUM",
+      studentType: "PARTICULAR",
       belt: "PRETA",
       degrees: 0,
     },

@@ -24,6 +24,8 @@ export async function GET(
       adminName: true,
       adminEmail: true,
       isActive: true,
+      enablePlans: true,
+      enableTimer: true,
       createdAt: true,
     },
   });
@@ -52,7 +54,7 @@ export async function PUT(
   }
 
   const body = await req.json();
-  const { name, logoUrl, primaryColor, secondaryColor, adminName, adminEmail, isActive } = body;
+  const { name, logoUrl, primaryColor, secondaryColor, adminName, adminEmail, isActive, enablePlans, enableTimer } = body;
 
   const tenant = await prismaMaster.tenant.update({
     where: { id: params.id },
@@ -64,6 +66,8 @@ export async function PUT(
       ...(adminName !== undefined && { adminName }),
       ...(adminEmail !== undefined && { adminEmail }),
       ...(isActive !== undefined && { isActive }),
+      ...(enablePlans !== undefined && { enablePlans }),
+      ...(enableTimer !== undefined && { enableTimer }),
     },
   });
 

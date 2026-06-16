@@ -8,6 +8,8 @@ interface TenantInfo {
   logoUrl: string | null;
   primaryColor: string;
   secondaryColor: string;
+  enablePlans: boolean;
+  enableTimer: boolean;
 }
 
 const TenantInfoContext = createContext<TenantInfo | null>(null);

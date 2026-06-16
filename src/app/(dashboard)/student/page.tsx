@@ -27,7 +27,7 @@ import {
   CalendarDays,
   RefreshCw,
 } from "lucide-react";
-import { DAY_NAMES, getBeltsForType, isPremiumOrPro } from "@/lib/utils";
+import { DAY_NAMES, getBeltsForType, isParticular } from "@/lib/utils";
 import { Trophy } from "lucide-react";
 
 interface BeltRequirement {
@@ -61,6 +61,8 @@ interface GroupClass {
   endTime: string;
   capacity: number;
   isKids: boolean;
+  fixedRoster: boolean;
+  enrollments?: { userId: string }[];
 }
 
 interface PrivateSlot {
@@ -115,7 +117,7 @@ export default function StudentHome() {
     fetch("/api/group-classes").then((r) => r.json()).then(setGroupClasses);
     fetch("/api/events").then((r) => r.json()).then(setEvents);
     fetch("/api/belt-requirements").then((r) => r.json()).then(setRequirements);
-    if (isPremiumOrPro(session?.user.studentType || "")) {
+    if (isParticular(session?.user.studentType || "")) {
       fetch("/api/credits").then((r) => r.json()).then(setCredits);
     }
     fetch("/api/ranking/my-position").then((r) => r.json()).then(setRankPosition).catch(() => {});
@@ -163,7 +165,9 @@ export default function StudentHome() {
   }, [rescheduleDate]);
 
   const userIsKids = session?.user.isKids || false;
-  const dayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && gc.isKids === userIsKids);
+  const allDayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && gc.isKids === userIsKids);
+  const fixedRosterClasses = allDayClasses.filter((gc) => gc.fixedRoster && gc.enrollments?.some((e) => e.userId === user.id));
+  const dayClasses = allDayClasses.filter((gc) => !gc.fixedRoster);
   const dayBookings = bookings.filter((b) => b.date === selectedDateStr);
   const dayEvents = events.filter((e) => e.date === selectedDateStr);
   const privateBookings = dayBookings.filter((b) => b.type === "PRIVATE");
@@ -197,7 +201,7 @@ export default function StudentHome() {
     return (
       bookings.some((b) => b.date === dateStr) ||
       events.some((e) => e.date === dateStr) ||
-      groupClasses.some((gc) => gc.dayOfWeek === dow) ||
+      groupClasses.some((gc) => gc.dayOfWeek === dow && (!gc.fixedRoster || gc.enrollments?.some((e) => e.userId === user.id))) ||
       mySlots.some((s) => s.dayOfWeek === dow && s.isAvailable)
     );
   }
@@ -278,7 +282,7 @@ export default function StudentHome() {
         setRescheduleInfo(null);
         setRescheduleDate("");
         fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
-        if (isPremiumOrPro(session?.user.studentType || "")) {
+        if (isParticular(session?.user.studentType || "")) {
           fetch("/api/credits").then((r) => r.json()).then(setCredits);
         }
       } else {
@@ -547,6 +551,67 @@ export default function StudentHome() {
           </Card>
         ))}
 
+        {/* Fixed roster classes (enrolled by admin) */}
+        {hasGrappling && fixedRosterClasses.map((gc) => {
+          const booking = getBookingForClass(gc.id);
+          const isCheckedIn = booking?.checkedIn || false;
+          const isTodaySelected = selectedDateStr === today;
+          const loading = actionLoading === booking?.id;
+
+          return (
+            <Card
+              key={gc.id}
+              className={`!p-4 border-l-4 transition-colors ${
+                isCheckedIn ? "border-l-emerald-500" : "border-l-accent"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock size={14} className="text-content-secondary" />
+                    <span className="text-sm font-semibold text-content-primary">
+                      {gc.startTime} - {gc.endTime}
+                    </span>
+                  </div>
+                  <p className="font-medium text-content-primary">{gc.name}</p>
+                  <div className="flex items-center gap-3 mt-2">
+                    <Badge variant="default">Turma Fixa</Badge>
+                    {isCheckedIn && (
+                      <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
+                        <CheckCircle size={14} />
+                        Presente
+                      </span>
+                    )}
+                    {!isCheckedIn && booking && (
+                      <span className="flex items-center gap-1 text-accent text-xs font-medium">
+                        <CalendarCheck size={14} />
+                        Matriculado
+                      </span>
+                    )}
+                    {!booking && (
+                      <span className="text-xs text-content-muted">Matriculado</span>
+                    )}
+                  </div>
+                </div>
+                {booking && !isCheckedIn && isTodaySelected && (
+                  <Button
+                    size="sm"
+                    disabled={!!loading}
+                    onClick={() => handleCheckin(booking.id)}
+                  >
+                    {loading ? "..." : (
+                      <>
+                        <CheckCircle size={14} className="mr-1.5" />
+                        Check-in
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </Card>
+          );
+        })}
+
         {/* Group classes (only for Grappling students) */}
         {hasGrappling && dayClasses.filter((gc) => {
           if (!showOnlyMine) return true;
@@ -789,7 +854,7 @@ export default function StudentHome() {
           const hasOpenSlots = showOnlyMine
             ? openSlotCards.some(({ booking }) => !!booking)
             : openSlotCards.length > 0;
-          const hasContent = hasGroupClasses || privateSlotCards.length > 0 || hasOpenSlots || dayEvents.length > 0;
+          const hasContent = hasGroupClasses || fixedRosterClasses.length > 0 || privateSlotCards.length > 0 || hasOpenSlots || dayEvents.length > 0;
           if (!hasContent) return (
             <Card className="!p-8">
               <p className="text-content-secondary text-sm text-center">

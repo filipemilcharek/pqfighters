@@ -54,6 +54,16 @@ export async function getTenantInfo(slug: string) {
       primaryColor: true,
       secondaryColor: true,
       isActive: true,
+      enablePlans: true,
+      enableTimer: true,
     },
+  });
+}
+
+/** Get feature flags for a tenant */
+export async function getTenantFlags(slug: string) {
+  return prismaMaster.tenant.findUnique({
+    where: { slug },
+    select: { enablePlans: true, enableTimer: true },
   });
 }

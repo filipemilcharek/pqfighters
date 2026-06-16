@@ -15,6 +15,8 @@ interface TenantData {
   adminName: string;
   adminEmail: string;
   isActive: boolean;
+  enablePlans: boolean;
+  enableTimer: boolean;
 }
 
 export default function EditTenantPage() {
@@ -35,6 +37,8 @@ export default function EditTenantPage() {
   const [adminName, setAdminName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [enablePlans, setEnablePlans] = useState(true);
+  const [enableTimer, setEnableTimer] = useState(true);
   const [newLogo, setNewLogo] = useState<File | null>(null);
 
   useEffect(() => {
@@ -61,6 +65,8 @@ export default function EditTenantPage() {
           setAdminName(t.adminName);
           setAdminEmail(t.adminEmail);
           setIsActive(t.isActive);
+          setEnablePlans(t.enablePlans);
+          setEnableTimer(t.enableTimer);
         }
       })
       .finally(() => setLoading(false));
@@ -99,6 +105,8 @@ export default function EditTenantPage() {
           adminName,
           adminEmail,
           isActive,
+          enablePlans,
+          enableTimer,
         }),
       });
 
@@ -233,19 +241,51 @@ export default function EditTenantPage() {
             onChange={setSecondaryColor}
           />
 
-          <div className="flex items-center gap-3 p-4 rounded-lg bg-surface-secondary border border-border">
-            <label className="flex items-center gap-3 cursor-pointer flex-1">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
-              />
-              <div>
-                <span className="text-sm font-medium text-content-primary">CT Ativo</span>
-                <p className="text-xs text-content-muted">Desativar impede o acesso dos usuários</p>
-              </div>
-            </label>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-surface-secondary border border-border">
+              <label className="flex items-center gap-3 cursor-pointer flex-1">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
+                />
+                <div>
+                  <span className="text-sm font-medium text-content-primary">CT Ativo</span>
+                  <p className="text-xs text-content-muted">Desativar impede o acesso dos usuários</p>
+                </div>
+              </label>
+            </div>
+
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-surface-secondary border border-border">
+              <label className="flex items-center gap-3 cursor-pointer flex-1">
+                <input
+                  type="checkbox"
+                  checked={enablePlans}
+                  onChange={(e) => setEnablePlans(e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
+                />
+                <div>
+                  <span className="text-sm font-medium text-content-primary">Módulo Planos</span>
+                  <p className="text-xs text-content-muted">Habilitar página de planos para admin e alunos</p>
+                </div>
+              </label>
+            </div>
+
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-surface-secondary border border-border">
+              <label className="flex items-center gap-3 cursor-pointer flex-1">
+                <input
+                  type="checkbox"
+                  checked={enableTimer}
+                  onChange={(e) => setEnableTimer(e.target.checked)}
+                  className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
+                />
+                <div>
+                  <span className="text-sm font-medium text-content-primary">Módulo Timer</span>
+                  <p className="text-xs text-content-muted">Habilitar timer de treino para admin</p>
+                </div>
+              </label>
+            </div>
           </div>
 
           {error && (

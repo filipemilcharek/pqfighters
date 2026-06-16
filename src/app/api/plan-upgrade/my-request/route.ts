@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getTenantPrisma } from "@/lib/tenant-prisma";
+import { getTenantPrisma, getTenantFlags } from "@/lib/tenant-prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -7,6 +7,11 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  const flags = await getTenantFlags(session.user.tenantSlug);
+  if (!flags?.enablePlans) {
+    return NextResponse.json(null);
   }
 
   const prisma = await getTenantPrisma(session.user.tenantSlug);

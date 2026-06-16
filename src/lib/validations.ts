@@ -9,7 +9,7 @@ export const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter no mínimo 2 caracteres"),
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
-  studentType: z.enum(["ESSENCIAL", "PRO", "PREMIUM"]),
+  studentType: z.enum(["COLETIVA", "PARTICULAR"]).default("COLETIVA"),
   modalities: z.string().optional(),
   photoUrl: z.string().optional().nullable(),
   isKids: z.boolean().optional(),
@@ -32,6 +32,7 @@ export const groupClassSchema = z.object({
   capacity: z.number().min(1),
   isKids: z.boolean().optional(),
   classType: z.enum(["GROUP"]).optional(),
+  fixedRoster: z.boolean().optional(),
   instructorId: z.string().optional().nullable(),
 });
 
@@ -64,7 +65,7 @@ const ALL_BELTS = [
 
 export const updateStudentSchema = z.object({
   name: z.string().min(2).optional(),
-  studentType: z.enum(["ESSENCIAL", "PRO", "PREMIUM"]).optional(),
+  studentType: z.enum(["COLETIVA", "PARTICULAR"]).optional(),
   belt: z.enum(ALL_BELTS).optional(),
   degrees: z.number().min(0).max(4).optional(),
   modalities: z.string().optional(),

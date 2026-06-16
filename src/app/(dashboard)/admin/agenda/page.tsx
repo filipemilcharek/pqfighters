@@ -25,7 +25,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { DAY_NAMES, getPlanLabel, isPremiumOrPro } from "@/lib/utils";
+import { DAY_NAMES, getPlanLabel, isParticular } from "@/lib/utils";
 
 interface Booking {
   id: string;
@@ -514,7 +514,7 @@ export default function AdminAgendaPage() {
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-content-primary truncate">{s.name}</p>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <Badge variant={isPremiumOrPro(s.studentType) ? "success" : "default"}>
+                                <Badge variant={isParticular(s.studentType) ? "success" : "default"}>
                                   {getPlanLabel(s.studentType)}
                                 </Badge>
                               </div>

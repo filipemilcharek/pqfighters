@@ -19,6 +19,8 @@ model Tenant {
   tursoDbUrl     String
   tursoAuthToken String
   isActive       Boolean  @default(true)
+  enablePlans    Boolean  @default(true)
+  enableTimer    Boolean  @default(true)
   createdAt      DateTime @default(now())
 }
 
