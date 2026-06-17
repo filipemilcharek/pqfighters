@@ -51,14 +51,14 @@ export async function sendVerificationEmail(email: string, name: string, token: 
   const html = `
     <div style="background-color: #09090b; color: #e4e4e7; font-family: sans-serif; padding: 40px; text-align: center; border-radius: 8px; max-width: 600px; margin: 0 auto; border: 1px solid #27272a;">
       <h1 style="color: #ffffff; font-size: 28px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">
-        PQ <span style="color: #f97316;">FIGHTERS</span>
+        FAIX<span style="color: #f97316; font-weight: 800;">APP</span>RETA
       </h1>
       <p style="color: #a1a1aa; font-size: 16px; margin-bottom: 30px;">Centro de Treinamento</p>
       
       <div style="background-color: #18181b; padding: 30px; border-radius: 6px; border: 1px solid #27272a; margin-bottom: 30px;">
         <h2 style="color: #ffffff; font-size: 20px; margin-top: 0; margin-bottom: 20px;">Olá, ${name}!</h2>
         <p style="color: #d4d4d8; font-size: 15px; line-height: 1.5; margin-bottom: 25px;">
-          Obrigado por se cadastrar na PQ Fighters. Para ativar o seu cadastro e prosseguir para a aprovação, confirme o seu endereço de e-mail utilizando o código abaixo:
+          Obrigado por se cadastrar na Faixappreta. Para ativar o seu cadastro e prosseguir para a aprovação, confirme o seu endereço de e-mail utilizando o código abaixo:
         </p>
         
         <div style="font-size: 36px; font-weight: bold; color: #f97316; letter-spacing: 6px; margin: 25px 0; background-color: #09090b; padding: 15px; border-radius: 4px; border: 1px dashed #f97316; display: inline-block;">
@@ -82,7 +82,7 @@ export async function sendVerificationEmail(email: string, name: string, token: 
 
   return sendEmail({
     to: email,
-    subject: "PQ Fighters - Verifique seu e-mail",
+    subject: "Faixappreta - Verifique seu e-mail",
     html,
   });
 }
@@ -96,14 +96,14 @@ export async function sendPasswordResetEmail(email: string, name: string, token:
   const html = `
     <div style="background-color: #09090b; color: #e4e4e7; font-family: sans-serif; padding: 40px; text-align: center; border-radius: 8px; max-width: 600px; margin: 0 auto; border: 1px solid #27272a;">
       <h1 style="color: #ffffff; font-size: 28px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">
-        PQ <span style="color: #f97316;">FIGHTERS</span>
+        FAIX<span style="color: #f97316; font-weight: 800;">APP</span>RETA
       </h1>
       <p style="color: #a1a1aa; font-size: 16px; margin-bottom: 30px;">Centro de Treinamento</p>
       
       <div style="background-color: #18181b; padding: 30px; border-radius: 6px; border: 1px solid #27272a; margin-bottom: 30px;">
         <h2 style="color: #ffffff; font-size: 20px; margin-top: 0; margin-bottom: 20px;">Redefinição de Senha</h2>
         <p style="color: #d4d4d8; font-size: 15px; line-height: 1.5; margin-bottom: 25px;">
-          Olá, ${name}. Recebemos uma solicitação para redefinir a senha da sua conta na PQ Fighters. Clique no botão abaixo para prosseguir com a redefinição:
+          Olá, ${name}. Recebemos uma solicitação para redefinir a senha da sua conta na Faixappreta. Clique no botão abaixo para prosseguir with a redefinição:
         </p>
         
         <a href="${resetLink}" style="background-color: #f97316; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; display: inline-block; margin-bottom: 25px; transition: background-color 0.2s;">
@@ -124,7 +124,7 @@ export async function sendPasswordResetEmail(email: string, name: string, token:
 
   return sendEmail({
     to: email,
-    subject: "PQ Fighters - Redefinição de Senha",
+    subject: "Faixappreta - Redefinição de Senha",
     html,
   });
 }
