@@ -11,7 +11,7 @@ export const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter no mínimo 2 caracteres"),
   email: z.string().email("Email inválido"),
   password: passwordSchema,
-  studentType: z.enum(["ESSENCIAL", "PRO", "PREMIUM"]),
+  studentType: z.enum(["COLETIVA", "PARTICULAR"]).default("COLETIVA"),
   modalities: z.string().optional(),
   photoUrl: z.string().optional().nullable(),
   isKids: z.boolean().optional(),
@@ -23,6 +23,7 @@ export const slotSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   isAvailable: z.boolean().optional(),
   userId: z.string().min(1).optional().nullable(),
+  instructorId: z.string().optional().nullable(),
 });
 
 export const groupClassSchema = z.object({
@@ -32,7 +33,9 @@ export const groupClassSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}$/),
   capacity: z.number().min(1),
   isKids: z.boolean().optional(),
-  classType: z.enum(["GROUP", "SEMI_PRIVATE"]).optional(),
+  classType: z.enum(["GROUP"]).optional(),
+  fixedRoster: z.boolean().optional(),
+  instructorId: z.string().optional().nullable(),
 });
 
 export const bookingSchema = z.object({
@@ -64,7 +67,7 @@ const ALL_BELTS = [
 
 export const updateStudentSchema = z.object({
   name: z.string().min(2).optional(),
-  studentType: z.enum(["ESSENCIAL", "PRO", "PREMIUM"]).optional(),
+  studentType: z.enum(["COLETIVA", "PARTICULAR"]).optional(),
   belt: z.enum(ALL_BELTS).optional(),
   degrees: z.number().min(0).max(4).optional(),
   modalities: z.string().optional(),

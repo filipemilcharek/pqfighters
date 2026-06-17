@@ -7,12 +7,14 @@ declare module "next-auth" {
       name: string;
       email: string;
       role: string;
+      isOwner: boolean;
       studentType: string;
       modalities: string;
       belt: string;
       degrees: number;
       isKids: boolean;
       photoUrl?: string | null;
+      tenantSlug: string;
     };
   }
 
@@ -21,12 +23,14 @@ declare module "next-auth" {
     name: string;
     email: string;
     role: string;
+    isOwner: boolean;
     studentType: string;
     modalities: string;
     belt: string;
     degrees: number;
     isKids: boolean;
     photoUrl?: string | null;
+    tenantSlug: string;
   }
 }
 
@@ -34,11 +38,13 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: string;
+    isOwner: boolean;
     studentType: string;
     modalities: string;
     belt: string;
     degrees: number;
     isKids: boolean;
     photoUrl?: string | null;
+    tenantSlug: string;
   }
 }

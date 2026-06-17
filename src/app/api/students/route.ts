@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { registerSchema } from "@/lib/validations";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
@@ -12,6 +12,9 @@ export async function GET() {
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const students = await prisma.user.findMany({
     where: { role: "STUDENT", status: "APPROVED" },
@@ -50,6 +53,16 @@ export async function POST(req: NextRequest) {
 
   const { name, email, password, studentType, modalities, photoUrl, isKids } = result.data;
 
+  // Admin creating student → auto-approve; self-registration → pending
+  const session = await getServerSession(authOptions);
+  const tenantSlug = session?.user?.tenantSlug || body.tenantSlug;
+  if (!tenantSlug) {
+    return NextResponse.json({ error: "Tenant não identificado" }, { status: 400 });
+  }
+
+  const prisma = await getTenantPrisma(tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
+
   const exists = await prisma.user.findUnique({ where: { email } });
   if (exists) {
     return NextResponse.json(
@@ -59,9 +72,7 @@ export async function POST(req: NextRequest) {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-
   // Admin creating student → auto-approve & auto-verify; self-registration → pending & unverified
-  const session = await getServerSession(authOptions);
   const isAdmin = session?.user?.role === "ADMIN";
   const status = isAdmin ? "APPROVED" : "PENDING";
   const emailVerified = isAdmin ? new Date() : null;

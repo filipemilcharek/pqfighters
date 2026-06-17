@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -12,6 +12,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
+
   const body = await req.json();
 
   // Only allow safe fields to be updated
@@ -21,6 +24,7 @@ export async function PATCH(
   if (body.endTime !== undefined) allowed.endTime = body.endTime;
   if (body.isAvailable !== undefined) allowed.isAvailable = body.isAvailable;
   if (body.userId !== undefined) allowed.userId = body.userId || null;
+  if (body.instructorId !== undefined) allowed.instructorId = body.instructorId || null;
 
   const slot = await prisma.privateSlot.update({
     where: { id: params.id },
@@ -39,6 +43,9 @@ export async function DELETE(
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   await prisma.privateSlot.delete({ where: { id: params.id } });
   return NextResponse.json({ ok: true });

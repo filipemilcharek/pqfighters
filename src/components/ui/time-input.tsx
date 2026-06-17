@@ -24,7 +24,7 @@ export function TimeInput({ label, value, onChange, required, className }: TimeI
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-zinc-400 mb-1.5">
+        <label className="block text-sm font-medium text-content-secondary mb-1.5">
           {label}
         </label>
       )}
@@ -38,7 +38,7 @@ export function TimeInput({ label, value, onChange, required, className }: TimeI
         onChange={handleChange}
         required={required}
         className={cn(
-          "w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2.5 text-sm text-zinc-50 placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500/40 transition-all",
+          "w-full rounded-lg border border-border bg-surface-primary px-3 py-2.5 text-sm text-content-primary placeholder-content-muted focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent/40 transition-all",
           className
         )}
       />

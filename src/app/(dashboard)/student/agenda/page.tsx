@@ -23,7 +23,7 @@ import {
   CalendarCheck,
   RefreshCw,
 } from "lucide-react";
-import { DAY_NAMES, isPremiumOrPro } from "@/lib/utils";
+import { DAY_NAMES, isParticular } from "@/lib/utils";
 
 interface Booking {
   id: string;
@@ -46,6 +46,8 @@ interface GroupClass {
   capacity: number;
   isKids: boolean;
   classType: string;
+  fixedRoster: boolean;
+  enrollments?: { userId: string }[];
 }
 
 interface PrivateSlot {
@@ -86,7 +88,7 @@ export default function AgendaPage() {
     fetch("/api/bookings").then((r) => r.json()).then(setBookings);
     fetch("/api/group-classes").then((r) => r.json()).then(setGroupClasses);
     fetch("/api/events").then((r) => r.json()).then(setEvents);
-    if (isPremiumOrPro(session?.user.studentType || "")) {
+    if (isParticular(session?.user.studentType || "")) {
       fetch("/api/credits").then((r) => r.json()).then(setCredits);
     }
   }, [session?.user.studentType]);
@@ -119,9 +121,12 @@ export default function AgendaPage() {
   }, [rescheduleDate]);
 
   const userIsKids = session?.user.isKids || false;
-  const isProOrPremium = isPremiumOrPro(session?.user.studentType || "");
-  const dayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && gc.isKids === userIsKids && (gc.classType || "GROUP") === "GROUP");
-  const daySemiPrivate = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && (gc.classType || "GROUP") === "SEMI_PRIVATE" && !gc.isKids);
+  const userId = session?.user.id;
+  const allDayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && gc.isKids === userIsKids);
+  // Fixed roster classes where student is enrolled (always show, no self-booking)
+  const fixedRosterClasses = allDayClasses.filter((gc) => gc.fixedRoster && gc.enrollments?.some((e) => e.userId === userId));
+  // Open classes (student can self-book)
+  const dayClasses = allDayClasses.filter((gc) => !gc.fixedRoster);
   const dayBookings = bookings.filter((b) => b.date === selectedDateStr);
   const dayEvents = events.filter((e) => e.date === selectedDateStr);
   const privateBookings = dayBookings.filter((b) => b.type === "PRIVATE");
@@ -145,7 +150,7 @@ export default function AgendaPage() {
     return (
       bookings.some((b) => b.date === dateStr) ||
       events.some((e) => e.date === dateStr) ||
-      groupClasses.some((gc) => gc.dayOfWeek === dow) ||
+      groupClasses.some((gc) => gc.dayOfWeek === dow && (!gc.fixedRoster || gc.enrollments?.some((e) => e.userId === userId))) ||
       mySlots.some((s) => s.dayOfWeek === dow && s.isAvailable)
     );
   }
@@ -196,7 +201,7 @@ export default function AgendaPage() {
       }
       const booking = await res.json();
       setBookings((prev) => [...prev, booking]);
-      if (isPremiumOrPro(session?.user.studentType || "")) {
+      if (isParticular(session?.user.studentType || "")) {
         fetch("/api/credits").then((r) => r.json()).then(setCredits);
       }
     } catch {
@@ -229,7 +234,7 @@ export default function AgendaPage() {
         setRescheduleInfo(null);
         setRescheduleDate("");
         fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
-        if (isPremiumOrPro(session?.user.studentType || "")) {
+        if (isParticular(session?.user.studentType || "")) {
           fetch("/api/credits").then((r) => r.json()).then(setCredits);
         }
       } else {
@@ -250,7 +255,7 @@ export default function AgendaPage() {
       setBookings((prev) => prev.filter((b) => b.id !== bookingId));
       // Refetch slots and credits
       fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
-      if (isPremiumOrPro(session?.user.studentType || "")) {
+      if (isParticular(session?.user.studentType || "")) {
         fetch("/api/credits").then((r) => r.json()).then(setCredits);
       }
     } else {
@@ -283,7 +288,7 @@ export default function AgendaPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-zinc-50">Minha Agenda</h1>
+        <h1 className="text-2xl font-bold text-content-primary">Minha Agenda</h1>
         {credits && credits.monthlyCredits > 0 && (
           <Badge variant={credits.remaining > 0 ? "success" : "danger"}>
             Créditos: {credits.remaining}/{credits.monthlyCredits}
@@ -301,7 +306,7 @@ export default function AgendaPage() {
           >
             <ChevronLeft size={18} />
           </Button>
-          <span className="font-medium text-sm text-zinc-50">
+          <span className="font-medium text-sm text-content-primary">
             {format(currentWeekStart, "d MMM", { locale: ptBR })} -{" "}
             {format(addDays(currentWeekStart, 6), "d MMM yyyy", {
               locale: ptBR,
@@ -328,21 +333,21 @@ export default function AgendaPage() {
                 onClick={() => setSelectedDate(day)}
                 className={`flex flex-col items-center p-1.5 sm:p-2 rounded-md text-sm transition-colors ${
                   isSelected
-                    ? "bg-orange-500 text-zinc-50"
+                    ? "bg-accent text-content-primary"
                     : isToday
-                    ? "bg-zinc-800"
-                    : "hover:bg-zinc-800"
+                    ? "bg-surface-tertiary"
+                    : "hover:bg-surface-tertiary"
                 }`}
               >
-                <span className="text-[10px] sm:text-xs uppercase text-zinc-400">
+                <span className="text-[10px] sm:text-xs uppercase text-content-secondary">
                   <span className="sm:hidden">{format(day, "EEEEE", { locale: ptBR })}</span>
                   <span className="hidden sm:inline">{format(day, "EEE", { locale: ptBR })}</span>
                 </span>
-                <span className="font-medium text-zinc-50 text-sm sm:text-base">{format(day, "d")}</span>
+                <span className="font-medium text-content-primary text-sm sm:text-base">{format(day, "d")}</span>
                 {has && (
                   <div
                     className={`w-1.5 h-1.5 rounded-full mt-0.5 sm:mt-1 ${
-                      isSelected ? "bg-white" : "bg-orange-500"
+                      isSelected ? "bg-white" : "bg-accent"
                     }`}
                   />
                 )}
@@ -355,17 +360,17 @@ export default function AgendaPage() {
       {/* Day details */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm sm:text-lg font-semibold text-zinc-50">
+          <h2 className="text-sm sm:text-lg font-semibold text-content-primary">
             {format(selectedDate, "d 'de' MMMM, EEEE", { locale: ptBR })}
           </h2>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[10px] sm:text-xs text-zinc-400">Meus horários</span>
+            <span className="text-[10px] sm:text-xs text-content-secondary">Meus horários</span>
             <button
               role="switch"
               aria-checked={showOnlyMine}
               onClick={() => setShowOnlyMine((v) => !v)}
               className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 shrink-0 items-center rounded-full transition-colors ${
-                showOnlyMine ? "bg-orange-500" : "bg-zinc-700"
+                showOnlyMine ? "bg-accent" : "bg-surface-tertiary"
               }`}
             >
               <span
@@ -380,9 +385,9 @@ export default function AgendaPage() {
         {/* Events */}
         {dayEvents.map((event) => (
           <Card key={event.id} className="!p-4 border-l-4 border-l-gray-400">
-            <p className="font-medium text-sm text-zinc-50">{event.title}</p>
+            <p className="font-medium text-sm text-content-primary">{event.title}</p>
             {event.description && (
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-content-secondary mt-1">
                 {event.description}
               </p>
             )}
@@ -390,103 +395,62 @@ export default function AgendaPage() {
           </Card>
         ))}
 
-        {/* Semi-private classes for Pro/Premium */}
-        {isProOrPremium && daySemiPrivate.filter((gc) => {
-          if (!showOnlyMine) return true;
-          return !!getBookingForClass(gc.id);
-        }).map((gc) => {
+        {/* Fixed roster classes (enrolled by admin, no self-booking) */}
+        {(session?.user.modalities || "GRAPPLING").includes("GRAPPLING") && fixedRosterClasses.map((gc) => {
           const booking = getBookingForClass(gc.id);
-          const isBooked = !!booking;
           const isCheckedIn = booking?.checkedIn || false;
           const isToday = selectedDateStr === today;
-          const loading = actionLoading === gc.id || actionLoading === booking?.id;
+          const loading = actionLoading === booking?.id;
 
           return (
             <Card
               key={gc.id}
               className={`!p-4 border-l-4 transition-colors ${
-                isCheckedIn
-                  ? "border-l-emerald-500"
-                  : isBooked
-                  ? "border-l-accent"
-                  : "border-l-yellow-500"
+                isCheckedIn ? "border-l-emerald-500" : "border-l-accent"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock size={14} className="text-zinc-400" />
-                    <span className="text-sm font-semibold text-zinc-50">
+                    <Clock size={14} className="text-content-secondary" />
+                    <span className="text-sm font-semibold text-content-primary">
                       {gc.startTime} - {gc.endTime}
                     </span>
                   </div>
-                  <p className="font-medium text-zinc-50">{gc.name}</p>
+                  <p className="font-medium text-content-primary">{gc.name}</p>
                   <div className="flex items-center gap-3 mt-2">
-                    <Badge variant="warning">Semi-Particular</Badge>
+                    <Badge variant="default">Turma Fixa</Badge>
                     {isCheckedIn && (
                       <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
                         <CheckCircle size={14} />
                         Presente
                       </span>
                     )}
-                    {isBooked && !isCheckedIn && (
-                      <span className="flex items-center gap-1 text-orange-500 text-xs font-medium">
+                    {!isCheckedIn && booking && (
+                      <span className="flex items-center gap-1 text-accent text-xs font-medium">
                         <CalendarCheck size={14} />
-                        Agendado
+                        Matriculado
                       </span>
+                    )}
+                    {!booking && (
+                      <span className="text-xs text-content-muted">Matriculado</span>
                     )}
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  {!isBooked && (
-                    <Button
-                      size="sm"
-                      disabled={loading}
-                      onClick={() => handleBookAndCheckin(gc.id)}
-                    >
-                      {loading ? (
-                        "..."
-                      ) : isToday ? (
-                        <>
-                          <CheckCircle size={14} className="mr-1.5" />
-                          Check-in
-                        </>
-                      ) : (
-                        <>
-                          <CalendarCheck size={14} className="mr-1.5" />
-                          Agendar
-                        </>
-                      )}
-                    </Button>
-                  )}
-
-                  {isBooked && !isCheckedIn && (
-                    <>
-                      {isToday && (
-                        <Button
-                          size="sm"
-                          disabled={loading}
-                          onClick={() => handleCheckin(booking!.id)}
-                        >
-                          {loading ? "..." : (
-                            <>
-                              <CheckCircle size={14} className="mr-1.5" />
-                              Check-in
-                            </>
-                          )}
-                        </Button>
-                      )}
-                      <button
-                        onClick={() => handleCancel(booking!.id)}
-                        className="text-red-400 hover:text-red-300 p-1"
-                        title="Cancelar"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </>
-                  )}
-                </div>
+                {booking && !isCheckedIn && isToday && (
+                  <Button
+                    size="sm"
+                    disabled={!!loading}
+                    onClick={() => handleCheckin(booking.id)}
+                  >
+                    {loading ? "..." : (
+                      <>
+                        <CheckCircle size={14} className="mr-1.5" />
+                        Check-in
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             </Card>
           );
@@ -511,18 +475,18 @@ export default function AgendaPage() {
                   ? "border-l-emerald-500"
                   : isBooked
                   ? "border-l-accent"
-                  : "border-l-zinc-800"
+                  : "border-l-border"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock size={14} className="text-zinc-400" />
-                    <span className="text-sm font-semibold text-zinc-50">
+                    <Clock size={14} className="text-content-secondary" />
+                    <span className="text-sm font-semibold text-content-primary">
                       {gc.startTime} - {gc.endTime}
                     </span>
                   </div>
-                  <p className="font-medium text-zinc-50">{gc.name}</p>
+                  <p className="font-medium text-content-primary">{gc.name}</p>
                   <div className="flex items-center gap-3 mt-2">
                     <Badge variant="default">Coletiva</Badge>
                     {isCheckedIn && (
@@ -532,7 +496,7 @@ export default function AgendaPage() {
                       </span>
                     )}
                     {isBooked && !isCheckedIn && (
-                      <span className="flex items-center gap-1 text-orange-500 text-xs font-medium">
+                      <span className="flex items-center gap-1 text-accent text-xs font-medium">
                         <CalendarCheck size={14} />
                         Agendado
                       </span>
@@ -601,36 +565,36 @@ export default function AgendaPage() {
             <Card key={slot.id} className={`!p-4 border-l-4 ${
               label === "Presente" ? "border-l-emerald-500" :
               label === "Cancelou" ? "border-l-red-500" :
-              label === "Ausente" ? "border-l-zinc-500" :
+              label === "Ausente" ? "border-l-content-muted" :
               "border-l-accent"
             }`}>
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock size={14} className="text-zinc-400" />
-                    <span className="text-sm font-semibold text-zinc-50">
+                    <Clock size={14} className="text-content-secondary" />
+                    <span className="text-sm font-semibold text-content-primary">
                       {slot.startTime} - {slot.endTime}
                     </span>
                   </div>
-                  <p className="font-medium text-zinc-50">Aula Particular</p>
+                  <p className="font-medium text-content-primary">Aula Particular</p>
                   <div className="flex items-center gap-3 mt-2">
                     <Badge variant="success">Particular</Badge>
                     {label ? (
                       <span className={`flex items-center gap-1 text-xs font-medium ${
                         label === "Presente" ? "text-emerald-400" :
                         label === "Cancelou" ? "text-red-400" :
-                        label === "Ausente" ? "text-zinc-400" : ""
+                        label === "Ausente" ? "text-content-secondary" : ""
                       }`}>
                         <CheckCircle size={14} />
                         {label}
                       </span>
                     ) : booking ? (
-                      <span className="flex items-center gap-1 text-orange-500 text-xs font-medium">
+                      <span className="flex items-center gap-1 text-accent text-xs font-medium">
                         <CalendarCheck size={14} />
                         Agendado
                       </span>
                     ) : (
-                      <span className="text-xs text-zinc-500">Sua aula</span>
+                      <span className="text-xs text-content-muted">Sua aula</span>
                     )}
                   </div>
                 </div>
@@ -662,37 +626,37 @@ export default function AgendaPage() {
             <Card key={slot.id} className={`!p-4 border-l-4 ${
               label === "Presente" ? "border-l-emerald-500" :
               label === "Cancelou" ? "border-l-red-500" :
-              label === "Ausente" ? "border-l-zinc-500" :
+              label === "Ausente" ? "border-l-content-muted" :
               isBooked ? "border-l-accent" :
-              "border-l-zinc-800"
+              "border-l-border"
             }`}>
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock size={14} className="text-zinc-400" />
-                    <span className="text-sm font-semibold text-zinc-50">
+                    <Clock size={14} className="text-content-secondary" />
+                    <span className="text-sm font-semibold text-content-primary">
                       {slot.startTime} - {slot.endTime}
                     </span>
                   </div>
-                  <p className="font-medium text-zinc-50">Aula Particular</p>
+                  <p className="font-medium text-content-primary">Aula Particular</p>
                   <div className="flex items-center gap-3 mt-2">
                     <Badge variant="success">Particular</Badge>
                     {label ? (
                       <span className={`flex items-center gap-1 text-xs font-medium ${
                         label === "Presente" ? "text-emerald-400" :
                         label === "Cancelou" ? "text-red-400" :
-                        label === "Ausente" ? "text-zinc-400" : ""
+                        label === "Ausente" ? "text-content-secondary" : ""
                       }`}>
                         <CheckCircle size={14} />
                         {label}
                       </span>
                     ) : isBooked ? (
-                      <span className="flex items-center gap-1 text-orange-500 text-xs font-medium">
+                      <span className="flex items-center gap-1 text-accent text-xs font-medium">
                         <CalendarCheck size={14} />
                         Agendado
                       </span>
                     ) : (
-                      <span className="text-xs text-zinc-500">Disponível</span>
+                      <span className="text-xs text-content-muted">Disponível</span>
                     )}
                   </div>
                 </div>
@@ -734,14 +698,11 @@ export default function AgendaPage() {
           const hasOpenSlots = showOnlyMine
             ? openSlotCards.some(({ booking }) => !!booking)
             : openSlotCards.length > 0;
-          const hasSemiPrivate = isProOrPremium && (showOnlyMine
-            ? daySemiPrivate.some((gc) => !!getBookingForClass(gc.id))
-            : daySemiPrivate.length > 0);
-          const hasContent = hasGroupClasses || hasSemiPrivate || privateSlotCards.length > 0 || hasOpenSlots || dayEvents.length > 0;
+          const hasContent = hasGroupClasses || fixedRosterClasses.length > 0 || privateSlotCards.length > 0 || hasOpenSlots || dayEvents.length > 0;
 
           if (!hasContent) return (
             <Card className="!p-8">
-              <p className="text-zinc-400 text-sm text-center">
+              <p className="text-content-secondary text-sm text-center">
                 {showOnlyMine
                   ? "Nenhum horário agendado para este dia"
                   : DAY_NAMES[selectedDayOfWeek] === "Domingo" || DAY_NAMES[selectedDayOfWeek] === "Sábado"
@@ -757,39 +718,39 @@ export default function AgendaPage() {
       {/* Reschedule modal */}
       {rescheduleInfo && (
         <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center p-4"
           onClick={() => { setRescheduleInfo(null); setRescheduleDate(""); }}
         >
           <div
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto"
+            className="bg-surface-secondary border border-border rounded-xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-2 mb-4">
-              <RefreshCw size={18} className="text-orange-500" />
-              <h2 className="text-lg font-semibold text-zinc-50">Remarcar Aula</h2>
+              <RefreshCw size={18} className="text-accent" />
+              <h2 className="text-lg font-semibold text-content-primary">Remarcar Aula</h2>
             </div>
-            <p className="text-sm text-zinc-400 mb-4">
+            <p className="text-sm text-content-secondary mb-4">
               Selecione uma nova data e horário para sua aula.
             </p>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-zinc-300 mb-2">Nova data</label>
+              <label className="block text-sm font-medium text-content-secondary mb-2">Nova data</label>
               <input
                 type="date"
                 min={today}
                 value={rescheduleDate}
                 onChange={(e) => setRescheduleDate(e.target.value)}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-50 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
 
             {rescheduleDate && (
               <div className="mb-4">
-                <p className="text-sm text-zinc-400 mb-3">
+                <p className="text-sm text-content-secondary mb-3">
                   Horários disponíveis — {DAY_NAMES[new Date(rescheduleDate + "T12:00:00").getDay()]}
                 </p>
                 {rescheduleSlots.length === 0 ? (
-                  <p className="text-sm text-zinc-500 text-center py-4">
+                  <p className="text-sm text-content-muted text-center py-4">
                     Nenhum horário disponível nesta data
                   </p>
                 ) : (
@@ -797,11 +758,11 @@ export default function AgendaPage() {
                     {rescheduleSlots.map((slot) => (
                       <div
                         key={slot.id}
-                        className="flex items-center justify-between p-3 bg-zinc-800 rounded-lg"
+                        className="flex items-center justify-between p-3 bg-surface-tertiary rounded-lg"
                       >
                         <div className="flex items-center gap-2">
-                          <Clock size={14} className="text-zinc-400" />
-                          <span className="text-sm font-medium text-zinc-50">
+                          <Clock size={14} className="text-content-secondary" />
+                          <span className="text-sm font-medium text-content-primary">
                             {slot.startTime} - {slot.endTime}
                           </span>
                         </div>

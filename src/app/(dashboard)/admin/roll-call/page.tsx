@@ -89,8 +89,8 @@ export default function RollCallPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-zinc-50 mb-1">Chamada</h1>
-      <p className="text-sm text-zinc-400 mb-6">
+      <h1 className="text-2xl font-bold text-content-primary mb-1">Chamada</h1>
+      <p className="text-sm text-content-secondary mb-6">
         Registre a presença dos alunos nas aulas agendadas.
       </p>
 
@@ -99,16 +99,16 @@ export default function RollCallPage() {
           type="date"
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}
-          className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-50"
+          className="bg-surface-secondary border border-border rounded-lg px-3 py-2 text-sm text-content-primary"
         />
-        <p className="text-xs text-zinc-400 mt-1 capitalize">{dateLabel}</p>
+        <p className="text-xs text-content-secondary mt-1 capitalize">{dateLabel}</p>
       </div>
 
       {loading ? (
-        <p className="text-zinc-500 text-sm text-center py-8">Carregando...</p>
+        <p className="text-content-muted text-sm text-center py-8">Carregando...</p>
       ) : bookings.length === 0 ? (
         <Card>
-          <p className="text-zinc-400 text-sm text-center py-8">
+          <p className="text-content-secondary text-sm text-center py-8">
             Nenhum agendamento para esta data.
           </p>
         </Card>
@@ -116,7 +116,7 @@ export default function RollCallPage() {
         <>
           {pending.length > 0 && (
             <div className="mb-6">
-              <h2 className="text-sm font-semibold text-zinc-400 mb-3 uppercase tracking-wider">
+              <h2 className="text-sm font-semibold text-content-secondary mb-3 uppercase tracking-wider">
                 Pendentes ({pending.length})
               </h2>
               <div className="space-y-2">
@@ -135,7 +135,7 @@ export default function RollCallPage() {
 
           {done.length > 0 && (
             <div>
-              <h2 className="text-sm font-semibold text-zinc-400 mb-3 uppercase tracking-wider">
+              <h2 className="text-sm font-semibold text-content-secondary mb-3 uppercase tracking-wider">
                 Concluídos ({done.length})
               </h2>
               <div className="space-y-2">
@@ -186,8 +186,8 @@ function BookingCard({
       <div className="flex items-center gap-3">
         <StudentAvatar name={b.user.name} photoUrl={b.user.photoUrl} size={40} />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-zinc-50 truncate">{b.user.name}</p>
-          <p className="text-xs text-zinc-400">{classLabel}</p>
+          <p className="text-sm font-medium text-content-primary truncate">{b.user.name}</p>
+          <p className="text-xs text-content-secondary">{classLabel}</p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
@@ -200,7 +200,7 @@ function BookingCard({
           <button
             onClick={() => onDelete(b.id)}
             disabled={updating}
-            className="text-zinc-500 hover:text-red-400 transition-colors p-1"
+            className="text-content-muted hover:text-red-400 transition-colors p-1"
             title="Excluir"
           >
             <Trash2 size={14} />

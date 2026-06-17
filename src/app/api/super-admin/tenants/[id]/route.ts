@@ -1,0 +1,105 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prismaMaster } from "@/lib/prisma-master";
+import { verifySuperAdmin } from "@/lib/super-admin-auth";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const admin = await verifySuperAdmin();
+  if (!admin) {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  const tenant = await prismaMaster.tenant.findUnique({
+    where: { id: params.id },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      logoUrl: true,
+      primaryColor: true,
+      secondaryColor: true,
+      adminName: true,
+      adminEmail: true,
+      isActive: true,
+      enablePlans: true,
+      enableTimer: true,
+      createdAt: true,
+    },
+  });
+
+  if (!tenant) {
+    return NextResponse.json({ error: "CT não encontrado" }, { status: 404 });
+  }
+
+  return NextResponse.json({ tenant });
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const admin = await verifySuperAdmin();
+  if (!admin) {
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+
+  const existing = await prismaMaster.tenant.findUnique({
+    where: { id: params.id },
+  });
+  if (!existing) {
+    return NextResponse.json({ error: "CT não encontrado" }, { status: 404 });
+  }
+
+  const body = await req.json();
+  const { name, logoUrl, primaryColor, secondaryColor, adminName, adminEmail, isActive, enablePlans, enableTimer } = body;
+
+  const tenant = await prismaMaster.tenant.update({
+    where: { id: params.id },
+    data: {
+      ...(name !== undefined && { name }),
+      ...(logoUrl !== undefined && { logoUrl: logoUrl || null }),
+      ...(primaryColor !== undefined && { primaryColor }),
+      ...(secondaryColor !== undefined && { secondaryColor }),
+      ...(adminName !== undefined && { adminName }),
+      ...(adminEmail !== undefined && { adminEmail }),
+      ...(isActive !== undefined && { isActive }),
+      ...(enablePlans !== undefined && { enablePlans }),
+      ...(enableTimer !== undefined && { enableTimer }),
+    },
+  });
+
+  // Sync admin name/email in tenant DB
+  if (adminName !== undefined || adminEmail !== undefined) {
+    try {
+      const tenantPrisma = await getTenantPrisma(existing.slug);
+      if (tenantPrisma) {
+        const adminUser = await tenantPrisma.user.findFirst({
+          where: { email: existing.adminEmail, role: "ADMIN" },
+        });
+        if (adminUser) {
+          await tenantPrisma.user.update({
+            where: { id: adminUser.id },
+            data: {
+              ...(adminName !== undefined && { name: adminName }),
+              ...(adminEmail !== undefined && { email: adminEmail }),
+            },
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error syncing admin in tenant DB:", err);
+    }
+  }
+
+  return NextResponse.json({
+    ok: true,
+    tenant: {
+      id: tenant.id,
+      name: tenant.name,
+      slug: tenant.slug,
+    },
+  });
+}

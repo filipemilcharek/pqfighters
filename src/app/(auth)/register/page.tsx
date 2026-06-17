@@ -1,29 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { StudentAvatar } from "@/components/student-avatar";
 import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { Logo } from "@/components/logo";
+import { useSearchParams, useRouter } from "next/navigation";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tenantSlug = searchParams.get("tenant") || "";
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    studentType: "ESSENCIAL",
   });
-  const [modalities, setModalities] = useState<string[]>(["GRAPPLING"]);
   const [isKids, setIsKids] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
+  const [tenantName, setTenantName] = useState("");
+  const [tenantLogoUrl, setTenantLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (tenantSlug) {
+      fetch(`/api/tenant-info?slug=${encodeURIComponent(tenantSlug)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.name) setTenantName(data.name);
+          if (data.logoUrl) setTenantLogoUrl(data.logoUrl);
+          if (data.primaryColor) {
+            document.documentElement.style.setProperty("--color-accent", data.primaryColor);
+          }
+          if (data.secondaryColor) {
+            document.documentElement.style.setProperty("--color-accent-dark", data.secondaryColor);
+          }
+        })
+        .catch(() => { });
+    }
+  }, [tenantSlug]);
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -36,6 +56,12 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (!tenantSlug) {
+      setError("Tenant não identificado.");
+      return;
+    }
+
     setLoading(true);
 
     let photoUrl: string | null = null;
@@ -56,7 +82,7 @@ export default function RegisterPage() {
     const res = await fetch("/api/students", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, modalities: modalities.join(","), isKids, photoUrl }),
+      body: JSON.stringify({ ...form, modalities: "GRAPPLING", isKids, photoUrl, tenantSlug }),
     });
 
     const data = await res.json();
@@ -70,24 +96,79 @@ export default function RegisterPage() {
     router.push(`/verify-email?email=${encodeURIComponent(form.email)}`);
   }
 
+  if (!tenantSlug) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-primary px-4">
+        <div className="w-full max-w-md">
+          <Card>
+            <div className="flex flex-col items-center text-center">
+              <Logo size={72} logoUrl={tenantLogoUrl} />
+              <h1 className="text-3xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+                faix<span className="text-red-600 font-extrabold">app</span>reta
+              </h1>
+              <p className="text-sm text-content-secondary mt-4">
+                Use o link fornecido pelo seu Centro de Treinamento para se cadastrar.
+              </p>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (registered) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-primary px-4">
+        <div className="w-full max-w-md">
+          <Card>
+            <div className="flex flex-col items-center text-center">
+              <Logo size={72} logoUrl={tenantLogoUrl} />
+              <h1 className="text-3xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+                faix<span className="text-red-600 font-extrabold">app</span>reta
+              </h1>
+              <div className="mt-6 mb-4">
+                <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-3xl">&#9203;</span>
+                </div>
+                <h2 className="text-lg font-semibold text-content-primary mb-2">Cadastro enviado!</h2>
+                <p className="text-sm text-content-secondary">
+                  Seu cadastro foi recebido e está aguardando aprovação do professor. Você receberá acesso assim que for aprovado.
+                </p>
+              </div>
+              <Link href={`/login?tenant=${tenantSlug}`}>
+                <Button variant="secondary" size="sm">
+                  Voltar para o login
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#09090b] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-surface-primary px-4">
       <div className="w-full max-w-md">
         <Card>
           <div className="flex flex-col items-center mb-8">
-            <Image src="/logo.png" alt="PQ" width={72} height={72} />
-            <h1 className="text-3xl font-bold text-zinc-50 tracking-tight font-teko uppercase mt-3">
-              PQ <span className="text-accent">FIGHTERS</span>
-            </h1>
-            <p className="text-zinc-400 text-sm mt-1">
-              Crie sua conta
-            </p>
+            <Logo size={72} logoUrl={tenantLogoUrl} />
+            {tenantName ? (
+              <h1 className="text-2xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+                {tenantName}
+              </h1>
+            ) : (
+              <h1 className="text-3xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+                faix<span className="text-red-600 font-extrabold">app</span>reta
+              </h1>
+            )}
+            <p className="text-content-muted text-sm mt-1">Crie sua conta</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col items-center gap-2">
               <StudentAvatar name={form.name || "?"} photoUrl={photoPreview} size={64} />
-              <label className="cursor-pointer text-sm text-orange-500 hover:text-orange-400 transition-colors">
+              <label className="cursor-pointer text-sm text-accent hover:text-accent-dark transition-colors">
                 {photoPreview ? "Alterar foto" : "Adicionar foto"}
                 <input
                   type="file"
@@ -118,62 +199,24 @@ export default function RegisterPage() {
               type="password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Minimo 6 caracteres"
               required
               minLength={6}
             />
-            <Select
-              label="Tipo de Aula"
-              value={form.studentType}
-              onChange={(e) =>
-                setForm({ ...form, studentType: e.target.value })
-              }
-            >
-              <option value="ESSENCIAL">Essencial</option>
-              <option value="PRO">Pro</option>
-              <option value="PREMIUM">Premium</option>
-            </Select>
-
             <div>
               <label className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={isKids}
                   onChange={(e) => setIsKids(e.target.checked)}
-                  className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500"
+                  className="w-4 h-4 rounded border-border bg-surface-primary text-accent focus:ring-accent"
                 />
-                <span className="text-sm font-medium text-zinc-300">Aluno Kids</span>
+                <span className="text-sm font-medium text-content-secondary">Aluno Kids</span>
               </label>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">Modalidades</label>
-              <div className="flex flex-col gap-2">
-                {[
-                  { value: "GRAPPLING", label: "Grappling / Jiu-Jitsu" },
-                  { value: "MMA", label: "MMA / Boxe" },
-                ].map((m) => (
-                  <label key={m.value} className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={modalities.includes(m.value)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setModalities((prev) => [...prev, m.value]);
-                        } else if (modalities.length > 1) {
-                          setModalities((prev) => prev.filter((v) => v !== m.value));
-                        }
-                      }}
-                      className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500"
-                    />
-                    <span className="text-sm text-zinc-200">{m.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
             {error && (
-              <p className="text-sm text-red-400 text-center">{error}</p>
+              <p className="text-sm text-red-500 text-center">{error}</p>
             )}
 
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
@@ -181,14 +224,22 @@ export default function RegisterPage() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-zinc-500 mt-6">
-            Já tem conta?{" "}
-            <Link href="/login" className="text-orange-500 hover:text-orange-400 transition-colors">
+          <p className="text-center text-sm text-content-muted mt-6">
+            Ja tem conta?{" "}
+            <Link href={`/login?tenant=${tenantSlug}`} className="text-accent hover:text-accent-dark transition-colors">
               Entrar
             </Link>
           </p>
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-surface-primary text-content-muted">Carregando...</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

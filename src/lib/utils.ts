@@ -66,15 +66,14 @@ export function cn(...classes: (string | boolean | undefined | null)[]) {
 }
 
 export const PLAN_LABELS: Record<string, string> = {
-  ESSENCIAL: "Essencial",
-  PRO: "Pro",
-  PREMIUM: "Premium",
+  COLETIVA: "Coletiva",
+  PARTICULAR: "Particular",
 };
 
 export function getPlanLabel(studentType: string): string {
   return PLAN_LABELS[studentType] || studentType;
 }
 
-export function isPremiumOrPro(studentType: string): boolean {
-  return studentType === "PREMIUM" || studentType === "PRO";
+export function isParticular(studentType: string): boolean {
+  return studentType === "PARTICULAR";
 }

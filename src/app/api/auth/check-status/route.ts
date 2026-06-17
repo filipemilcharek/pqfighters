@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { checkRateLimits } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
-    const { email } = await req.json();
+    const { email, tenantSlug } = await req.json();
+
+    if (!email || !tenantSlug) {
+      return NextResponse.json({ status: "UNKNOWN" });
+    }
 
     const limitCheck = await checkRateLimits(req, {
       email,
@@ -15,7 +19,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: limitCheck.error }, { status: 429 });
     }
 
-    if (!email) {
+    const prisma = await getTenantPrisma(tenantSlug);
+    if (!prisma) {
       return NextResponse.json({ status: "UNKNOWN" });
     }
 
@@ -38,4 +43,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ status: "UNKNOWN", error: "Erro interno no servidor" }, { status: 500 });
   }
 }
-

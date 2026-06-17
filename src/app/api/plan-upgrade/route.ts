@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma, getTenantFlags } from "@/lib/tenant-prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -10,10 +10,32 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const { plan, frequency, details, price } = await req.json();
+  const flags = await getTenantFlags(session.user.tenantSlug);
+  if (!flags?.enablePlans) {
+    return NextResponse.json({ error: "Módulo de planos desabilitado" }, { status: 403 });
+  }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
+
+  const { planId, plan, frequency, details, price } = await req.json();
 
   if (!plan || !frequency || !price) {
     return NextResponse.json({ error: "Dados incompletos" }, { status: 400 });
+  }
+
+  // Validate: check if the requested plan has the same type as current studentType
+  if (planId) {
+    const targetPlan = await prisma.plan.findUnique({
+      where: { id: planId },
+      select: { planType: true },
+    });
+    if (targetPlan && targetPlan.planType === session.user.studentType) {
+      return NextResponse.json(
+        { error: "Você já está em um plano do mesmo tipo" },
+        { status: 400 }
+      );
+    }
   }
 
   // Check if there's already a pending request
@@ -31,6 +53,7 @@ export async function POST(req: Request) {
   const request = await prisma.planUpgradeRequest.create({
     data: {
       userId: session.user.id,
+      planId: planId || null,
       plan,
       frequency,
       details: details || null,
@@ -47,6 +70,14 @@ export async function GET() {
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const flags = await getTenantFlags(session.user.tenantSlug);
+  if (!flags?.enablePlans) {
+    return NextResponse.json({ error: "Módulo de planos desabilitado" }, { status: 403 });
+  }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const requests = await prisma.planUpgradeRequest.findMany({
     where: { status: "PENDING" },

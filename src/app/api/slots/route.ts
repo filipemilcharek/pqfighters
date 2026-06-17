@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { slotSchema } from "@/lib/validations";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -10,13 +10,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
+
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
 
-  // Students see their bound slots + (PRO/PREMIUM only) unbound available slots
+  // Students see their bound slots + (PARTICULAR only) unbound available slots
   if (session.user.role === "STUDENT") {
     const date = searchParams.get("date");
-    const isParticular = session.user.studentType === "PREMIUM" || session.user.studentType === "PRO";
+    const isParticular = session.user.studentType === "PARTICULAR";
     const orFilter = isParticular
       ? [{ userId: session.user.id }, { userId: null, isAvailable: true }]
       : [{ userId: session.user.id }];
@@ -84,7 +87,10 @@ export async function GET(req: NextRequest) {
 
   const slots = await prisma.privateSlot.findMany({
     where,
-    include: { user: { select: { id: true, name: true } } },
+    include: {
+      user: { select: { id: true, name: true } },
+      instructor: { select: { id: true, name: true } },
+    },
     orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
   });
   return NextResponse.json(slots);
@@ -95,6 +101,9 @@ export async function POST(req: NextRequest) {
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const body = await req.json();
   const result = slotSchema.safeParse(body);
@@ -112,7 +121,7 @@ export async function POST(req: NextRequest) {
     const [h, m] = result.data.startTime.split(":").map(Number);
     endTime = `${String(h + 1).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   }
-  const data = { ...result.data, endTime, userId: result.data.userId || null };
+  const data = { ...result.data, endTime, userId: result.data.userId || null, instructorId: result.data.instructorId || session.user.id };
 
   // Support creating multiple slots for the same time with different students
   const userIds: (string | null)[] = Array.isArray(body.userIds) ? body.userIds : [];

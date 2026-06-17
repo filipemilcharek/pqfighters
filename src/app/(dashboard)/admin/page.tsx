@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Users, CheckCircle, Calendar, Pencil, RefreshCw, Check, UserPlus, ArrowUpCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DAY_NAMES, getPlanLabel, isPremiumOrPro } from "@/lib/utils";
+import { DAY_NAMES, getPlanLabel, isParticular } from "@/lib/utils";
+import { useTenantInfo } from "@/components/tenant-theme";
 
 interface RescheduleLog {
   id: string;
@@ -63,6 +64,7 @@ function getPaymentStatus(
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const tenantInfo = useTenantInfo();
   const [students, setStudents] = useState<Student[]>([]);
   const [rescheduleLogs, setRescheduleLogs] = useState<RescheduleLog[]>([]);
   const [pendingCounts, setPendingCounts] = useState<{ pendingStudents: number; pendingUpgrades: number }>({ pendingStudents: 0, pendingUpgrades: 0 });
@@ -95,7 +97,7 @@ export default function AdminDashboard() {
 
   const totalStudents = students.length;
   const particular = students.filter(
-    (s) => isPremiumOrPro(s.studentType)
+    (s) => isParticular(s.studentType)
   ).length;
   const totalCheckins = students.reduce(
     (sum, s) => sum + s._count.bookings + s.initialCheckins,
@@ -103,22 +105,22 @@ export default function AdminDashboard() {
   );
 
   if (loading) {
-    return <div className="text-center py-8 text-zinc-500">Carregando...</div>;
+    return <div className="text-center py-8 text-content-muted">Carregando...</div>;
   }
 
   return (
     <div className="min-w-0 overflow-hidden">
-      <h1 className="text-2xl font-bold mb-6 text-zinc-50">Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-6 text-content-primary">Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <Card>
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-orange-500/10">
-              <Users size={22} className="text-orange-500" />
+            <div className="p-3 rounded-lg bg-accent/10">
+              <Users size={22} className="text-accent" />
             </div>
             <div>
-              <p className="text-sm text-zinc-400">Total Alunos</p>
-              <p className="text-2xl font-bold text-zinc-50">{totalStudents}</p>
+              <p className="text-sm text-content-secondary">Total Alunos</p>
+              <p className="text-2xl font-bold text-content-primary">{totalStudents}</p>
             </div>
           </div>
         </Card>
@@ -128,8 +130,8 @@ export default function AdminDashboard() {
               <Calendar size={22} className="text-emerald-400" />
             </div>
             <div>
-              <p className="text-sm text-zinc-400">Particulares</p>
-              <p className="text-2xl font-bold text-zinc-50">{particular}</p>
+              <p className="text-sm text-content-secondary">Particulares</p>
+              <p className="text-2xl font-bold text-content-primary">{particular}</p>
             </div>
           </div>
         </Card>
@@ -139,8 +141,8 @@ export default function AdminDashboard() {
               <CheckCircle size={22} className="text-blue-400" />
             </div>
             <div>
-              <p className="text-sm text-zinc-400">Check-ins Totais</p>
-              <p className="text-2xl font-bold text-zinc-50">{totalCheckins}</p>
+              <p className="text-sm text-content-secondary">Check-ins Totais</p>
+              <p className="text-2xl font-bold text-content-primary">{totalCheckins}</p>
             </div>
           </div>
         </Card>
@@ -153,7 +155,7 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/15 transition-colors cursor-pointer">
                 <UserPlus size={20} className="text-amber-400 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-zinc-50">
+                  <p className="text-sm font-medium text-content-primary">
                     {pendingCounts.pendingStudents === 1
                       ? "1 novo aluno aguardando aprovação"
                       : `${pendingCounts.pendingStudents} novos alunos aguardando aprovação`}
@@ -163,12 +165,12 @@ export default function AdminDashboard() {
               </div>
             </Link>
           )}
-          {pendingCounts.pendingUpgrades > 0 && (
-            <Link href="/admin/plan-upgrades">
+          {pendingCounts.pendingUpgrades > 0 && tenantInfo?.enablePlans !== false && (
+            <Link href="/admin/plans">
               <div className="flex items-center gap-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/15 transition-colors cursor-pointer">
                 <ArrowUpCircle size={20} className="text-blue-400 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-zinc-50">
+                  <p className="text-sm font-medium text-content-primary">
                     {pendingCounts.pendingUpgrades === 1
                       ? "1 solicitação de upgrade de plano"
                       : `${pendingCounts.pendingUpgrades} solicitações de upgrade de plano`}
@@ -185,8 +187,8 @@ export default function AdminDashboard() {
         <Card className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <RefreshCw size={18} className="text-orange-500" />
-              <h2 className="text-lg font-semibold text-zinc-50">Notificações</h2>
+              <RefreshCw size={18} className="text-accent" />
+              <h2 className="text-lg font-semibold text-content-primary">Notificações</h2>
               {rescheduleLogs.filter((l) => !l.readByAdmin).length > 0 && (
                 <Badge variant="warning">
                   {rescheduleLogs.filter((l) => !l.readByAdmin).length}
@@ -212,37 +214,37 @@ export default function AdminDashboard() {
                   <div key={log.id} className="relative">
                     <div
                       className={`flex items-center justify-between p-2.5 sm:p-3 rounded-t-lg text-xs sm:text-sm ${
-                        log.readByAdmin ? "bg-zinc-800/50" : "bg-orange-500/10 border border-orange-500/20 border-b-0"
+                        log.readByAdmin ? "bg-surface-tertiary/50" : "bg-accent/10 border border-accent/20 border-b-0"
                       }`}
                     >
                       <div>
-                        <span className="font-medium text-zinc-50">{log.user.name}</span>
+                        <span className="font-medium text-content-primary">{log.user.name}</span>
                         {" cancelou "}
-                        <span className="font-medium text-zinc-50">
+                        <span className="font-medium text-content-primary">
                           {DAY_NAMES[log.privateSlot.dayOfWeek]} {log.privateSlot.startTime}
                         </span>
                         {" do dia "}
-                        <span className="font-medium text-zinc-50">{formatDate(log.date)}</span>
+                        <span className="font-medium text-content-primary">{formatDate(log.date)}</span>
                       </div>
                     </div>
                     <div
                       className={`flex items-center justify-between p-2.5 sm:p-3 rounded-b-lg text-xs sm:text-sm ${
-                        log.readByAdmin ? "bg-zinc-800/50" : "bg-emerald-500/10 border border-emerald-500/20 border-t-0"
+                        log.readByAdmin ? "bg-surface-tertiary/50" : "bg-emerald-500/10 border border-emerald-500/20 border-t-0"
                       }`}
                     >
                       <div>
-                        <span className="font-medium text-zinc-50">{log.user.name}</span>
+                        <span className="font-medium text-content-primary">{log.user.name}</span>
                         {" agendou "}
-                        <span className="font-medium text-zinc-50">
+                        <span className="font-medium text-content-primary">
                           {DAY_NAMES[log.newPrivateSlot!.dayOfWeek]} {log.newPrivateSlot!.startTime}
                         </span>
                         {" do dia "}
-                        <span className="font-medium text-zinc-50">{formatDate(log.newDate!)}</span>
+                        <span className="font-medium text-content-primary">{formatDate(log.newDate!)}</span>
                       </div>
                       {!log.readByAdmin && (
                         <button
                           onClick={() => markLogRead(log.id)}
-                          className="text-zinc-400 hover:text-zinc-200 p-1"
+                          className="text-content-secondary hover:text-content-primary p-1"
                           title="Marcar como lida"
                         >
                           <Check size={16} />
@@ -255,8 +257,8 @@ export default function AdminDashboard() {
 
               // Single box: green for booking, amber for cancel
               const bgClass = isBooking
-                ? (log.readByAdmin ? "bg-zinc-800/50" : "bg-emerald-500/10 border border-emerald-500/20")
-                : (log.readByAdmin ? "bg-zinc-800/50" : "bg-orange-500/10 border border-orange-500/20");
+                ? (log.readByAdmin ? "bg-surface-tertiary/50" : "bg-emerald-500/10 border border-emerald-500/20")
+                : (log.readByAdmin ? "bg-surface-tertiary/50" : "bg-accent/10 border border-accent/20");
               const verb = isBooking ? "agendou" : "desmarcou";
 
               return (
@@ -265,18 +267,18 @@ export default function AdminDashboard() {
                   className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg text-xs sm:text-sm ${bgClass}`}
                 >
                   <div>
-                    <span className="font-medium text-zinc-50">{log.user.name}</span>
+                    <span className="font-medium text-content-primary">{log.user.name}</span>
                     {` ${verb} `}
-                    <span className="font-medium text-zinc-50">
+                    <span className="font-medium text-content-primary">
                       {DAY_NAMES[log.privateSlot.dayOfWeek]} {log.privateSlot.startTime}
                     </span>
                     {" do dia "}
-                    <span className="font-medium text-zinc-50">{formatDate(log.date)}</span>
+                    <span className="font-medium text-content-primary">{formatDate(log.date)}</span>
                   </div>
                   {!log.readByAdmin && (
                     <button
                       onClick={() => markLogRead(log.id)}
-                      className="text-zinc-400 hover:text-zinc-200 p-1"
+                      className="text-content-secondary hover:text-content-primary p-1"
                       title="Marcar como lida"
                     >
                       <Check size={16} />
@@ -290,18 +292,18 @@ export default function AdminDashboard() {
       )}
 
       <Card>
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Alunos</h2>
+        <h2 className="text-lg font-semibold mb-4 text-content-primary">Alunos</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-800">
-                <th className="text-left py-3 px-2 sm:px-3 text-zinc-400 font-medium">Aluno</th>
-                <th className="text-left py-3 px-2 sm:px-3 text-zinc-400 font-medium hidden sm:table-cell">Tipo</th>
-                <th className="text-left py-3 px-2 sm:px-3 text-zinc-400 font-medium hidden sm:table-cell">Modalidades</th>
-                <th className="text-left py-3 px-2 sm:px-3 text-zinc-400 font-medium">Faixa</th>
-                <th className="text-left py-3 px-2 sm:px-3 text-zinc-400 font-medium hidden sm:table-cell">Check-ins</th>
-                <th className="text-left py-3 px-2 sm:px-3 text-zinc-400 font-medium hidden sm:table-cell">Pagamento</th>
-                <th className="text-left py-3 px-1 sm:px-3 text-zinc-400 font-medium"></th>
+              <tr className="border-b border-border">
+                <th className="text-left py-3 px-2 sm:px-3 text-content-secondary font-medium">Aluno</th>
+                <th className="text-left py-3 px-2 sm:px-3 text-content-secondary font-medium hidden sm:table-cell">Tipo</th>
+                <th className="text-left py-3 px-2 sm:px-3 text-content-secondary font-medium hidden sm:table-cell">Modalidades</th>
+                <th className="text-left py-3 px-2 sm:px-3 text-content-secondary font-medium">Faixa</th>
+                <th className="text-left py-3 px-2 sm:px-3 text-content-secondary font-medium hidden sm:table-cell">Check-ins</th>
+                <th className="text-left py-3 px-2 sm:px-3 text-content-secondary font-medium hidden sm:table-cell">Pagamento</th>
+                <th className="text-left py-3 px-1 sm:px-3 text-content-secondary font-medium"></th>
               </tr>
             </thead>
             <tbody>
@@ -310,7 +312,7 @@ export default function AdminDashboard() {
                 return (
                   <tr
                     key={s.id}
-                    className="border-b border-zinc-800 hover:bg-zinc-800 cursor-pointer transition-colors"
+                    className="border-b border-border hover:bg-surface-tertiary cursor-pointer transition-colors"
                     onClick={() => router.push(`/admin/students/${s.id}`)}
                   >
                     <td className="py-3 px-2 sm:px-3 max-w-[140px] sm:max-w-none">
@@ -318,24 +320,24 @@ export default function AdminDashboard() {
                         <StudentAvatar name={s.name} photoUrl={s.photoUrl} size={32} />
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="font-medium text-zinc-50 truncate">{s.name}</p>
+                            <p className="font-medium text-content-primary truncate">{s.name}</p>
                             {s.isKids && <Badge variant="warning">Kids</Badge>}
                           </div>
-                          <p className="text-xs text-zinc-500 truncate hidden sm:block">{s.email}</p>
+                          <p className="text-xs text-content-muted truncate hidden sm:block">{s.email}</p>
                         </div>
                       </div>
                     </td>
                     <td className="py-3 px-2 sm:px-3 hidden sm:table-cell">
                       <Badge
                         variant={
-                          isPremiumOrPro(s.studentType) ? "success" : "default"
+                          isParticular(s.studentType) ? "success" : "default"
                         }
                       >
                         {getPlanLabel(s.studentType)}
                       </Badge>
                     </td>
                     <td className="py-3 px-2 sm:px-3 hidden sm:table-cell">
-                      <span className="text-xs text-zinc-400">
+                      <span className="text-xs text-content-secondary">
                         {(s.modalities || "GRAPPLING").split(",").map((m: string) =>
                           m === "GRAPPLING" ? "Grappling/JJ" : "MMA/Boxe"
                         ).join(", ")}
@@ -344,20 +346,20 @@ export default function AdminDashboard() {
                     <td className="py-3 px-2 sm:px-3">
                       <div className="flex items-center gap-1 sm:gap-2">
                         <BeltIcon belt={s.belt} size={16} />
-                        <span className="text-zinc-300 text-xs sm:text-sm whitespace-nowrap">
+                        <span className="text-content-secondary text-xs sm:text-sm whitespace-nowrap">
                           {s.belt}
                           {s.degrees > 0 ? ` ${s.degrees}°` : ""}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-2 sm:px-3 text-zinc-300 hidden sm:table-cell">{s._count.bookings + s.initialCheckins}</td>
+                    <td className="py-3 px-2 sm:px-3 text-content-secondary hidden sm:table-cell">{s._count.bookings + s.initialCheckins}</td>
                     <td className="py-3 px-2 sm:px-3 hidden sm:table-cell">
                       {paymentStatus ? (
                         <Badge variant={paymentStatus.variant}>
                           {paymentStatus.label}
                         </Badge>
                       ) : (
-                        <span className="text-zinc-600 text-xs">-</span>
+                        <span className="text-content-muted text-xs">-</span>
                       )}
                     </td>
                     <td className="py-3 px-1 sm:px-3">
@@ -378,7 +380,7 @@ export default function AdminDashboard() {
                 <tr>
                   <td
                     colSpan={7}
-                    className="py-8 text-center text-zinc-500"
+                    className="py-8 text-center text-content-muted"
                   >
                     Nenhum aluno cadastrado
                   </td>

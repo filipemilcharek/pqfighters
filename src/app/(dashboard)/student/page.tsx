@@ -27,7 +27,7 @@ import {
   CalendarDays,
   RefreshCw,
 } from "lucide-react";
-import { DAY_NAMES, getBeltsForType, getPlanLabel, isPremiumOrPro } from "@/lib/utils";
+import { DAY_NAMES, getBeltsForType, isParticular } from "@/lib/utils";
 import { Trophy } from "lucide-react";
 
 interface BeltRequirement {
@@ -61,6 +61,8 @@ interface GroupClass {
   endTime: string;
   capacity: number;
   isKids: boolean;
+  fixedRoster: boolean;
+  enrollments?: { userId: string }[];
 }
 
 interface PrivateSlot {
@@ -115,7 +117,7 @@ export default function StudentHome() {
     fetch("/api/group-classes").then((r) => r.json()).then(setGroupClasses);
     fetch("/api/events").then((r) => r.json()).then(setEvents);
     fetch("/api/belt-requirements").then((r) => r.json()).then(setRequirements);
-    if (isPremiumOrPro(session?.user.studentType || "")) {
+    if (isParticular(session?.user.studentType || "")) {
       fetch("/api/credits").then((r) => r.json()).then(setCredits);
     }
     fetch("/api/ranking/my-position").then((r) => r.json()).then(setRankPosition).catch(() => {});
@@ -163,7 +165,9 @@ export default function StudentHome() {
   }, [rescheduleDate]);
 
   const userIsKids = session?.user.isKids || false;
-  const dayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && gc.isKids === userIsKids);
+  const allDayClasses = groupClasses.filter((gc) => gc.dayOfWeek === selectedDayOfWeek && gc.isKids === userIsKids);
+  const fixedRosterClasses = allDayClasses.filter((gc) => gc.fixedRoster && gc.enrollments?.some((e) => e.userId === user.id));
+  const dayClasses = allDayClasses.filter((gc) => !gc.fixedRoster);
   const dayBookings = bookings.filter((b) => b.date === selectedDateStr);
   const dayEvents = events.filter((e) => e.date === selectedDateStr);
   const privateBookings = dayBookings.filter((b) => b.type === "PRIVATE");
@@ -197,7 +201,7 @@ export default function StudentHome() {
     return (
       bookings.some((b) => b.date === dateStr) ||
       events.some((e) => e.date === dateStr) ||
-      groupClasses.some((gc) => gc.dayOfWeek === dow) ||
+      groupClasses.some((gc) => gc.dayOfWeek === dow && (!gc.fixedRoster || gc.enrollments?.some((e) => e.userId === user.id))) ||
       mySlots.some((s) => s.dayOfWeek === dow && s.isAvailable)
     );
   }
@@ -278,7 +282,7 @@ export default function StudentHome() {
         setRescheduleInfo(null);
         setRescheduleDate("");
         fetch(`/api/slots?date=${selectedDateStr}`).then((r) => r.json()).then(setMySlots);
-        if (isPremiumOrPro(session?.user.studentType || "")) {
+        if (isParticular(session?.user.studentType || "")) {
           fetch("/api/credits").then((r) => r.json()).then(setCredits);
         }
       } else {
@@ -340,7 +344,7 @@ export default function StudentHome() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6 text-zinc-50">
+      <h1 className="text-2xl font-bold mb-6 text-content-primary">
         Olá, {user.name}!
       </h1>
 
@@ -349,7 +353,7 @@ export default function StudentHome() {
       {/* Upcoming events */}
       {upcomingEvents.length > 0 && (
         <div className="mb-6 space-y-2">
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wide flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-content-secondary uppercase tracking-wide flex items-center gap-2">
             <CalendarDays size={16} />
             Próximos Eventos
           </h2>
@@ -357,12 +361,12 @@ export default function StudentHome() {
             <Card key={event.id} className="!p-4 border-l-4 border-l-amber-500">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-medium text-sm text-zinc-50">{event.title}</p>
+                  <p className="font-medium text-sm text-content-primary">{event.title}</p>
                   {event.description && (
-                    <p className="text-xs text-zinc-400 mt-0.5">{event.description}</p>
+                    <p className="text-xs text-content-secondary mt-0.5">{event.description}</p>
                   )}
                 </div>
-                <span className="text-xs text-zinc-500 shrink-0">
+                <span className="text-xs text-content-muted shrink-0">
                   {new Date(event.date + "T12:00:00").toLocaleDateString("pt-BR", {
                     day: "2-digit",
                     month: "short",
@@ -382,24 +386,19 @@ export default function StudentHome() {
               <div className="mb-1">
                 <BeltVisual belt={user.belt} degrees={user.degrees} width={320} />
               </div>
-              <div className="mt-3">
-                <p className="text-sm text-zinc-400">
-                  Plano: {getPlanLabel(user.studentType)}
-                </p>
               </div>
-            </div>
             {rankPosition && rankPosition.position > 0 && (
-              <div className="shrink-0 flex sm:flex-col items-center gap-2 sm:gap-0 bg-zinc-800 rounded-lg px-4 py-2.5 sm:py-3 border border-zinc-700 w-full sm:w-auto">
+              <div className="shrink-0 flex sm:flex-col items-center gap-2 sm:gap-0 bg-surface-tertiary rounded-lg px-4 py-2.5 sm:py-3 border border-border w-full sm:w-auto">
                 <Trophy size={18} className="text-yellow-400 sm:mb-1" />
-                <p className="text-xl sm:text-2xl font-bold text-zinc-50">{rankPosition.position}°</p>
-                <p className="text-[10px] text-zinc-500 uppercase tracking-wider hidden sm:block">ranking</p>
-                <p className="text-xs text-zinc-400 sm:mt-0.5">{rankPosition.presences} {rankPosition.presences === 1 ? "presença" : "presenças"}</p>
+                <p className="text-xl sm:text-2xl font-bold text-content-primary">{rankPosition.position}°</p>
+                <p className="text-[10px] text-content-muted uppercase tracking-wider hidden sm:block">ranking</p>
+                <p className="text-xs text-content-secondary sm:mt-0.5">{rankPosition.presences} {rankPosition.presences === 1 ? "presença" : "presenças"}</p>
               </div>
             )}
           </div>
 
           {lastGraduationDate && (
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-content-muted mt-1">
               Última graduação: {new Date(lastGraduationDate).toLocaleDateString("pt-BR")}
             </p>
           )}
@@ -434,27 +433,24 @@ export default function StudentHome() {
               </div>
             </>
           ) : nextBelt && (!nextBeltReq || nextBeltReq.requiredClasses === 0) ? (
-            <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
+            <p className="text-xs text-content-secondary border-t border-border pt-3 mt-3">
               Requisito para faixa {nextBelt} não configurado.
             </p>
           ) : (
-            <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
+            <p className="text-xs text-content-secondary border-t border-border pt-3 mt-3">
               Faixa máxima atingida.
             </p>
           )}
         </Card>
       ) : (
         <Card className="mb-6">
-          <p className="text-sm text-zinc-400">
-            Plano: {getPlanLabel(user.studentType)}
-          </p>
-          <p className="text-2xl font-bold text-zinc-50 mt-2">{checkins} {checkins === 1 ? "presença" : "presenças"}</p>
+          <p className="text-2xl font-bold text-content-primary">{checkins} {checkins === 1 ? "presença" : "presenças"}</p>
         </Card>
       )}
 
       {/* Agenda - Week navigation */}
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-semibold text-zinc-50">Minha Agenda</h2>
+        <h2 className="text-lg font-semibold text-content-primary">Minha Agenda</h2>
         {credits && credits.monthlyCredits > 0 && (
           <Badge variant={credits.remaining > 0 ? "success" : "danger"}>
             Créditos: {credits.remaining}/{credits.monthlyCredits}
@@ -471,7 +467,7 @@ export default function StudentHome() {
           >
             <ChevronLeft size={18} />
           </Button>
-          <span className="font-medium text-sm text-zinc-50">
+          <span className="font-medium text-sm text-content-primary">
             {format(currentWeekStart, "d MMM", { locale: ptBR })} -{" "}
             {format(addDays(currentWeekStart, 6), "d MMM yyyy", { locale: ptBR })}
           </span>
@@ -495,21 +491,21 @@ export default function StudentHome() {
                 onClick={() => setSelectedDate(day)}
                 className={`flex flex-col items-center p-1.5 sm:p-2 rounded-md text-sm transition-colors ${
                   isSelected
-                    ? "bg-orange-500 text-zinc-50"
+                    ? "bg-accent text-content-primary"
                     : isToday
-                    ? "bg-zinc-800"
-                    : "hover:bg-zinc-800"
+                    ? "bg-surface-tertiary"
+                    : "hover:bg-surface-tertiary"
                 }`}
               >
-                <span className="text-[10px] sm:text-xs uppercase text-zinc-400">
+                <span className="text-[10px] sm:text-xs uppercase text-content-secondary">
                   <span className="sm:hidden">{format(day, "EEEEE", { locale: ptBR })}</span>
                   <span className="hidden sm:inline">{format(day, "EEE", { locale: ptBR })}</span>
                 </span>
-                <span className="font-medium text-zinc-50 text-sm sm:text-base">{format(day, "d")}</span>
+                <span className="font-medium text-content-primary text-sm sm:text-base">{format(day, "d")}</span>
                 {has && (
                   <div
                     className={`w-1.5 h-1.5 rounded-full mt-0.5 sm:mt-1 ${
-                      isSelected ? "bg-white" : "bg-orange-500"
+                      isSelected ? "bg-white" : "bg-accent"
                     }`}
                   />
                 )}
@@ -522,17 +518,17 @@ export default function StudentHome() {
       {/* Day details */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm sm:text-base font-semibold text-zinc-50">
+          <h3 className="text-sm sm:text-base font-semibold text-content-primary">
             {format(selectedDate, "d 'de' MMMM, EEEE", { locale: ptBR })}
           </h3>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[10px] sm:text-xs text-zinc-400">Meus horários</span>
+            <span className="text-[10px] sm:text-xs text-content-secondary">Meus horários</span>
             <button
               role="switch"
               aria-checked={showOnlyMine}
               onClick={() => setShowOnlyMine((v) => !v)}
               className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 shrink-0 items-center rounded-full transition-colors ${
-                showOnlyMine ? "bg-orange-500" : "bg-zinc-700"
+                showOnlyMine ? "bg-accent" : "bg-surface-tertiary"
               }`}
             >
               <span
@@ -547,13 +543,74 @@ export default function StudentHome() {
         {/* Events on this day */}
         {dayEvents.map((event) => (
           <Card key={event.id} className="!p-4 border-l-4 border-l-amber-500">
-            <p className="font-medium text-sm text-zinc-50">{event.title}</p>
+            <p className="font-medium text-sm text-content-primary">{event.title}</p>
             {event.description && (
-              <p className="text-xs text-zinc-400 mt-1">{event.description}</p>
+              <p className="text-xs text-content-secondary mt-1">{event.description}</p>
             )}
             <Badge className="mt-2">Evento</Badge>
           </Card>
         ))}
+
+        {/* Fixed roster classes (enrolled by admin) */}
+        {hasGrappling && fixedRosterClasses.map((gc) => {
+          const booking = getBookingForClass(gc.id);
+          const isCheckedIn = booking?.checkedIn || false;
+          const isTodaySelected = selectedDateStr === today;
+          const loading = actionLoading === booking?.id;
+
+          return (
+            <Card
+              key={gc.id}
+              className={`!p-4 border-l-4 transition-colors ${
+                isCheckedIn ? "border-l-emerald-500" : "border-l-accent"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock size={14} className="text-content-secondary" />
+                    <span className="text-sm font-semibold text-content-primary">
+                      {gc.startTime} - {gc.endTime}
+                    </span>
+                  </div>
+                  <p className="font-medium text-content-primary">{gc.name}</p>
+                  <div className="flex items-center gap-3 mt-2">
+                    <Badge variant="default">Turma Fixa</Badge>
+                    {isCheckedIn && (
+                      <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium">
+                        <CheckCircle size={14} />
+                        Presente
+                      </span>
+                    )}
+                    {!isCheckedIn && booking && (
+                      <span className="flex items-center gap-1 text-accent text-xs font-medium">
+                        <CalendarCheck size={14} />
+                        Matriculado
+                      </span>
+                    )}
+                    {!booking && (
+                      <span className="text-xs text-content-muted">Matriculado</span>
+                    )}
+                  </div>
+                </div>
+                {booking && !isCheckedIn && isTodaySelected && (
+                  <Button
+                    size="sm"
+                    disabled={!!loading}
+                    onClick={() => handleCheckin(booking.id)}
+                  >
+                    {loading ? "..." : (
+                      <>
+                        <CheckCircle size={14} className="mr-1.5" />
+                        Check-in
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </Card>
+          );
+        })}
 
         {/* Group classes (only for Grappling students) */}
         {hasGrappling && dayClasses.filter((gc) => {
@@ -574,18 +631,18 @@ export default function StudentHome() {
                   ? "border-l-emerald-500"
                   : isBooked
                   ? "border-l-accent"
-                  : "border-l-zinc-800"
+                  : "border-l-border"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock size={14} className="text-zinc-400" />
-                    <span className="text-sm font-semibold text-zinc-50">
+                    <Clock size={14} className="text-content-secondary" />
+                    <span className="text-sm font-semibold text-content-primary">
                       {gc.startTime} - {gc.endTime}
                     </span>
                   </div>
-                  <p className="font-medium text-zinc-50">{gc.name}</p>
+                  <p className="font-medium text-content-primary">{gc.name}</p>
                   <div className="flex items-center gap-3 mt-2">
                     <Badge variant="default">Coletiva</Badge>
                     {isCheckedIn && (
@@ -595,7 +652,7 @@ export default function StudentHome() {
                       </span>
                     )}
                     {isBooked && !isCheckedIn && (
-                      <span className="flex items-center gap-1 text-orange-500 text-xs font-medium">
+                      <span className="flex items-center gap-1 text-accent text-xs font-medium">
                         <CalendarCheck size={14} />
                         Agendado
                       </span>
@@ -664,36 +721,36 @@ export default function StudentHome() {
             <Card key={slot.id} className={`!p-4 border-l-4 ${
               label === "Presente" ? "border-l-emerald-500" :
               label === "Cancelou" ? "border-l-red-500" :
-              label === "Ausente" ? "border-l-zinc-500" :
+              label === "Ausente" ? "border-l-content-muted" :
               "border-l-accent"
             }`}>
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock size={14} className="text-zinc-400" />
-                    <span className="text-sm font-semibold text-zinc-50">
+                    <Clock size={14} className="text-content-secondary" />
+                    <span className="text-sm font-semibold text-content-primary">
                       {slot.startTime} - {slot.endTime}
                     </span>
                   </div>
-                  <p className="font-medium text-zinc-50">Aula Particular</p>
+                  <p className="font-medium text-content-primary">Aula Particular</p>
                   <div className="flex items-center gap-3 mt-2">
                     <Badge variant="success">Particular</Badge>
                     {label ? (
                       <span className={`flex items-center gap-1 text-xs font-medium ${
                         label === "Presente" ? "text-emerald-400" :
                         label === "Cancelou" ? "text-red-400" :
-                        label === "Ausente" ? "text-zinc-400" : ""
+                        label === "Ausente" ? "text-content-secondary" : ""
                       }`}>
                         <CheckCircle size={14} />
                         {label}
                       </span>
                     ) : booking ? (
-                      <span className="flex items-center gap-1 text-orange-500 text-xs font-medium">
+                      <span className="flex items-center gap-1 text-accent text-xs font-medium">
                         <CalendarCheck size={14} />
                         Agendado
                       </span>
                     ) : (
-                      <span className="text-xs text-zinc-500">Sua aula</span>
+                      <span className="text-xs text-content-muted">Sua aula</span>
                     )}
                   </div>
                 </div>
@@ -725,37 +782,37 @@ export default function StudentHome() {
             <Card key={slot.id} className={`!p-4 border-l-4 ${
               label === "Presente" ? "border-l-emerald-500" :
               label === "Cancelou" ? "border-l-red-500" :
-              label === "Ausente" ? "border-l-zinc-500" :
+              label === "Ausente" ? "border-l-content-muted" :
               isBooked ? "border-l-accent" :
-              "border-l-zinc-800"
+              "border-l-border"
             }`}>
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Clock size={14} className="text-zinc-400" />
-                    <span className="text-sm font-semibold text-zinc-50">
+                    <Clock size={14} className="text-content-secondary" />
+                    <span className="text-sm font-semibold text-content-primary">
                       {slot.startTime} - {slot.endTime}
                     </span>
                   </div>
-                  <p className="font-medium text-zinc-50">Aula Particular</p>
+                  <p className="font-medium text-content-primary">Aula Particular</p>
                   <div className="flex items-center gap-3 mt-2">
                     <Badge variant="success">Particular</Badge>
                     {label ? (
                       <span className={`flex items-center gap-1 text-xs font-medium ${
                         label === "Presente" ? "text-emerald-400" :
                         label === "Cancelou" ? "text-red-400" :
-                        label === "Ausente" ? "text-zinc-400" : ""
+                        label === "Ausente" ? "text-content-secondary" : ""
                       }`}>
                         <CheckCircle size={14} />
                         {label}
                       </span>
                     ) : isBooked ? (
-                      <span className="flex items-center gap-1 text-orange-500 text-xs font-medium">
+                      <span className="flex items-center gap-1 text-accent text-xs font-medium">
                         <CalendarCheck size={14} />
                         Agendado
                       </span>
                     ) : (
-                      <span className="text-xs text-zinc-500">Disponível</span>
+                      <span className="text-xs text-content-muted">Disponível</span>
                     )}
                   </div>
                 </div>
@@ -797,10 +854,10 @@ export default function StudentHome() {
           const hasOpenSlots = showOnlyMine
             ? openSlotCards.some(({ booking }) => !!booking)
             : openSlotCards.length > 0;
-          const hasContent = hasGroupClasses || privateSlotCards.length > 0 || hasOpenSlots || dayEvents.length > 0;
+          const hasContent = hasGroupClasses || fixedRosterClasses.length > 0 || privateSlotCards.length > 0 || hasOpenSlots || dayEvents.length > 0;
           if (!hasContent) return (
             <Card className="!p-8">
-              <p className="text-zinc-400 text-sm text-center">
+              <p className="text-content-secondary text-sm text-center">
                 {showOnlyMine
                   ? "Nenhum horário agendado para este dia"
                   : DAY_NAMES[selectedDayOfWeek] === "Domingo" || DAY_NAMES[selectedDayOfWeek] === "Sábado"
@@ -816,39 +873,39 @@ export default function StudentHome() {
       {/* Reschedule modal */}
       {rescheduleInfo && (
         <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/20 z-50 flex items-center justify-center p-4"
           onClick={() => { setRescheduleInfo(null); setRescheduleDate(""); }}
         >
           <div
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto"
+            className="bg-surface-secondary border border-border rounded-xl p-6 w-full max-w-md max-h-[80vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-2 mb-4">
-              <RefreshCw size={18} className="text-orange-500" />
-              <h2 className="text-lg font-semibold text-zinc-50">Remarcar Aula</h2>
+              <RefreshCw size={18} className="text-accent" />
+              <h2 className="text-lg font-semibold text-content-primary">Remarcar Aula</h2>
             </div>
-            <p className="text-sm text-zinc-400 mb-4">
+            <p className="text-sm text-content-secondary mb-4">
               Selecione uma nova data e horário para sua aula.
             </p>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-zinc-300 mb-2">Nova data</label>
+              <label className="block text-sm font-medium text-content-secondary mb-2">Nova data</label>
               <input
                 type="date"
                 min={today}
                 value={rescheduleDate}
                 onChange={(e) => setRescheduleDate(e.target.value)}
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-50 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full rounded-lg border border-border bg-surface-tertiary px-3 py-2 text-sm text-content-primary focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
 
             {rescheduleDate && (
               <div className="mb-4">
-                <p className="text-sm text-zinc-400 mb-3">
+                <p className="text-sm text-content-secondary mb-3">
                   Horários disponíveis — {DAY_NAMES[new Date(rescheduleDate + "T12:00:00").getDay()]}
                 </p>
                 {rescheduleSlots.length === 0 ? (
-                  <p className="text-sm text-zinc-500 text-center py-4">
+                  <p className="text-sm text-content-muted text-center py-4">
                     Nenhum horário disponível nesta data
                   </p>
                 ) : (
@@ -856,11 +913,11 @@ export default function StudentHome() {
                     {rescheduleSlots.map((slot) => (
                       <div
                         key={slot.id}
-                        className="flex items-center justify-between p-3 bg-zinc-800 rounded-lg"
+                        className="flex items-center justify-between p-3 bg-surface-tertiary rounded-lg"
                       >
                         <div className="flex items-center gap-2">
-                          <Clock size={14} className="text-zinc-400" />
-                          <span className="text-sm font-medium text-zinc-50">
+                          <Clock size={14} className="text-content-secondary" />
+                          <span className="text-sm font-medium text-content-primary">
                             {slot.startTime} - {slot.endTime}
                           </span>
                         </div>

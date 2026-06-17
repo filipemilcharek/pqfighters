@@ -10,7 +10,6 @@ import { BeltVisual, BeltProgress } from "@/components/belt-visual";
 import { DegreeProgress } from "@/components/degree-progress";
 import { getBeltsForType } from "@/lib/utils";
 import { ArrowLeft, CheckCircle, XCircle, Clock, Pencil, Plus, Trash2 } from "lucide-react";
-import { getPlanLabel, isPremiumOrPro } from "@/lib/utils";
 import Link from "next/link";
 
 interface Booking {
@@ -29,15 +28,12 @@ interface Student {
   id: string;
   name: string;
   email: string;
-  studentType: string;
   modalities: string;
   isKids: boolean;
   belt: string;
   degrees: number;
   initialCheckins: number;
   photoUrl: string | null;
-  monthlyDueDay: number | null;
-  lastPaymentDate: string | null;
   lastGraduationDate: string | null;
   lastBeltChangeDate: string | null;
   createdAt: string;
@@ -60,22 +56,6 @@ function getNextBelt(current: string, isKids: boolean): string | null {
   const idx = belts.indexOf(current);
   if (idx === -1 || idx >= belts.length - 1) return null;
   return belts[idx + 1];
-}
-
-function getPaymentStatus(
-  monthlyDueDay: number | null,
-  lastPaymentDate: string | null
-): { label: string; variant: "green" | "warning" | "danger" } | null {
-  if (!monthlyDueDay) return null;
-  const now = new Date();
-  const currentMonth = now.getFullYear() * 12 + now.getMonth();
-  if (!lastPaymentDate) return { label: "Atrasado", variant: "danger" };
-  const payment = new Date(lastPaymentDate);
-  const paymentMonth = payment.getFullYear() * 12 + payment.getMonth();
-  const diff = currentMonth - paymentMonth;
-  if (diff <= 0) return { label: "Em dia", variant: "green" };
-  if (diff === 1) return { label: "Pendente", variant: "warning" };
-  return { label: "Atrasado", variant: "danger" };
 }
 
 export default function StudentProfilePage() {
@@ -184,11 +164,11 @@ export default function StudentProfilePage() {
   }, [id]);
 
   if (loading) {
-    return <div className="text-center py-8 text-zinc-500">Carregando...</div>;
+    return <div className="text-center py-8 text-content-muted">Carregando...</div>;
   }
 
   if (!student) {
-    return <div className="text-center py-8 text-zinc-500">Aluno não encontrado</div>;
+    return <div className="text-center py-8 text-content-muted">Aluno não encontrado</div>;
   }
 
   const checkins = student.bookings.filter((b) => b.checkedIn);
@@ -213,8 +193,6 @@ export default function StudentProfilePage() {
     ? requirements.find((r) => r.belt === nextBelt)
     : null;
 
-  const paymentStatus = getPaymentStatus(student.monthlyDueDay, student.lastPaymentDate);
-
   // Degree progress
   const nextDegree = student.degrees < 4 ? student.degrees + 1 : null;
   const degreeReq = nextDegree
@@ -225,7 +203,7 @@ export default function StudentProfilePage() {
     <div className="max-w-2xl">
       <button
         onClick={() => router.push("/admin")}
-        className="flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-50 mb-4"
+        className="flex items-center gap-1 text-sm text-content-secondary hover:text-content-primary mb-4"
       >
         <ArrowLeft size={16} />
         Voltar
@@ -234,7 +212,7 @@ export default function StudentProfilePage() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <StudentAvatar name={student.name} photoUrl={student.photoUrl} size={56} />
-          <h1 className="text-2xl font-bold text-zinc-50">Perfil do Aluno</h1>
+          <h1 className="text-2xl font-bold text-content-primary">Perfil do Aluno</h1>
         </div>
         <Link href={`/admin/students/${id}/edit`}>
           <Button size="sm" variant="secondary">
@@ -246,79 +224,41 @@ export default function StudentProfilePage() {
 
       {/* Dados Pessoais */}
       <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Dados Pessoais</h2>
+        <h2 className="text-lg font-semibold mb-4 text-content-primary">Dados Pessoais</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-zinc-400">Nome</p>
-            <p className="font-medium text-zinc-50">{student.name}</p>
+            <p className="text-content-secondary">Nome</p>
+            <p className="font-medium text-content-primary">{student.name}</p>
           </div>
           <div>
-            <p className="text-zinc-400">Email</p>
-            <p className="font-medium text-zinc-50">{student.email}</p>
+            <p className="text-content-secondary">Email</p>
+            <p className="font-medium text-content-primary">{student.email}</p>
           </div>
           <div>
-            <p className="text-zinc-400">Tipo de Plano</p>
+            <p className="text-content-secondary">Kids</p>
             <div className="flex items-center gap-2">
-              <Badge variant={isPremiumOrPro(student.studentType) ? "success" : "default"}>
-                {getPlanLabel(student.studentType)}
-              </Badge>
-              {student.isKids && <Badge variant="warning">Kids</Badge>}
+              {student.isKids ? <Badge variant="warning">Kids</Badge> : <span className="font-medium text-content-primary">Não</span>}
             </div>
           </div>
           <div>
-            <p className="text-zinc-400">Cadastrado em</p>
-            <p className="font-medium text-zinc-50">
+            <p className="text-content-secondary">Cadastrado em</p>
+            <p className="font-medium text-content-primary">
               {new Date(student.createdAt).toLocaleDateString("pt-BR")}
             </p>
           </div>
         </div>
       </Card>
 
-      {/* Pagamento */}
+      {/* Graduação */}
       <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Pagamento</h2>
-        {student.monthlyDueDay ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-            <div>
-              <p className="text-zinc-400">Dia de vencimento</p>
-              <p className="font-medium text-zinc-50">Dia {student.monthlyDueDay}</p>
-            </div>
-            <div>
-              <p className="text-zinc-400">Último pagamento</p>
-              <p className="font-medium text-zinc-50">
-                {student.lastPaymentDate
-                  ? new Date(student.lastPaymentDate).toLocaleDateString("pt-BR")
-                  : "Nenhum"}
-              </p>
-            </div>
-            <div>
-              <p className="text-zinc-400">Status</p>
-              {paymentStatus && (
-                <Badge variant={paymentStatus.variant}>{paymentStatus.label}</Badge>
-              )}
-            </div>
-          </div>
-        ) : (
-          <p className="text-sm text-zinc-500">
-            Vencimento não configurado.{" "}
-            <Link href={`/admin/students/${id}/edit`} className="text-orange-500 underline">
-              Configurar
-            </Link>
-          </p>
-        )}
-      </Card>
-
-      {/* Graduação (only for Grappling students) */}
-      {(student.modalities || "GRAPPLING").includes("GRAPPLING") && (
-        <Card className="mb-6">
-          <h2 className="text-lg font-semibold mb-4 text-zinc-50">Graduação</h2>
+          <h2 className="text-lg font-semibold mb-4 text-content-primary">Graduação</h2>
 
           <div className="mb-2">
             <BeltVisual belt={student.belt} degrees={student.degrees} width={320} />
           </div>
 
           {student.lastGraduationDate && (
-            <p className="text-xs text-zinc-400 mb-3">
+            <p className="text-xs text-content-secondary mb-3">
               Última graduação: {new Date(student.lastGraduationDate).toLocaleDateString("pt-BR")}
             </p>
           )}
@@ -382,38 +322,37 @@ export default function StudentProfilePage() {
               </div>
             </>
           ) : nextBelt && (!nextBeltReq || nextBeltReq.requiredClasses === 0) ? (
-            <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
+            <p className="text-xs text-content-secondary border-t border-border pt-3 mt-3">
               Requisito para faixa {nextBelt} não configurado.{" "}
-              <Link href="/admin/belt-requirements" className="underline text-orange-500 hover:text-orange-500/80">
+              <Link href="/admin/belt-requirements" className="underline text-accent hover:text-accent/80">
                 Configurar
               </Link>
             </p>
           ) : (
-            <p className="text-xs text-zinc-400 border-t border-zinc-800 pt-3 mt-3">
+            <p className="text-xs text-content-secondary border-t border-border pt-3 mt-3">
               Faixa máxima atingida.
             </p>
           )}
         </Card>
-      )}
 
       {/* Frequência */}
       <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Frequência</h2>
+        <h2 className="text-lg font-semibold mb-4 text-content-primary">Frequência</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-2xl font-bold text-zinc-50">{totalBookings}</p>
-            <p className="text-sm text-zinc-400">Agendamentos</p>
+            <p className="text-2xl font-bold text-content-primary">{totalBookings}</p>
+            <p className="text-sm text-content-secondary">Agendamentos</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-zinc-50">{totalCheckins}</p>
-            <p className="text-sm text-zinc-400">Check-ins</p>
+            <p className="text-2xl font-bold text-content-primary">{totalCheckins}</p>
+            <p className="text-sm text-content-secondary">Check-ins</p>
             {student.initialCheckins > 0 && (
-              <p className="text-xs text-zinc-500">({student.initialCheckins} iniciais)</p>
+              <p className="text-xs text-content-muted">({student.initialCheckins} iniciais)</p>
             )}
           </div>
           <div>
-            <p className="text-2xl font-bold text-zinc-50">{frequencia}%</p>
-            <p className="text-sm text-zinc-400">Presença</p>
+            <p className="text-2xl font-bold text-content-primary">{frequencia}%</p>
+            <p className="text-sm text-content-secondary">Presença</p>
           </div>
         </div>
       </Card>
@@ -421,7 +360,7 @@ export default function StudentProfilePage() {
       {/* Histórico de Aulas */}
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-zinc-50">Histórico de Aulas</h2>
+          <h2 className="text-lg font-semibold text-content-primary">Histórico de Aulas</h2>
           <Button size="sm" variant="secondary" onClick={() => setShowAddForm(!showAddForm)}>
             <Plus size={14} className="mr-1.5" />
             Adicionar Presença
@@ -429,19 +368,19 @@ export default function StudentProfilePage() {
         </div>
 
         {showAddForm && (
-          <div className="mb-4 p-3 bg-zinc-800/50 rounded-lg space-y-3">
-            <p className="text-xs text-zinc-400">
+          <div className="mb-4 p-3 bg-surface-tertiary/50 rounded-lg space-y-3">
+            <p className="text-xs text-content-secondary">
               Adicione presenças retroativas para este aluno. O total será somado ao contador de check-ins.
             </p>
             <div className="flex items-end gap-3">
               <div>
-                <label className="text-xs text-zinc-400 block mb-1">Quantidade</label>
+                <label className="text-xs text-content-secondary block mb-1">Quantidade</label>
                 <input
                   type="number"
                   min={1}
                   value={addCount}
                   onChange={(e) => setAddCount(Number(e.target.value))}
-                  className="w-24 bg-zinc-900 border border-zinc-700 rounded px-2 py-1.5 text-sm text-zinc-50"
+                  className="w-24 bg-surface-secondary border border-border rounded px-2 py-1.5 text-sm text-content-primary"
                 />
               </div>
               <Button size="sm" onClick={addManualCheckins} disabled={saving || addCount < 1}>
@@ -455,11 +394,11 @@ export default function StudentProfilePage() {
         )}
 
         {student.bookings.length === 0 && !showAddForm ? (
-          <p className="text-zinc-400 text-sm text-center py-4">
+          <p className="text-content-secondary text-sm text-center py-4">
             Nenhum agendamento registrado
           </p>
         ) : (
-          <div className="divide-y divide-zinc-800">
+          <div className="divide-y divide-border">
             {student.bookings.map((b) => {
               let label: string;
               if (b.type === "PRIVATE" && b.privateSlot) {
@@ -473,8 +412,8 @@ export default function StudentProfilePage() {
               return (
                 <div key={b.id} className="flex items-center justify-between py-3">
                   <div>
-                    <p className="text-sm font-medium text-zinc-50">{label}</p>
-                    <p className="text-xs text-zinc-400">
+                    <p className="text-sm font-medium text-content-primary">{label}</p>
+                    <p className="text-xs text-content-secondary">
                       {new Date(b.date + "T12:00:00").toLocaleDateString("pt-BR", {
                         weekday: "long",
                         day: "2-digit",
@@ -500,13 +439,13 @@ export default function StudentProfilePage() {
                         <XCircle size={14} /> Ausente
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 text-xs font-medium text-zinc-500">
+                      <span className="flex items-center gap-1 text-xs font-medium text-content-muted">
                         <Clock size={14} /> Pendente
                       </span>
                     )}
                     <button
                       onClick={() => deleteBooking(b.id)}
-                      className="text-zinc-600 hover:text-red-400 transition-colors"
+                      className="text-content-muted hover:text-red-400 transition-colors"
                       title="Excluir presença"
                     >
                       <Trash2 size={14} />

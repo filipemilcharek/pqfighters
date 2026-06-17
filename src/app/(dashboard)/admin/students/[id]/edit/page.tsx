@@ -31,18 +31,14 @@ export default function EditStudentPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [studentType, setStudentType] = useState("ESSENCIAL");
   const [belt, setBelt] = useState("");
   const [degrees, setDegrees] = useState(0);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [initialCheckins, setInitialCheckins] = useState<string>("0");
-  const [monthlyDueDay, setMonthlyDueDay] = useState<string>("");
-  const [lastPaymentDate, setLastPaymentDate] = useState<string>("");
   const [lastGraduationDate, setLastGraduationDate] = useState<string>("");
   const [lastBeltChangeDate, setLastBeltChangeDate] = useState<string>("");
-  const [modalities, setModalities] = useState<string[]>(["GRAPPLING"]);
   const [isKids, setIsKids] = useState(false);
   const [originalBelt, setOriginalBelt] = useState("");
   const [originalDegrees, setOriginalDegrees] = useState(0);
@@ -57,22 +53,14 @@ export default function EditStudentPage() {
       .then((data) => {
         if (!data.error) {
           setStudent(data);
-          setStudentType(data.studentType || "ESSENCIAL");
           setBelt(data.belt);
           setOriginalBelt(data.belt);
           setDegrees(data.degrees);
           setOriginalDegrees(data.degrees);
           setPhotoUrl(data.photoUrl);
-          setModalities((data.modalities || "GRAPPLING").split(","));
           setIsKids(data.isKids || false);
           setInitialCheckins(String(data.initialCheckins || 0));
           setMonthlyCredits(String(data.monthlyCredits || 0));
-          setMonthlyDueDay(data.monthlyDueDay ? String(data.monthlyDueDay) : "");
-          setLastPaymentDate(
-            data.lastPaymentDate
-              ? new Date(data.lastPaymentDate).toISOString().split("T")[0]
-              : ""
-          );
           setLastGraduationDate(
             data.lastGraduationDate
               ? new Date(data.lastGraduationDate).toISOString().split("T")[0]
@@ -116,19 +104,9 @@ export default function EditStudentPage() {
       newPhotoUrl = uploadData.url;
     }
 
-    const body: Record<string, unknown> = { studentType, belt, degrees, photoUrl: newPhotoUrl, modalities: modalities.join(","), isKids, initialCheckins: Number(initialCheckins) || 0, monthlyCredits: Number(monthlyCredits) || 0 };
+    const body: Record<string, unknown> = { belt, degrees, photoUrl: newPhotoUrl, modalities: "GRAPPLING", isKids, initialCheckins: Number(initialCheckins) || 0, monthlyCredits: Number(monthlyCredits) || 0 };
     if (resetBeltProgress) body.resetBeltProgress = true;
     if (resetDegreeProgress) body.resetDegreeProgress = true;
-    if (monthlyDueDay) {
-      body.monthlyDueDay = Number(monthlyDueDay);
-    } else {
-      body.monthlyDueDay = null;
-    }
-    if (lastPaymentDate) {
-      body.lastPaymentDate = lastPaymentDate;
-    } else {
-      body.lastPaymentDate = null;
-    }
     body.lastGraduationDate = lastGraduationDate || null;
     body.lastBeltChangeDate = lastBeltChangeDate || null;
 
@@ -148,20 +126,6 @@ export default function EditStudentPage() {
     router.push(`/admin/students/${id}`);
   }
 
-  async function handleRegisterPayment() {
-    setSaving(true);
-    const today = new Date().toISOString().split("T")[0];
-    const res = await fetch(`/api/students/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lastPaymentDate: today }),
-    });
-    if (res.ok) {
-      setLastPaymentDate(today);
-    }
-    setSaving(false);
-  }
-
   async function handleDelete() {
     if (!confirm("Tem certeza que deseja excluir este aluno? Todos os dados serão perdidos.")) return;
 
@@ -170,11 +134,11 @@ export default function EditStudentPage() {
   }
 
   if (loading) {
-    return <div className="text-center py-8 text-zinc-500">Carregando...</div>;
+    return <div className="text-center py-8 text-content-muted">Carregando...</div>;
   }
 
   if (!student) {
-    return <div className="text-center py-8 text-zinc-500">Aluno não encontrado</div>;
+    return <div className="text-center py-8 text-content-muted">Aluno não encontrado</div>;
   }
 
   const displayPhoto = photoPreview || photoUrl;
@@ -183,21 +147,21 @@ export default function EditStudentPage() {
     <div className="max-w-lg">
       <button
         onClick={() => router.push(`/admin/students/${id}`)}
-        className="flex items-center gap-1 text-sm text-zinc-400 hover:text-zinc-50 mb-4"
+        className="flex items-center gap-1 text-sm text-content-secondary hover:text-content-primary mb-4"
       >
         <ArrowLeft size={16} />
         Voltar ao perfil
       </button>
 
-      <h1 className="text-2xl font-bold mb-2 text-zinc-50">Editar Aluno</h1>
-      <p className="text-sm text-zinc-400 mb-6">{student.name} ({student.email})</p>
+      <h1 className="text-2xl font-bold mb-2 text-content-primary">Editar Aluno</h1>
+      <p className="text-sm text-content-secondary mb-6">{student.name} ({student.email})</p>
 
       {/* Foto */}
       <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Foto</h2>
+        <h2 className="text-lg font-semibold mb-4 text-content-primary">Foto</h2>
         <div className="flex items-center gap-4">
           <StudentAvatar name={student.name} photoUrl={displayPhoto} size={64} />
-          <label className="cursor-pointer inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 px-3 py-1.5 text-sm bg-zinc-800 text-zinc-200 border border-zinc-700 hover:bg-zinc-700">
+          <label className="cursor-pointer inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 px-3 py-1.5 text-sm bg-surface-tertiary text-content-primary border border-border hover:bg-surface-tertiary">
             {displayPhoto ? "Alterar foto" : "Adicionar foto"}
             <input
               type="file"
@@ -209,19 +173,10 @@ export default function EditStudentPage() {
         </div>
       </Card>
 
-      {/* Plano */}
+      {/* Kids */}
       <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Plano</h2>
-        <Select
-          label="Tipo de Aula"
-          value={studentType}
-          onChange={(e) => setStudentType(e.target.value)}
-        >
-          <option value="ESSENCIAL">Essencial</option>
-          <option value="PRO">Pro</option>
-          <option value="PREMIUM">Premium</option>
-        </Select>
-        <label className="flex items-center gap-3 cursor-pointer mt-4">
+        <h2 className="text-lg font-semibold mb-4 text-content-primary">Configurações</h2>
+        <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
             checked={isKids}
@@ -230,45 +185,17 @@ export default function EditStudentPage() {
               setBelt("BRANCA");
               setDegrees(0);
             }}
-            className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500"
+            className="w-4 h-4 rounded border-border bg-surface-tertiary text-accent focus:ring-accent"
           />
-          <span className="text-sm text-zinc-200">Aluno Kids</span>
+          <span className="text-sm text-content-primary">Aluno Kids</span>
         </label>
       </Card>
 
-      {/* Modalidades */}
+      {/* Graduação */}
       <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Modalidades</h2>
-        <div className="flex flex-col gap-3">
-          {[
-            { value: "GRAPPLING", label: "Grappling / Jiu-Jitsu" },
-            { value: "MMA", label: "MMA / Boxe" },
-          ].map((m) => (
-            <label key={m.value} className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={modalities.includes(m.value)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setModalities((prev) => [...prev, m.value]);
-                  } else {
-                    setModalities((prev) => prev.filter((v) => v !== m.value));
-                  }
-                }}
-                className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500"
-              />
-              <span className="text-sm text-zinc-200">{m.label}</span>
-            </label>
-          ))}
-        </div>
-      </Card>
+          <h2 className="text-lg font-semibold mb-4 text-content-primary">Graduação</h2>
 
-      {/* Graduação (only for Grappling students) */}
-      {modalities.includes("GRAPPLING") && (
-        <Card className="mb-6">
-          <h2 className="text-lg font-semibold mb-4 text-zinc-50">Graduação</h2>
-
-          <div className="mb-5 p-4 bg-zinc-800 rounded-lg">
+          <div className="mb-5 p-4 bg-surface-tertiary rounded-lg">
             <BeltVisual belt={belt} degrees={degrees} width={280} />
           </div>
 
@@ -288,14 +215,14 @@ export default function EditStudentPage() {
                   type="checkbox"
                   checked={resetBeltProgress}
                   onChange={(e) => setResetBeltProgress(e.target.checked)}
-                  className="w-4 h-4 mt-0.5 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500 shrink-0"
+                  className="w-4 h-4 mt-0.5 rounded border-border bg-surface-tertiary text-accent focus:ring-accent shrink-0"
                 />
                 <span>Resetar progresso para a próxima faixa (marque se for uma promoção real, desmarque se for apenas ajuste cadastral)</span>
               </label>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-content-secondary mb-2">
                 Graus
               </label>
               <div className="flex gap-2">
@@ -306,8 +233,8 @@ export default function EditStudentPage() {
                     onClick={() => setDegrees(d)}
                     className={`w-10 h-10 rounded-md border text-sm font-medium transition-colors ${
                       degrees === d
-                        ? "bg-orange-500 text-zinc-50 border-orange-500"
-                        : "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-700"
+                        ? "bg-accent text-content-primary border-accent"
+                        : "bg-surface-tertiary text-content-secondary border-border hover:bg-surface-tertiary"
                     }`}
                   >
                     {d}
@@ -320,7 +247,7 @@ export default function EditStudentPage() {
                     type="checkbox"
                     checked={resetDegreeProgress}
                     onChange={(e) => setResetDegreeProgress(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 rounded border-zinc-600 bg-zinc-800 text-orange-500 focus:ring-orange-500 shrink-0"
+                    className="w-4 h-4 mt-0.5 rounded border-border bg-surface-tertiary text-accent focus:ring-accent shrink-0"
                   />
                   <span>Resetar progresso para o próximo grau (marque se for uma promoção real, desmarque se for apenas ajuste cadastral)</span>
                 </label>
@@ -342,34 +269,16 @@ export default function EditStudentPage() {
               value={lastBeltChangeDate}
               onChange={(e) => setLastBeltChangeDate(e.target.value)}
             />
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-content-muted">
               Estas datas controlam a contagem de presenças para progressão. Deixe em branco para contar desde o início.
             </p>
           </div>
         </Card>
-      )}
-
-      {/* Créditos Mensais (PRO e PREMIUM) */}
-      {(studentType === "PREMIUM" || studentType === "PRO") && (
-        <Card className="mb-6">
-          <h2 className="text-lg font-semibold mb-4 text-zinc-50">Créditos Mensais</h2>
-          <p className="text-sm text-zinc-400 mb-4">
-            Aulas particulares por mês. 0 = sem limite.
-          </p>
-          <Input
-            label="Quantidade de créditos"
-            type="number"
-            min="0"
-            value={monthlyCredits}
-            onChange={(e) => setMonthlyCredits(e.target.value)}
-          />
-        </Card>
-      )}
 
       {/* Presenças Iniciais */}
       <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Presenças Iniciais</h2>
-        <p className="text-sm text-zinc-400 mb-4">
+        <h2 className="text-lg font-semibold mb-4 text-content-primary">Presenças Iniciais</h2>
+        <p className="text-sm text-content-secondary mb-4">
           Número de presenças anteriores ao sistema. Soma no total para progressão de faixa/grau.
         </p>
         <Input
@@ -379,37 +288,6 @@ export default function EditStudentPage() {
           value={initialCheckins}
           onChange={(e) => setInitialCheckins(e.target.value)}
         />
-      </Card>
-
-      {/* Pagamento */}
-      <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-zinc-50">Pagamento</h2>
-        <div className="space-y-4">
-          <Input
-            label="Dia de vencimento (1-31)"
-            type="number"
-            min="1"
-            max="31"
-            value={monthlyDueDay}
-            onChange={(e) => setMonthlyDueDay(e.target.value)}
-            placeholder="Ex: 10"
-          />
-          <Input
-            label="Data do último pagamento"
-            type="date"
-            value={lastPaymentDate}
-            onChange={(e) => setLastPaymentDate(e.target.value)}
-          />
-          <Button
-            type="button"
-            size="sm"
-            variant="secondary"
-            onClick={handleRegisterPayment}
-            disabled={saving}
-          >
-            Registrar pagamento hoje
-          </Button>
-        </div>
       </Card>
 
       {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
@@ -428,8 +306,8 @@ export default function EditStudentPage() {
       </div>
 
       <Card className="mb-6">
-        <h2 className="text-lg font-semibold mb-2 text-zinc-50">Redefinir Senha</h2>
-        <p className="text-sm text-zinc-400 mb-4">
+        <h2 className="text-lg font-semibold mb-2 text-content-primary">Redefinir Senha</h2>
+        <p className="text-sm text-content-secondary mb-4">
           Defina uma nova senha temporária para o aluno.
         </p>
         <div className="flex items-end gap-3">
@@ -466,7 +344,7 @@ export default function EditStudentPage() {
 
       <Card>
         <h2 className="text-lg font-semibold mb-2 text-red-400">Zona de Perigo</h2>
-        <p className="text-sm text-zinc-400 mb-4">
+        <p className="text-sm text-content-secondary mb-4">
           Ao excluir o aluno, todos os agendamentos e dados serão removidos permanentemente.
         </p>
         <Button variant="danger" onClick={handleDelete}>

@@ -15,7 +15,9 @@ model User {
   emailVerified      DateTime?
   role               String    @default("STUDENT") // ADMIN | STUDENT
   status             String    @default("PENDING") // PENDING | APPROVED
-  studentType        String    @default("ESSENCIAL") // ESSENCIAL | PRO | PREMIUM
+  isOwner            Boolean   @default(false)
+  studentType        String    @default("COLETIVA") // COLETIVA | PARTICULAR
+  planId             String?
   belt               String    @default("BRANCA")
   degrees            Int       @default(0)
   initialCheckins    Int       @default(0)
@@ -31,39 +33,59 @@ model User {
 
   bookings          Booking[]
   privateSlots      PrivateSlot[]
+  instructorClasses GroupClass[]   @relation("instructorClasses")
+  instructorSlots   PrivateSlot[]  @relation("instructorSlots")
   createdEvents     Event[]
   createdNotifs     Notification[]
   notificationReads NotificationRead[]
   rescheduleLogs    RescheduleLog[]
   graduationLogs      GraduationLog[]
   planUpgradeRequests PlanUpgradeRequest[]
+  classEnrollments    GroupClassEnrollment[]
 }
 
 model PrivateSlot {
-  id          String  @id @default(cuid())
-  dayOfWeek   Int // 0=domingo, 1=segunda...6=sabado
-  startTime   String // "HH:mm"
-  endTime     String // "HH:mm"
-  isAvailable Boolean @default(true)
-  userId      String?
+  id           String  @id @default(cuid())
+  dayOfWeek    Int // 0=domingo, 1=segunda...6=sabado
+  startTime    String // "HH:mm"
+  endTime      String // "HH:mm"
+  isAvailable  Boolean @default(true)
+  userId       String?
+  instructorId String?
 
   user              User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  instructor        User?            @relation("instructorSlots", fields: [instructorId], references: [id], onDelete: SetNull)
   bookings          Booking[]
   rescheduleLogs    RescheduleLog[] @relation("originalSlot")
   rescheduleNewLogs RescheduleLog[] @relation("newSlot")
 }
 
 model GroupClass {
-  id        String @id @default(cuid())
-  name      String
-  dayOfWeek Int
-  startTime String
-  endTime   String
-  capacity  Int
-  isKids    Boolean @default(false)
-  classType String  @default("GROUP") // GROUP | SEMI_PRIVATE
+  id           String  @id @default(cuid())
+  name         String
+  dayOfWeek    Int
+  startTime    String
+  endTime      String
+  capacity     Int
+  isKids       Boolean @default(false)
+  classType    String  @default("GROUP")
+  fixedRoster  Boolean @default(false)
+  instructorId String?
 
-  bookings Booking[]
+  instructor  User?                  @relation("instructorClasses", fields: [instructorId], references: [id], onDelete: SetNull)
+  bookings    Booking[]
+  enrollments GroupClassEnrollment[]
+}
+
+model GroupClassEnrollment {
+  id           String @id @default(cuid())
+  groupClassId String
+  userId       String
+
+  groupClass GroupClass @relation(fields: [groupClassId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupClassId, userId])
 }
 
 model Booking {
@@ -135,9 +157,10 @@ model NotificationRead {
 model PlanUpgradeRequest {
   id          String   @id @default(cuid())
   userId      String
-  plan        String   // Essencial | Pro | Premium | Kids
+  planId      String?
+  plan        String   // nome do plano solicitado
   frequency   String   // mensal, trimestral, semestral, anual, etc.
-  details     String?  // frequência semanal ou pacote (ex: "2x_semana", "pacote_5_aulas")
+  details     String?
   price       String   // valor formatado
   status      String   @default("PENDING") // PENDING | APPROVED | REJECTED
   readByAdmin Boolean  @default(false)
@@ -154,6 +177,18 @@ model GraduationLog {
   type      String   // BELT | DEGREE
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Plan {
+  id             String   @id @default(cuid())
+  name           String
+  description    String   @default("")
+  price          String
+  frequency      String
+  planType       String   // COLETIVA | PARTICULAR
+  monthlyCredits Int      @default(0)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
 }
 
 model RescheduleLog {

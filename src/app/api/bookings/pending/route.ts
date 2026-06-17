@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
@@ -8,6 +8,9 @@ export async function GET(req: NextRequest) {
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(session.user.tenantSlug);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const { searchParams } = new URL(req.url);
   const date = searchParams.get("date");
@@ -49,14 +52,47 @@ export async function GET(req: NextRequest) {
         });
       }
     }
+
+    // Auto-create bookings for fixed roster group classes on this date
+    const fixedClasses = await prisma.groupClass.findMany({
+      where: { dayOfWeek, fixedRoster: true },
+      include: { enrollments: true },
+    });
+
+    for (const gc of fixedClasses) {
+      for (const enrollment of gc.enrollments) {
+        const exists = await prisma.booking.findFirst({
+          where: { userId: enrollment.userId, groupClassId: gc.id, date },
+        });
+        if (!exists) {
+          await prisma.booking.create({
+            data: {
+              userId: enrollment.userId,
+              type: "GROUP",
+              groupClassId: gc.id,
+              date,
+            },
+          });
+        }
+      }
+    }
+  }
+
+  // Non-owner professors only see bookings for their own classes/slots
+  if (!session.user.isOwner) {
+    const instructorId = session.user.id;
+    where.OR = [
+      { groupClass: { instructorId } },
+      { privateSlot: { instructorId } },
+    ];
   }
 
   const bookings = await prisma.booking.findMany({
     where,
     include: {
       user: { select: { id: true, name: true, belt: true, degrees: true, photoUrl: true } },
-      privateSlot: true,
-      groupClass: true,
+      privateSlot: { include: { instructor: { select: { id: true, name: true } } } },
+      groupClass: { include: { instructor: { select: { id: true, name: true } } } },
     },
     orderBy: [{ date: "desc" }, { createdAt: "asc" }],
   });

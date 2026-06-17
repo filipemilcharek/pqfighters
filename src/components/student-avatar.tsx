@@ -31,7 +31,7 @@ export function StudentAvatar({
 
   return (
     <div
-      className="rounded-full bg-zinc-700 flex items-center justify-center text-zinc-300 font-semibold shrink-0"
+      className="rounded-full bg-surface-tertiary flex items-center justify-center text-content-secondary font-semibold shrink-0"
       style={{ width: size, height: size, fontSize: size * 0.38 }}
     >
       {initials}

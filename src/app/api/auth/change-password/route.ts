@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { getTenantPrisma } from "@/lib/tenant-prisma";
 
 export async function POST(req: NextRequest) {
   const token = await getToken({ req });
-  if (!token?.id) {
+  if (!token?.id || !token?.tenantSlug) {
     return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   }
+
+  const prisma = await getTenantPrisma(token.tenantSlug as string);
+  if (!prisma) return NextResponse.json({ error: "Tenant não encontrado" }, { status: 404 });
 
   const { currentPassword, newPassword } = await req.json();
 
