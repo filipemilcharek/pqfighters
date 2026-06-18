@@ -139,7 +139,7 @@ const FAQ = [
   {
     pergunta: "Preciso entender de tecnologia?",
     resposta:
-      "Não. O faixappreta foi feito para ser simples. Se você usa WhatsApp, você consegue usar o sistema. E qualquer dúvida, estamos no WhatsApp para ajudar.",
+      <>Não. O faix<span className="text-red-600">app</span>reta foi feito para ser simples. Se você usa WhatsApp, você consegue usar o sistema. E qualquer dúvida, estamos no WhatsApp para ajudar.</>,
   },
   {
     pergunta: "Funciona no celular?",
@@ -168,7 +168,7 @@ const FAQ = [
   },
 ];
 
-function FAQItem({ pergunta, resposta }: { pergunta: string; resposta: string }) {
+function FAQItem({ pergunta, resposta }: { pergunta: string; resposta: React.ReactNode }) {
   return (
     <details className="group border border-white/10 rounded-2xl overflow-hidden">
       <summary className="flex items-center justify-between cursor-pointer p-6 hover:bg-white/5 transition-colors">
@@ -195,7 +195,7 @@ export default function SitePage() {
             <span className="text-red-600">planilha e caderno</span>
           </h1>
           <p className="text-zinc-400 text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed mb-12">
-            O <span className="text-white font-bold">faixappreta</span> é o
+            O <span className="text-white font-bold">faix<span className="text-red-600">app</span>reta</span> é o
             sistema que organiza seu CT, libera seu tempo e dá uma experiência
             profissional para seus alunos.
           </p>
@@ -246,7 +246,7 @@ export default function SitePage() {
             <p className="text-zinc-400 text-lg">
               Se você marcou pelo menos uma,{" "}
               <span className="text-white font-bold">
-                o faixappreta foi feito para você.
+                o faix<span className="text-red-600">app</span>reta foi feito para você.
               </span>
             </p>
           </div>
@@ -259,7 +259,7 @@ export default function SitePage() {
           <div className="text-center mb-16">
             <h2 className="font-teko text-5xl sm:text-6xl font-bold uppercase text-white mb-4">
               Antes e depois do{" "}
-              <span className="text-red-600">faixappreta</span>
+              faix<span className="text-red-600">app</span>reta
             </h2>
           </div>
           <div className="space-y-4">

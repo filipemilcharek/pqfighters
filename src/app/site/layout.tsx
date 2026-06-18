@@ -114,7 +114,7 @@ function Footer() {
         </div>
         <div className="mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 max-w-7xl mx-auto">
           <p className="text-zinc-600 text-sm">
-            &copy; {new Date().getFullYear()} faixappreta. Todos os direitos
+            &copy; {new Date().getFullYear()} faix<span className="text-red-600">app</span>reta. Todos os direitos
             reservados.
           </p>
         </div>
