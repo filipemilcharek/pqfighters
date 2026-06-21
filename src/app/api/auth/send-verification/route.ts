@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     const tenants = await prismaMaster.tenant.findMany({ where: { isActive: true } });
     let user = null;
     let targetPrisma = prisma;
+    let matchedTenantSlug = "";
 
     for (const tenant of tenants) {
       const p = await getTenantPrisma(tenant.slug);
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
       if (u) {
         user = u;
         targetPrisma = p;
+        matchedTenantSlug = tenant.slug;
         break;
       }
     }
@@ -77,7 +79,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    await sendVerificationEmail(email, user.name, token);
+    await sendVerificationEmail(email, user.name, token, matchedTenantSlug);
 
     return NextResponse.json({ success: true, message: "Código enviado com sucesso!" });
   } catch (err) {

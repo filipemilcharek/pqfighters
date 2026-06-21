@@ -59,7 +59,7 @@ function LoginForm() {
       setError("Seu e-mail ainda não foi verificado. Redirecionando para verificação...");
       setLoading(false);
       setTimeout(() => {
-        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        router.push(`/verify-email?email=${encodeURIComponent(email)}${tenantSlug ? `&tenant=${tenantSlug}` : ""}`);
       }, 2000);
       return;
     }

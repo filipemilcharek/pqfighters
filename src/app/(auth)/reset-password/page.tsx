@@ -23,6 +23,17 @@ function ResetPasswordForm() {
   const [tenantName, setTenantName] = useState("");
   const [tenantLogoUrl, setTenantLogoUrl] = useState<string | null>(null);
 
+  // Clean token from URL to prevent leaking in browser history
+  useEffect(() => {
+    if (token && typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has("token")) {
+        url.searchParams.delete("token");
+        window.history.replaceState({}, "", url.toString());
+      }
+    }
+  }, [token]);
+
   // Validate token on mount
   useEffect(() => {
     if (!token) {

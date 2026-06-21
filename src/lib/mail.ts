@@ -45,8 +45,8 @@ async function sendEmail({ to, subject, html }: { to: string; subject: string; h
 /**
  * Sends a verification email containing a 6-digit code.
  */
-export async function sendVerificationEmail(email: string, name: string, token: string) {
-  const verifyLink = `${APP_URL}/verify-email?email=${encodeURIComponent(email)}&token=${token}`;
+export async function sendVerificationEmail(email: string, name: string, token: string, tenantSlug?: string) {
+  const verifyLink = `${APP_URL}/verify-email?email=${encodeURIComponent(email)}&token=${token}${tenantSlug ? `&tenant=${tenantSlug}` : ""}`;
   
   const html = `
     <div style="background-color: #09090b; color: #e4e4e7; font-family: sans-serif; padding: 40px; text-align: center; border-radius: 8px; max-width: 600px; margin: 0 auto; border: 1px solid #27272a;">
@@ -65,13 +65,11 @@ export async function sendVerificationEmail(email: string, name: string, token: 
           ${token}
         </div>
         
-        <p style="color: #d4d4d8; font-size: 14px; margin-top: 25px; margin-bottom: 10px;">
-          Ou clique no botão abaixo para verificar sua conta diretamente:
-        </p>
-        
-        <a href="${verifyLink}" style="background-color: #f97316; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; display: inline-block; margin-top: 10px; transition: background-color 0.2s;">
-          Confirmar E-mail
-        </a>
+        <div style="margin-top: 10px; margin-bottom: 10px;">
+          <a href="${verifyLink}" style="background-color: #f97316; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; display: inline-block; transition: background-color 0.2s;">
+            Verificar E-mail
+          </a>
+        </div>
       </div>
       
       <p style="color: #71717a; font-size: 12px; margin-top: 20px;">

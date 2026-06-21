@@ -18,11 +18,34 @@ function VerifyEmailForm() {
   const [token, setToken] = useState(tokenParam);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [info, setInfo] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isAutoVerifying, setIsAutoVerifying] = useState(false);
   const [tenantName, setTenantName] = useState("");
   const [tenantLogoUrl, setTenantLogoUrl] = useState<string | null>(null);
+
+
+  // Clean sensitive query parameters from URL to prevent leaking in browser history
+  useEffect(() => {
+    if ((emailParam || tokenParam) && typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      let changed = false;
+      if (url.searchParams.has("token")) {
+        url.searchParams.delete("token");
+        changed = true;
+      }
+      if (url.searchParams.has("email")) {
+        url.searchParams.delete("email");
+        changed = true;
+      }
+      if (changed) {
+        window.history.replaceState({}, "", url.toString());
+      }
+    }
+  }, [emailParam, tokenParam]);
+
+
 
   useEffect(() => {
     if (tenantSlug) {
@@ -61,6 +84,8 @@ function VerifyEmailForm() {
 
   async function autoVerify(emailVal: string, tokenVal: string) {
     setError("");
+    setSuccess("");
+    setInfo("");
     setLoading(true);
     try {
       const res = await fetch("/api/auth/verify-email", {
@@ -87,6 +112,7 @@ function VerifyEmailForm() {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setInfo("");
     setLoading(true);
 
     try {
@@ -116,6 +142,7 @@ function VerifyEmailForm() {
     if (resendCooldown > 0) return;
     setError("");
     setSuccess("");
+    setInfo("");
     setLoading(true);
 
     try {
@@ -132,7 +159,7 @@ function VerifyEmailForm() {
         return;
       }
 
-      setSuccess("Novo código enviado! Verifique sua caixa de entrada.");
+      setInfo("Novo código enviado! Verifique sua caixa de entrada.");
       setResendCooldown(60); // 1 minute cooldown
     } catch {
       setError("Erro de conexão");
@@ -200,7 +227,11 @@ function VerifyEmailForm() {
           label="E-mail"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setError("");
+            setInfo("");
+          }}
           placeholder="seu@email.com"
           required
           disabled={!!emailParam}
@@ -209,12 +240,20 @@ function VerifyEmailForm() {
           label="Código de Verificação (6 dígitos)"
           type="text"
           value={token}
-          onChange={(e) => setToken(e.target.value.substring(0, 6))}
+          onChange={(e) => {
+            setToken(e.target.value.substring(0, 6));
+            setError("");
+            setInfo("");
+          }}
           placeholder="123456"
           required
           maxLength={6}
           className="text-center tracking-widest font-mono text-lg"
         />
+
+        {info && (
+          <p className="text-sm text-emerald-500 text-center">{info}</p>
+        )}
 
         {error && (
           <p className="text-sm text-red-500 text-center">{error}</p>

@@ -55,7 +55,8 @@ export async function POST(req: NextRequest) {
 
   // Admin creating student → auto-approve; self-registration → pending
   const session = await getServerSession(authOptions);
-  const tenantSlug = session?.user?.tenantSlug || body.tenantSlug;
+  const isAdminCreation = session?.user?.role === "ADMIN" && body.isAdminCreation === true;
+  const tenantSlug = isAdminCreation ? (session?.user?.tenantSlug || body.tenantSlug) : body.tenantSlug;
   if (!tenantSlug) {
     return NextResponse.json({ error: "Tenant não identificado" }, { status: 400 });
   }
@@ -73,9 +74,8 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await bcrypt.hash(password, 10);
   // Admin creating student → auto-approve & auto-verify; self-registration → pending & unverified
-  const isAdmin = session?.user?.role === "ADMIN";
-  const status = isAdmin ? "APPROVED" : "PENDING";
-  const emailVerified = isAdmin ? new Date() : null;
+  const status = isAdminCreation ? "APPROVED" : "PENDING";
+  const emailVerified = isAdminCreation ? new Date() : null;
 
   const user = await prisma.user.create({
     data: { 
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     select: { id: true, name: true, email: true },
   });
 
-  if (!isAdmin) {
+  if (!isAdminCreation) {
     // Generate 6-digit verification code using cryptographically secure RNG
     const token = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    await sendVerificationEmail(email, name, token);
+    await sendVerificationEmail(email, name, token, tenantSlug);
   }
 
   return NextResponse.json(user, { status: 201 });
