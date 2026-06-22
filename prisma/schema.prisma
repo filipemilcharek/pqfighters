@@ -22,6 +22,7 @@ model User {
   modalities         String    @default("GRAPPLING") // GRAPPLING, MMA, ou GRAPPLING,MMA
   isKids             Boolean   @default(false)
   photoUrl           String?
+  billingFrequency   String    @default("MENSAL") // MENSAL | TRIMESTRAL | SEMESTRAL | ANUAL
   monthlyDueDay      Int?
   lastPaymentDate    DateTime?
   lastGraduationDate DateTime?

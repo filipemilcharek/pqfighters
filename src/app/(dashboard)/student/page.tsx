@@ -27,7 +27,7 @@ import {
   CalendarDays,
   RefreshCw,
 } from "lucide-react";
-import { DAY_NAMES, getBeltsForType, getPlanLabel, isPremiumOrPro } from "@/lib/utils";
+import { DAY_NAMES, getBeltsForType, getPlanLabel, isPremiumOrPro, getPaymentStatus } from "@/lib/utils";
 import { Trophy } from "lucide-react";
 
 interface BeltRequirement {
@@ -129,18 +129,8 @@ export default function StudentHome() {
         if (data.initialCheckins) setInitialCheckins(data.initialCheckins);
         if (data.lastGraduationDate) setLastGraduationDate(data.lastGraduationDate);
         if (data.lastBeltChangeDate) setLastBeltChangeDate(data.lastBeltChangeDate);
-        if (data.monthlyDueDay) {
-          if (!data.lastPaymentDate) {
-            setPaymentStatus({ label: "Atrasado", variant: "danger" });
-          } else {
-            const now = new Date();
-            const payment = new Date(data.lastPaymentDate);
-            const diffDays = Math.floor((now.getTime() - payment.getTime()) / (1000 * 60 * 60 * 24));
-            if (diffDays <= 25) setPaymentStatus({ label: "Em dia", variant: "green", daysInfo: `${30 - diffDays} dias restantes` });
-            else if (diffDays <= 30) setPaymentStatus({ label: "Pendente", variant: "warning", daysInfo: `Vence em ${30 - diffDays} dias` });
-            else setPaymentStatus({ label: "Atrasado", variant: "danger", daysInfo: `${diffDays - 30} dias atrasado` });
-          }
-        }
+        const status = getPaymentStatus(data.monthlyDueDay, data.lastPaymentDate, data.billingFrequency, data.createdAt);
+        if (status) setPaymentStatus(status);
       })
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps

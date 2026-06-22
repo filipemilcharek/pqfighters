@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -9,13 +9,22 @@ import { StudentAvatar } from "@/components/student-avatar";
 import Link from "next/link";
 import Image from "next/image";
 
+interface Plan {
+  id: string;
+  name: string;
+  isKids: boolean;
+}
+
 export default function RegisterPage() {
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    studentType: "ESSENCIAL",
+    studentType: "",
+    billingFrequency: "MENSAL",
+    monthlyDueDay: "",
   });
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [modalities, setModalities] = useState<string[]>(["GRAPPLING"]);
   const [isKids, setIsKids] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -23,6 +32,32 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/plans")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setPlans(data);
+          if (data.length > 0 && !form.studentType) {
+            setForm((prev) => ({ ...prev, studentType: data[0].name }));
+          }
+        }
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const filteredPlans = plans.filter((p) => p.isKids === isKids);
+
+  // Reset studentType when toggling kids if current selection doesn't match
+  useEffect(() => {
+    const available = plans.filter((p) => p.isKids === isKids);
+    if (available.length > 0 && !available.some((p) => p.name === form.studentType)) {
+      setForm((prev) => ({ ...prev, studentType: available[0].name }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isKids, plans]);
 
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -52,10 +87,22 @@ export default function RegisterPage() {
       photoUrl = uploadData.url;
     }
 
+    const body: Record<string, unknown> = {
+      ...form,
+      modalities: modalities.join(","),
+      isKids,
+      photoUrl,
+    };
+    if (form.monthlyDueDay) {
+      body.monthlyDueDay = Number(form.monthlyDueDay);
+    } else {
+      delete body.monthlyDueDay;
+    }
+
     const res = await fetch("/api/students", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, modalities: modalities.join(","), isKids, photoUrl }),
+      body: JSON.stringify(body),
     });
 
     const data = await res.json();
@@ -152,17 +199,6 @@ export default function RegisterPage() {
               required
               minLength={6}
             />
-            <Select
-              label="Tipo de Aula"
-              value={form.studentType}
-              onChange={(e) =>
-                setForm({ ...form, studentType: e.target.value })
-              }
-            >
-              <option value="ESSENCIAL">Essencial</option>
-              <option value="PRO">Pro</option>
-              <option value="PREMIUM">Premium</option>
-            </Select>
 
             <div>
               <label className="flex items-center gap-3 cursor-pointer">
@@ -175,6 +211,46 @@ export default function RegisterPage() {
                 <span className="text-sm font-medium text-zinc-300">Aluno Kids</span>
               </label>
             </div>
+
+            <Select
+              label="Plano"
+              value={form.studentType}
+              onChange={(e) =>
+                setForm({ ...form, studentType: e.target.value })
+              }
+            >
+              {filteredPlans.length === 0 && (
+                <option value="">Carregando planos...</option>
+              )}
+              {filteredPlans.map((p) => (
+                <option key={p.id} value={p.name}>
+                  {p.name}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              label="Frequência de Pagamento"
+              value={form.billingFrequency}
+              onChange={(e) =>
+                setForm({ ...form, billingFrequency: e.target.value })
+              }
+            >
+              <option value="MENSAL">Mensal</option>
+              <option value="TRIMESTRAL">Trimestral</option>
+              <option value="SEMESTRAL">Semestral</option>
+              <option value="ANUAL">Anual</option>
+            </Select>
+
+            <Input
+              label="Dia de vencimento (1-31)"
+              type="number"
+              min="1"
+              max="31"
+              value={form.monthlyDueDay}
+              onChange={(e) => setForm({ ...form, monthlyDueDay: e.target.value })}
+              placeholder="Ex: 10"
+            />
 
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-2">Modalidades</label>

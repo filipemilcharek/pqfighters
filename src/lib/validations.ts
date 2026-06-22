@@ -9,10 +9,12 @@ export const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter no mínimo 2 caracteres"),
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
-  studentType: z.enum(["ESSENCIAL", "PRO", "PREMIUM"]),
+  studentType: z.string().min(1, "Selecione um plano"),
   modalities: z.string().optional(),
   photoUrl: z.string().optional().nullable(),
   isKids: z.boolean().optional(),
+  billingFrequency: z.enum(["MENSAL", "TRIMESTRAL", "SEMESTRAL", "ANUAL"]).optional(),
+  monthlyDueDay: z.number().min(1).max(31).optional(),
 });
 
 export const slotSchema = z.object({
@@ -70,6 +72,7 @@ export const updateStudentSchema = z.object({
   initialCheckins: z.number().min(0).optional(),
   monthlyCredits: z.number().min(0).optional(),
   photoUrl: z.string().optional().nullable(),
+  billingFrequency: z.enum(["MENSAL", "TRIMESTRAL", "SEMESTRAL", "ANUAL"]).optional(),
   monthlyDueDay: z.number().min(1).max(31).optional().nullable(),
   lastPaymentDate: z.string().optional().nullable(),
   lastGraduationDate: z.string().optional().nullable(),

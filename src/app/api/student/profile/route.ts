@@ -16,8 +16,10 @@ export async function GET() {
       modalities: true,
       lastGraduationDate: true,
       lastBeltChangeDate: true,
+      billingFrequency: true,
       lastPaymentDate: true,
       monthlyDueDay: true,
+      createdAt: true,
     },
   });
 

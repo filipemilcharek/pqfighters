@@ -10,7 +10,7 @@ import { BeltVisual, BeltProgress } from "@/components/belt-visual";
 import { DegreeProgress } from "@/components/degree-progress";
 import { getBeltsForType } from "@/lib/utils";
 import { ArrowLeft, CheckCircle, XCircle, Clock, Pencil, Plus, Trash2 } from "lucide-react";
-import { getPlanLabel, isPremiumOrPro } from "@/lib/utils";
+import { getPlanLabel, isPremiumOrPro, getPaymentStatus, BILLING_FREQUENCY_LABELS } from "@/lib/utils";
 import Link from "next/link";
 
 interface Booking {
@@ -36,6 +36,7 @@ interface Student {
   degrees: number;
   initialCheckins: number;
   photoUrl: string | null;
+  billingFrequency: string;
   monthlyDueDay: number | null;
   lastPaymentDate: string | null;
   lastGraduationDate: string | null;
@@ -60,23 +61,6 @@ function getNextBelt(current: string, isKids: boolean): string | null {
   const idx = belts.indexOf(current);
   if (idx === -1 || idx >= belts.length - 1) return null;
   return belts[idx + 1];
-}
-
-function getPaymentStatus(
-  monthlyDueDay: number | null,
-  lastPaymentDate: string | null
-): { label: string; variant: "green" | "warning" | "danger"; daysInfo?: string } | null {
-  if (!monthlyDueDay) return null;
-  if (!lastPaymentDate) return { label: "Atrasado", variant: "danger" };
-
-  const now = new Date();
-  const payment = new Date(lastPaymentDate);
-  const diffMs = now.getTime() - payment.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays <= 25) return { label: "Em dia", variant: "green", daysInfo: `${30 - diffDays} dias restantes` };
-  if (diffDays <= 30) return { label: "Pendente", variant: "warning", daysInfo: `Vence em ${30 - diffDays} dias` };
-  return { label: "Atrasado", variant: "danger", daysInfo: `${diffDays - 30} dias atrasado` };
 }
 
 export default function StudentProfilePage() {
@@ -214,7 +198,7 @@ export default function StudentProfilePage() {
     ? requirements.find((r) => r.belt === nextBelt)
     : null;
 
-  const paymentStatus = getPaymentStatus(student.monthlyDueDay, student.lastPaymentDate);
+  const paymentStatus = getPaymentStatus(student.monthlyDueDay, student.lastPaymentDate, student.billingFrequency, student.createdAt);
 
   // Degree progress
   const nextDegree = student.degrees < 4 ? student.degrees + 1 : null;
@@ -279,10 +263,14 @@ export default function StudentProfilePage() {
       <Card className="mb-6">
         <h2 className="text-lg font-semibold mb-4 text-zinc-50">Pagamento</h2>
         {student.monthlyDueDay ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-zinc-400">Dia de vencimento</p>
               <p className="font-medium text-zinc-50">Dia {student.monthlyDueDay}</p>
+            </div>
+            <div>
+              <p className="text-zinc-400">Frequência</p>
+              <p className="font-medium text-zinc-50">{BILLING_FREQUENCY_LABELS[student.billingFrequency] || student.billingFrequency}</p>
             </div>
             <div>
               <p className="text-zinc-400">Último pagamento</p>

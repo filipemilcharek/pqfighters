@@ -18,6 +18,7 @@ interface Student {
   belt: string;
   degrees: number;
   photoUrl: string | null;
+  billingFrequency: string;
   monthlyDueDay: number | null;
   lastPaymentDate: string | null;
   lastGraduationDate: string | null;
@@ -48,6 +49,7 @@ export default function EditStudentPage() {
   const [originalDegrees, setOriginalDegrees] = useState(0);
   const [resetBeltProgress, setResetBeltProgress] = useState(false);
   const [resetDegreeProgress, setResetDegreeProgress] = useState(false);
+  const [billingFrequency, setBillingFrequency] = useState("MENSAL");
   const [resetPassword, setResetPassword] = useState("");
   const [monthlyCredits, setMonthlyCredits] = useState<string>("0");
 
@@ -67,6 +69,7 @@ export default function EditStudentPage() {
           setIsKids(data.isKids || false);
           setInitialCheckins(String(data.initialCheckins || 0));
           setMonthlyCredits(String(data.monthlyCredits || 0));
+          setBillingFrequency(data.billingFrequency || "MENSAL");
           setMonthlyDueDay(data.monthlyDueDay ? String(data.monthlyDueDay) : "");
           setLastPaymentDate(
             data.lastPaymentDate
@@ -116,7 +119,7 @@ export default function EditStudentPage() {
       newPhotoUrl = uploadData.url;
     }
 
-    const body: Record<string, unknown> = { studentType, belt, degrees, photoUrl: newPhotoUrl, modalities: modalities.join(","), isKids, initialCheckins: Number(initialCheckins) || 0, monthlyCredits: Number(monthlyCredits) || 0 };
+    const body: Record<string, unknown> = { studentType, belt, degrees, photoUrl: newPhotoUrl, modalities: modalities.join(","), isKids, initialCheckins: Number(initialCheckins) || 0, monthlyCredits: Number(monthlyCredits) || 0, billingFrequency };
     if (resetBeltProgress) body.resetBeltProgress = true;
     if (resetDegreeProgress) body.resetDegreeProgress = true;
     if (monthlyDueDay) {
@@ -385,6 +388,16 @@ export default function EditStudentPage() {
       <Card className="mb-6">
         <h2 className="text-lg font-semibold mb-4 text-zinc-50">Pagamento</h2>
         <div className="space-y-4">
+          <Select
+            label="Frequência de Pagamento"
+            value={billingFrequency}
+            onChange={(e) => setBillingFrequency(e.target.value)}
+          >
+            <option value="MENSAL">Mensal</option>
+            <option value="TRIMESTRAL">Trimestral</option>
+            <option value="SEMESTRAL">Semestral</option>
+            <option value="ANUAL">Anual</option>
+          </Select>
           <Input
             label="Dia de vencimento (1-31)"
             type="number"

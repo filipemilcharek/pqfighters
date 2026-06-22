@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Users, CheckCircle, Calendar, Pencil, RefreshCw, Check, UserPlus, ArrowUpCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DAY_NAMES, getPlanLabel, isPremiumOrPro } from "@/lib/utils";
+import { DAY_NAMES, getPlanLabel, isPremiumOrPro, getPaymentStatus } from "@/lib/utils";
 
 interface RescheduleLog {
   id: string;
@@ -33,27 +33,12 @@ interface Student {
   belt: string;
   degrees: number;
   photoUrl: string | null;
+  billingFrequency: string;
   monthlyDueDay: number | null;
   lastPaymentDate: string | null;
+  createdAt: string;
   initialCheckins: number;
   _count: { bookings: number };
-}
-
-function getPaymentStatus(
-  monthlyDueDay: number | null,
-  lastPaymentDate: string | null
-): { label: string; variant: "green" | "warning" | "danger"; daysInfo?: string } | null {
-  if (!monthlyDueDay) return null;
-  if (!lastPaymentDate) return { label: "Atrasado", variant: "danger" };
-
-  const now = new Date();
-  const payment = new Date(lastPaymentDate);
-  const diffMs = now.getTime() - payment.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays <= 25) return { label: "Em dia", variant: "green", daysInfo: `${30 - diffDays} dias restantes` };
-  if (diffDays <= 30) return { label: "Pendente", variant: "warning", daysInfo: `Vence em ${30 - diffDays} dias` };
-  return { label: "Atrasado", variant: "danger", daysInfo: `${diffDays - 30} dias atrasado` };
 }
 
 export default function AdminDashboard() {
@@ -301,7 +286,7 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {students.map((s) => {
-                const paymentStatus = getPaymentStatus(s.monthlyDueDay, s.lastPaymentDate);
+                const paymentStatus = getPaymentStatus(s.monthlyDueDay, s.lastPaymentDate, s.billingFrequency, s.createdAt);
                 return (
                   <tr
                     key={s.id}

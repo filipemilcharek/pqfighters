@@ -24,6 +24,7 @@ export async function GET() {
       initialCheckins: true,
       isKids: true,
       photoUrl: true,
+      billingFrequency: true,
       monthlyDueDay: true,
       lastPaymentDate: true,
       createdAt: true,
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { name, email, password, studentType, modalities, photoUrl, isKids } = result.data;
+  const { name, email, password, studentType, modalities, photoUrl, isKids, billingFrequency, monthlyDueDay } = result.data;
 
   const exists = await prisma.user.findUnique({ where: { email } });
   if (exists) {
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
   const status = session?.user.role === "ADMIN" ? "APPROVED" : "PENDING";
 
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, studentType, modalities: modalities || "GRAPPLING", isKids: isKids || false, photoUrl: photoUrl || null, status },
+    data: { name, email, passwordHash, studentType, modalities: modalities || "GRAPPLING", isKids: isKids || false, photoUrl: photoUrl || null, billingFrequency: billingFrequency || "MENSAL", monthlyDueDay: monthlyDueDay || null, status },
     select: { id: true, name: true, email: true },
   });
 
