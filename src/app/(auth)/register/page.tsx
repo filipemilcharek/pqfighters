@@ -7,9 +7,10 @@ import { Card } from "@/components/ui/card";
 import { StudentAvatar } from "@/components/student-avatar";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 function RegisterForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tenantSlug = searchParams.get("tenant") || "";
   const [form, setForm] = useState({
@@ -40,7 +41,7 @@ function RegisterForm() {
             document.documentElement.style.setProperty("--color-accent-dark", data.secondaryColor);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [tenantSlug]);
 
@@ -92,7 +93,7 @@ function RegisterForm() {
       return;
     }
 
-    setRegistered(true);
+    router.push(`/verify-email?email=${encodeURIComponent(form.email)}${tenantSlug ? `&tenant=${tenantSlug}` : ""}`);
   }
 
   if (!tenantSlug) {

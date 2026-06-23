@@ -107,6 +107,31 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Send verification email to the tenant admin
+    try {
+      const crypto = await import("crypto");
+      const emailToken = crypto.randomInt(100000, 1000000).toString();
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      const { getTenantPrisma } = await import("@/lib/tenant-prisma");
+      const tenantPrisma = await getTenantPrisma(slug);
+      if (tenantPrisma) {
+        await tenantPrisma.verificationToken.create({
+          data: {
+            email: adminEmail,
+            token: emailToken,
+            expiresAt,
+          },
+        });
+
+        const { sendVerificationEmail } = await import("@/lib/mail");
+        await sendVerificationEmail(adminEmail, adminName, emailToken, slug);
+      }
+    } catch (mailErr) {
+      console.error("Error sending verification email to admin:", mailErr);
+      // Do not block tenant creation if email sending fails
+    }
+
     return NextResponse.json({
       ok: true,
       tenant: {

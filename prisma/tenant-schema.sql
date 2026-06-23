@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS "User" (
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "passwordHash" TEXT NOT NULL,
+    "emailVerified" DATETIME,
     "role" TEXT NOT NULL DEFAULT 'STUDENT',
     "status" TEXT NOT NULL DEFAULT 'PENDING',
     "studentType" TEXT NOT NULL DEFAULT 'COLETIVA',
@@ -171,3 +172,23 @@ CREATE TABLE IF NOT EXISTS "RescheduleLog" (
     CONSTRAINT "RescheduleLog_newPrivateSlotId_fkey" FOREIGN KEY ("newPrivateSlotId") REFERENCES "PrivateSlot" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "RescheduleLog_privateSlotId_date_type_key" ON "RescheduleLog"("privateSlotId", "date", "type");
+
+CREATE TABLE IF NOT EXISTS "VerificationToken" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "email" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expiresAt" DATETIME NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "VerificationToken_token_key" ON "VerificationToken"("token");
+CREATE UNIQUE INDEX IF NOT EXISTS "VerificationToken_email_token_key" ON "VerificationToken"("email", "token");
+
+CREATE TABLE IF NOT EXISTS "PasswordResetToken" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "email" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expiresAt" DATETIME NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "PasswordResetToken_token_key" ON "PasswordResetToken"("token");
+CREATE UNIQUE INDEX IF NOT EXISTS "PasswordResetToken_email_token_key" ON "PasswordResetToken"("email", "token");

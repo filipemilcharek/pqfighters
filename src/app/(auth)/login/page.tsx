@@ -34,7 +34,7 @@ function LoginForm() {
             document.documentElement.style.setProperty("--color-accent-dark", data.secondaryColor);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [tenantSlug]);
 
@@ -55,6 +55,14 @@ function LoginForm() {
       body: JSON.stringify({ email, tenantSlug }),
     });
     const checkData = await checkRes.json();
+    if (checkData.status === "UNVERIFIED") {
+      setError("Seu e-mail ainda não foi verificado. Redirecionando para verificação...");
+      setLoading(false);
+      setTimeout(() => {
+        router.push(`/verify-email?email=${encodeURIComponent(email)}${tenantSlug ? `&tenant=${tenantSlug}` : ""}`);
+      }, 2000);
+      return;
+    }
     if (checkData.status === "PENDING") {
       setError("Seu cadastro está aguardando aprovação do professor.");
       setLoading(false);
@@ -145,13 +153,12 @@ function LoginForm() {
           </p>
           <p className="text-center text-sm text-content-muted mt-3">
             Esqueceu sua senha?{" "}
-            <button
-              type="button"
-              onClick={() => alert("Entre em contato com o professor para redefinir sua senha.")}
+            <Link
+              href={`/forgot-password${tenantSlug ? `?tenant=${tenantSlug}` : ""}`}
               className="text-content-secondary hover:text-content-primary underline transition-colors"
             >
               Clique aqui
-            </button>
+            </Link>
           </p>
         </>
       )}

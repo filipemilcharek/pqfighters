@@ -4,6 +4,8 @@ import { registerSchema } from "@/lib/validations";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { sendVerificationEmail } from "@/lib/mail";
+import crypto from "crypto";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -53,7 +55,8 @@ export async function POST(req: NextRequest) {
 
   // Admin creating student → auto-approve; self-registration → pending
   const session = await getServerSession(authOptions);
-  const tenantSlug = session?.user?.tenantSlug || body.tenantSlug;
+  const isAdminCreation = session?.user?.role === "ADMIN" && body.isAdminCreation === true;
+  const tenantSlug = isAdminCreation ? (session?.user?.tenantSlug || body.tenantSlug) : body.tenantSlug;
   if (!tenantSlug) {
     return NextResponse.json({ error: "Tenant não identificado" }, { status: 400 });
   }
@@ -70,12 +73,44 @@ export async function POST(req: NextRequest) {
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const status = session?.user?.role === "ADMIN" ? "APPROVED" : "PENDING";
+  // Admin creating student → auto-approve & auto-verify; self-registration → pending & unverified
+  const status = isAdminCreation ? "APPROVED" : "PENDING";
+  const emailVerified = isAdminCreation ? new Date() : null;
 
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, studentType, modalities: modalities || "GRAPPLING", isKids: isKids || false, photoUrl: photoUrl || null, status },
+    data: { 
+      name, 
+      email, 
+      passwordHash, 
+      studentType, 
+      modalities: modalities || "GRAPPLING", 
+      isKids: isKids || false, 
+      photoUrl: photoUrl || null, 
+      status,
+      emailVerified
+    },
     select: { id: true, name: true, email: true },
   });
 
+  if (!isAdminCreation) {
+    // Generate 6-digit verification code using cryptographically secure RNG
+    const token = crypto.randomInt(100000, 1000000).toString();
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    // Clean up any old verification tokens for this email
+    await prisma.verificationToken.deleteMany({ where: { email } });
+
+    await prisma.verificationToken.create({
+      data: {
+        email,
+        token,
+        expiresAt,
+      },
+    });
+
+    await sendVerificationEmail(email, name, token, tenantSlug);
+  }
+
   return NextResponse.json(user, { status: 201 });
 }
+

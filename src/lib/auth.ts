@@ -36,6 +36,16 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
+          if (!user.emailVerified) {
+            console.log("[auth] user email not verified:", user.email);
+            return null;
+          }
+
+          if (user.status !== "APPROVED") {
+            console.log("[auth] user not approved:", user.email);
+            return null;
+          }
+
           console.log("[auth] user found:", user.email, "tenant:", tenantSlug);
 
           const isValid = await bcrypt.compare(
