@@ -423,12 +423,6 @@ export default function TimerRounds({ onToggleMode }: Props) {
   // Config
   const restActive = cfgRounds != null;
 
-  const chipStyle = (selected: boolean) => ({
-    background: selected ? "#ff3030" : "#16161b",
-    color: selected ? "#0a0a0c" : "#9a9aa2",
-    border: `2px solid ${selected ? "#ff3030" : "#26262c"}`,
-  });
-
   return (
     <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden ${barlow.className}`} style={{ background: "#0a0a0c", color: "#fff" }}>
       {/* Toggle mode (only idle) */}
