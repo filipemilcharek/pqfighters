@@ -70,11 +70,11 @@ function ForgotPasswordForm() {
       <div className="flex flex-col items-center mb-8">
         <Logo size={72} logoUrl={tenantLogoUrl} />
         {tenantName ? (
-          <h1 className="text-2xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+          <h1 className="text-2xl font-bold text-content-primary tracking-tight font-archivo uppercase mt-3">
             {tenantName}
           </h1>
         ) : (
-          <h1 className="text-3xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+          <h1 className="text-3xl font-bold text-content-primary tracking-tight font-archivo uppercase mt-3">
             faix<span className="text-accent font-extrabold">app</span>reta
           </h1>
         )}

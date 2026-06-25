@@ -85,7 +85,7 @@ export function NavSidebar() {
       <div className="p-5 border-b border-border">
         <div className="flex items-center gap-3">
           <Logo size={40} logoUrl={tenantLogoUrl} />
-          <span className="text-2xl font-bold text-content-primary tracking-tight font-teko uppercase">
+          <span className="text-2xl font-bold text-content-primary tracking-tight font-archivo uppercase">
             {tenantName || <>faix<span className="text-red-600 font-extrabold">app</span>reta</>}
           </span>
         </div>
@@ -143,7 +143,7 @@ export function NavSidebar() {
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center gap-2 p-3 lg:hidden bg-surface-primary/95 backdrop-blur-sm border-b border-border">
         <div className="flex items-center gap-2">
           <Logo size={28} logoUrl={tenantLogoUrl} />
-          <span className="text-lg font-bold text-content-primary tracking-tight font-teko uppercase">
+          <span className="text-lg font-bold text-content-primary tracking-tight font-archivo uppercase">
             {tenantName || <>faix<span className="text-red-600 font-extrabold">app</span>reta</>}
           </span>
         </div>

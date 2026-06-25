@@ -75,7 +75,7 @@ export default function InstitutionalPage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/10 border border-red-600/20 text-red-500 text-xs font-bold uppercase tracking-widest mb-6">
               <Zap className="w-3 h-3" /> Oferta Especial de Lançamento
             </div>
-            <h1 className="font-teko text-7xl sm:text-8xl md:text-9xl font-bold uppercase leading-[0.8] text-white mb-6">
+            <h1 className="font-archivo text-7xl sm:text-8xl md:text-9xl font-bold uppercase leading-[0.8] text-white mb-6">
               DO TATAME PARA O <span className="text-red-600">DIGITAL</span>
             </h1>
             <p className="text-zinc-400 text-xl md:text-2xl max-w-xl mx-auto lg:mx-0 leading-relaxed mb-10">
@@ -108,7 +108,7 @@ export default function InstitutionalPage() {
       <section id="funcionalidades" className="py-32 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
-            <h2 className="font-teko text-5xl sm:text-6xl font-bold uppercase text-white mb-4">
+            <h2 className="font-archivo text-5xl sm:text-6xl font-bold uppercase text-white mb-4">
               Tudo o que seu CT precisa em <span className="text-red-600">um só lugar</span>
             </h2>
             <p className="text-zinc-500 text-lg max-w-2xl mx-auto">
@@ -134,7 +134,7 @@ export default function InstitutionalPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
-              <h2 className="font-teko text-5xl font-bold uppercase text-white mb-8">
+              <h2 className="font-archivo text-5xl font-bold uppercase text-white mb-8">
                 Interface <span className="text-red-600">Moderna</span> e Intuitiva
               </h2>
               <div className="space-y-6">
@@ -158,28 +158,28 @@ export default function InstitutionalPage() {
                  <Image src="/site/print-aluno.png" alt="App do Aluno" fill className="object-cover object-top" />
                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4">
                    <Smartphone className="w-8 h-8 text-red-600 mb-2" />
-                   <span className="text-white font-teko text-xl uppercase">App do Aluno</span>
+                   <span className="text-white font-archivo text-xl uppercase">App do Aluno</span>
                  </div>
               </div>
               <div className="aspect-[3/4] bg-zinc-800 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center mt-8 group hover:border-red-600/50 transition-all overflow-hidden relative">
                  <Image src="/site/print-agendamento.png" alt="Agendamento" fill className="object-cover object-top" />
                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4">
                    <Calendar className="w-8 h-8 text-red-600 mb-2" />
-                   <span className="text-white font-teko text-xl uppercase">Agendamento</span>
+                   <span className="text-white font-archivo text-xl uppercase">Agendamento</span>
                  </div>
               </div>
               <div className="aspect-[3/4] bg-zinc-800 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center -mt-8 group hover:border-red-600/50 transition-all overflow-hidden relative">
                  <Image src="/site/print-dashboard.png" alt="Gestão de Alunos" fill className="object-cover object-top" />
                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4">
                    <Users className="w-8 h-8 text-red-600 mb-2" />
-                   <span className="text-white font-teko text-xl uppercase">Gestão</span>
+                   <span className="text-white font-archivo text-xl uppercase">Gestão</span>
                  </div>
               </div>
               <div className="aspect-[3/4] bg-zinc-800 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center group hover:border-red-600/50 transition-all overflow-hidden relative">
                  <Image src="/site/print-cronometro.png" alt="Cronômetro" fill className="object-cover" />
                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-4">
                    <Timer className="w-8 h-8 text-red-600 mb-2" />
-                   <span className="text-white font-teko text-xl uppercase">Cronômetro</span>
+                   <span className="text-white font-archivo text-xl uppercase">Cronômetro</span>
                  </div>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function InstitutionalPage() {
       {/* Planos */}
       <section id="planos" className="py-32 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto text-center">
-          <h2 className="font-teko text-6xl font-bold uppercase text-white mb-4">Invista no seu CT</h2>
+          <h2 className="font-archivo text-6xl font-bold uppercase text-white mb-4">Invista no seu CT</h2>
           <p className="text-zinc-500 text-lg mb-16">Aproveite nossa oferta por tempo limitado.</p>
           
           <div className="flex justify-center">
@@ -202,7 +202,7 @@ export default function InstitutionalPage() {
                     <span className="text-zinc-500 text-xl line-through mb-1">R$ {p.precoOriginal}</span>
                     <div className="flex items-baseline gap-1">
                       <span className="text-zinc-500 text-2xl font-medium">R$</span>
-                      <span className="text-white text-7xl font-teko font-bold">{p.preco}</span>
+                      <span className="text-white text-7xl font-archivo font-bold">{p.preco}</span>
                       <span className="text-zinc-500">/mês</span>
                     </div>
                   </div>
@@ -228,7 +228,7 @@ export default function InstitutionalPage() {
         <div className="absolute inset-0 bg-red-600/10 blur-[120px] rounded-full -bottom-1/2 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96" />
         <div className="max-w-4xl mx-auto bg-zinc-900 border border-white/10 rounded-[3rem] p-12 md:p-20 text-center relative z-10">
           <ShieldCheck className="w-16 h-16 text-red-600 mx-auto mb-8" />
-          <h2 className="font-teko text-5xl md:text-7xl font-bold uppercase text-white mb-6">
+          <h2 className="font-archivo text-5xl md:text-7xl font-bold uppercase text-white mb-6">
             Pronto para levar seu CT ao próximo nível?
           </h2>
           <p className="text-zinc-400 text-xl mb-12 leading-relaxed">

@@ -1,7 +1,11 @@
-import { Inter } from "next/font/google";
+import { Hanken_Grotesk } from "next/font/google";
 import "../globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const hanken = Hanken_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-hanken",
+});
 
 export const metadata = {
   title: "faixappreta - Super Admin",
@@ -14,7 +18,7 @@ export default function SuperAdminLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${inter.variable} font-inter antialiased bg-surface-primary text-content-primary`}>
+      <body className={`${hanken.variable} font-hanken antialiased bg-surface-primary text-content-primary`}>
         {children}
       </body>
     </html>

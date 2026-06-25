@@ -23,7 +23,7 @@ function RegisterForm() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [registered, setRegistered] = useState(false);
+  const [registered] = useState(false);
   const [tenantName, setTenantName] = useState("");
   const [tenantLogoUrl, setTenantLogoUrl] = useState<string | null>(null);
 
@@ -103,7 +103,7 @@ function RegisterForm() {
           <Card>
             <div className="flex flex-col items-center text-center">
               <Logo size={72} logoUrl={tenantLogoUrl} />
-              <h1 className="text-3xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+              <h1 className="text-3xl font-bold text-content-primary tracking-tight font-archivo uppercase mt-3">
                 faix<span className="text-red-600 font-extrabold">app</span>reta
               </h1>
               <p className="text-sm text-content-secondary mt-4">
@@ -123,7 +123,7 @@ function RegisterForm() {
           <Card>
             <div className="flex flex-col items-center text-center">
               <Logo size={72} logoUrl={tenantLogoUrl} />
-              <h1 className="text-3xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+              <h1 className="text-3xl font-bold text-content-primary tracking-tight font-archivo uppercase mt-3">
                 faix<span className="text-red-600 font-extrabold">app</span>reta
               </h1>
               <div className="mt-6 mb-4">
@@ -154,11 +154,11 @@ function RegisterForm() {
           <div className="flex flex-col items-center mb-8">
             <Logo size={72} logoUrl={tenantLogoUrl} />
             {tenantName ? (
-              <h1 className="text-2xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+              <h1 className="text-2xl font-bold text-content-primary tracking-tight font-archivo uppercase mt-3">
                 {tenantName}
               </h1>
             ) : (
-              <h1 className="text-3xl font-bold text-content-primary tracking-tight font-teko uppercase mt-3">
+              <h1 className="text-3xl font-bold text-content-primary tracking-tight font-archivo uppercase mt-3">
                 faix<span className="text-red-600 font-extrabold">app</span>reta
               </h1>
             )}
