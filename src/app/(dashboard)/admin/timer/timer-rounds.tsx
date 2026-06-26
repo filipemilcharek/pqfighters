@@ -130,14 +130,14 @@ export default function TimerRounds({ onToggleMode }: Props) {
   const router = useRouter();
 
   // Config
-  const [timeIdx, setTimeIdx] = useState(2); // default 5 min
+  const [configSeconds, setConfigSeconds] = useState(0); // incremental, starts at 0
   const [roundsIdx, setRoundsIdx] = useState(0); // default null (single)
   const [restIdx, setRestIdx] = useState(1); // default 30s
   const [sel, setSel] = useState(0); // keyboard: 0=tempo, 1=rounds, 2=descanso
 
   // Timer state
   const [phase, setPhase] = useState<Phase>("idle");
-  const [remaining, setRemaining] = useState(TIME_OPTS[2] * 60);
+  const [remaining, setRemaining] = useState(0);
   const [currentRound, setCurrentRound] = useState(1);
   const [totalRounds, setTotalRounds] = useState(1);
 
@@ -154,8 +154,8 @@ export default function TimerRounds({ onToggleMode }: Props) {
   const phaseRef = useRef<Phase>("idle");
   const currentRoundRef = useRef(1);
   const totalRoundsRef = useRef(1);
-  const remainingRef = useRef(TIME_OPTS[2] * 60);
-  const timeIdxRef = useRef(2);
+  const remainingRef = useRef(0);
+  const configSecondsRef = useRef(0);
   const roundsIdxRef = useRef(0);
   const restIdxRef = useRef(1);
 
@@ -164,11 +164,11 @@ export default function TimerRounds({ onToggleMode }: Props) {
   useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
   useEffect(() => { totalRoundsRef.current = totalRounds; }, [totalRounds]);
   useEffect(() => { remainingRef.current = remaining; }, [remaining]);
-  useEffect(() => { timeIdxRef.current = timeIdx; }, [timeIdx]);
+  useEffect(() => { configSecondsRef.current = configSeconds; }, [configSeconds]);
   useEffect(() => { roundsIdxRef.current = roundsIdx; }, [roundsIdx]);
   useEffect(() => { restIdxRef.current = restIdx; }, [restIdx]);
 
-  const roundMin = useCallback(() => TIME_OPTS[timeIdxRef.current], []);
+  const roundSec = useCallback(() => configSecondsRef.current, []);
   const restSec = useCallback(() => REST_OPTS[restIdxRef.current], []);
 
   // ── Hide sidebar ──
@@ -231,7 +231,7 @@ export default function TimerRounds({ onToggleMode }: Props) {
     currentRoundRef.current = round;
     setTotalRounds(total);
     totalRoundsRef.current = total;
-    const dur = roundMin() * 60;
+    const dur = roundSec();
     setRemaining(dur);
     remainingRef.current = dur;
     lastTickBeepRef.current = -1;
@@ -243,7 +243,7 @@ export default function TimerRounds({ onToggleMode }: Props) {
       phaseRef.current = "work";
       intervalRef.current = setInterval(tick, 100);
     }, delay * 1000);
-  }, [clearTimer, roundMin, tick]);
+  }, [clearTimer, roundSec, tick]);
 
   // Wire nextPhase
   useEffect(() => {
@@ -284,6 +284,7 @@ export default function TimerRounds({ onToggleMode }: Props) {
   // ── Actions ──
 
   function start() {
+    if (configSeconds <= 0) return;
     const rounds = ROUNDS_OPTS[roundsIdx];
     const total = rounds == null ? 1 : rounds;
     resumePhaseRef.current = "work";
@@ -315,19 +316,39 @@ export default function TimerRounds({ onToggleMode }: Props) {
     phaseRef.current = "idle";
     setCurrentRound(1);
     currentRoundRef.current = 1;
-    setRemaining(TIME_OPTS[timeIdxRef.current] * 60);
-    remainingRef.current = TIME_OPTS[timeIdxRef.current] * 60;
+    setRemaining(configSecondsRef.current);
+    remainingRef.current = configSecondsRef.current;
   }
 
   // ── Keyboard (TV remote) ──
 
+  function addTime(minutes: number) {
+    setConfigSeconds((prev) => {
+      const next = prev + minutes * 60;
+      setRemaining(next);
+      remainingRef.current = next;
+      configSecondsRef.current = next;
+      return next;
+    });
+  }
+
+  function clearTime() {
+    setConfigSeconds(0);
+    configSecondsRef.current = 0;
+    setRemaining(0);
+    remainingRef.current = 0;
+  }
+
   function adjust(dir: number) {
     if (sel === 0) {
-      const n = (timeIdx + dir + TIME_OPTS.length) % TIME_OPTS.length;
-      setTimeIdx(n);
-      timeIdxRef.current = n;
-      setRemaining(TIME_OPTS[n] * 60);
-      remainingRef.current = TIME_OPTS[n] * 60;
+      // Add or subtract 1 minute with arrow keys
+      setConfigSeconds((prev) => {
+        const next = Math.max(60, prev + dir * 60);
+        setRemaining(next);
+        remainingRef.current = next;
+        configSecondsRef.current = next;
+        return next;
+      });
     } else if (sel === 1) {
       const n = (roundsIdx + dir + ROUNDS_OPTS.length) % ROUNDS_OPTS.length;
       setRoundsIdx(n);
@@ -364,7 +385,7 @@ export default function TimerRounds({ onToggleMode }: Props) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeIdx, roundsIdx, restIdx, sel]);
+  }, [configSeconds, roundsIdx, restIdx, sel]);
 
   // ── Cleanup ──
   useEffect(() => {
@@ -416,7 +437,7 @@ export default function TimerRounds({ onToggleMode }: Props) {
     progressPct = 100;
   } else if (phase === "work" || phase === "rest" || phase === "paused") {
     const base = phase === "paused" ? resumePhaseRef.current : phase;
-    const total = base === "work" ? roundMin() * 60 : restSec();
+    const total = base === "work" ? roundSec() : restSec();
     progressPct = total ? Math.min(100, Math.max(0, (1 - remaining / total) * 100)) : 0;
   }
 
@@ -568,21 +589,24 @@ export default function TimerRounds({ onToggleMode }: Props) {
               {/* Tempo do round */}
               <ConfigRow
                 label="TEMPO DO ROUND"
-                hint="duracao de cada round"
+                hint={configSeconds > 0 ? `${Math.floor(configSeconds / 60)}min ${configSeconds % 60 ? (configSeconds % 60) + "s" : ""} configurado` : "clique para adicionar tempo"}
                 selected={sel === 0}
                 dimmed={false}
               >
-                {TIME_OPTS.map((o, i) => (
+                {TIME_OPTS.map((o) => (
                   <Chip
                     key={o}
-                    label={`${o} MIN`}
-                    isSelected={i === timeIdx}
-                    onClick={() => {
-                      setTimeIdx(i); timeIdxRef.current = i;
-                      setRemaining(o * 60); remainingRef.current = o * 60;
-                    }}
+                    label={`+${o} MIN`}
+                    isSelected={false}
+                    onClick={() => addTime(o)}
                   />
                 ))}
+                <Chip
+                  label="LIMPAR"
+                  isSelected={false}
+                  onClick={clearTime}
+                  variant="ghost"
+                />
               </ConfigRow>
 
               {/* Rounds */}
@@ -715,7 +739,8 @@ function ConfigRow({ label, hint, selected, dimmed, children }: {
   );
 }
 
-function Chip({ label, isSelected, onClick }: { label: string; isSelected: boolean; onClick: () => void }) {
+function Chip({ label, isSelected, onClick, variant }: { label: string; isSelected: boolean; onClick: () => void; variant?: "ghost" }) {
+  const isGhost = variant === "ghost";
   return (
     <div
       onClick={onClick}
@@ -727,9 +752,9 @@ function Chip({ label, isSelected, onClick }: { label: string; isSelected: boole
         fontWeight: 500,
         fontSize: "clamp(1.4rem, 2.1vw, 2rem)",
         lineHeight: 1.15,
-        background: isSelected ? "#ff3030" : "#16161b",
-        color: isSelected ? "#0a0a0c" : "#9a9aa2",
-        border: `2px solid ${isSelected ? "#ff3030" : "#26262c"}`,
+        background: isGhost ? "transparent" : isSelected ? "#ff3030" : "#16161b",
+        color: isGhost ? "#5a5a62" : isSelected ? "#0a0a0c" : "#9a9aa2",
+        border: `2px solid ${isGhost ? "#2a2a32" : isSelected ? "#ff3030" : "#26262c"}`,
         transition: "all 0.12s",
       }}
     >
