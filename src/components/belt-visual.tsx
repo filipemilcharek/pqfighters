@@ -43,7 +43,7 @@ export function BeltVisual({
       width={width}
       height={height + 8}
       viewBox={`0 0 ${width} ${height + 8}`}
-      className="block"
+      className="block max-w-full h-auto"
     >
       <defs>
         <filter id="beltShadow" x="-4%" y="-20%" width="108%" height="160%">
@@ -189,7 +189,6 @@ export function BeltProgress({
 
   // The progress fills the belt shape
   const height = width * 0.06;
-  const fillWidth = Math.max(0, (width - 4) * progress);
   const nextLabel = getBeltLabel(nextBelt);
 
   return (
@@ -211,7 +210,7 @@ export function BeltProgress({
         <div
           className="h-full rounded-full transition-all duration-700"
           style={{
-            width: fillWidth,
+            width: `${Math.round(progress * 100)}%`,
             backgroundColor: nextColor,
           }}
         />
