@@ -16,9 +16,40 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Parâmetros 'from' e 'to' são obrigatórios" }, { status: 400 });
   }
 
+  // If professor (not owner), only show students from their classes/slots
+  const isOwner = session.user.isOwner;
+  const instructorFilter = !isOwner
+    ? {
+        bookings: {
+          some: {
+            date: { gte: from, lte: to },
+            checkedIn: true,
+            OR: [
+              { groupClass: { instructorId: session.user.id } },
+              { privateSlot: { instructorId: session.user.id } },
+            ],
+          },
+        },
+      }
+    : {};
+
+  const bookingWhere = !isOwner
+    ? {
+        date: { gte: from, lte: to },
+        checkedIn: true,
+        OR: [
+          { groupClass: { instructorId: session.user.id } },
+          { privateSlot: { instructorId: session.user.id } },
+        ],
+      }
+    : {
+        date: { gte: from, lte: to },
+        checkedIn: true,
+      };
+
   // Get all students with their bookings in the period
   const students = await prisma.user.findMany({
-    where: { role: "STUDENT" },
+    where: { role: "STUDENT", ...instructorFilter },
     select: {
       id: true,
       name: true,
@@ -27,10 +58,7 @@ export async function GET(req: NextRequest) {
       initialCheckins: true,
       photoUrl: true,
       bookings: {
-        where: {
-          date: { gte: from, lte: to },
-          checkedIn: true,
-        },
+        where: bookingWhere,
         select: { id: true, date: true },
       },
     },

@@ -50,8 +50,13 @@ export default async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/student", req.url));
     }
 
+    // Professors (non-owner admins): redirect /admin to /admin/agenda
+    if (pathname === "/admin" && token.role === "ADMIN" && !token.isOwner) {
+      return NextResponse.redirect(new URL("/admin/agenda", req.url));
+    }
+
     if (pathname.startsWith("/student") && token.role === "ADMIN") {
-      return NextResponse.redirect(new URL("/admin", req.url));
+      return NextResponse.redirect(new URL(token.isOwner ? "/admin" : "/admin/agenda", req.url));
     }
   }
 

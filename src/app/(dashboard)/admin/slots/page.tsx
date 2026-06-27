@@ -15,6 +15,11 @@ interface Student {
   name: string;
 }
 
+interface Professor {
+  id: string;
+  name: string;
+}
+
 interface Slot {
   id: string;
   dayOfWeek: number;
@@ -23,16 +28,20 @@ interface Slot {
   isAvailable: boolean;
   userId: string | null;
   user: { id: string; name: string } | null;
+  instructorId: string | null;
+  instructor: { id: string; name: string } | null;
 }
 
 export default function SlotsPage() {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [professors, setProfessors] = useState<Professor[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Slot[] | null>(null);
   const [form, setForm] = useState({
     dayOfWeek: 1,
     startTime: "08:00",
+    instructorId: "" as string,
   });
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
@@ -41,6 +50,9 @@ export default function SlotsPage() {
     fetch("/api/students")
       .then((r) => r.json())
       .then(setStudents);
+    fetch("/api/professors")
+      .then((r) => r.json())
+      .then((data: Professor[]) => setProfessors(data));
   }, []);
 
   function loadSlots() {
@@ -52,7 +64,7 @@ export default function SlotsPage() {
   function openEdit(group: Slot[]) {
     const first = group[0];
     setEditingGroup(group);
-    setForm({ dayOfWeek: first.dayOfWeek, startTime: first.startTime });
+    setForm({ dayOfWeek: first.dayOfWeek, startTime: first.startTime, instructorId: first.instructorId || "" });
     setSelectedUserIds(group.filter((s) => s.userId).map((s) => s.userId!));
     setModalOpen(true);
   }
@@ -60,7 +72,7 @@ export default function SlotsPage() {
   function closeModal() {
     setModalOpen(false);
     setEditingGroup(null);
-    setForm({ dayOfWeek: 1, startTime: "08:00" });
+    setForm({ dayOfWeek: 1, startTime: "08:00", instructorId: "" });
     setSelectedUserIds([]);
   }
 
@@ -74,9 +86,10 @@ export default function SlotsPage() {
   }
 
   async function handleCreate() {
+    const payload = { ...form, instructorId: form.instructorId || null };
     const body = selectedUserIds.length > 0
-      ? { ...form, userIds: selectedUserIds }
-      : { ...form, userId: null };
+      ? { ...payload, userIds: selectedUserIds }
+      : { ...payload, userId: null };
     const res = await fetch("/api/slots", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -116,6 +129,8 @@ export default function SlotsPage() {
     }
 
     try {
+      const instructorId = form.instructorId || null;
+
       // Update kept slots (day/time might have changed)
       for (const uid of keptUserIds) {
         const slot = editingGroup.find((s) => s.userId === uid);
@@ -123,7 +138,7 @@ export default function SlotsPage() {
           await fetch(`/api/slots/${slot.id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ dayOfWeek: form.dayOfWeek, startTime: form.startTime, endTime }),
+            body: JSON.stringify({ dayOfWeek: form.dayOfWeek, startTime: form.startTime, endTime, instructorId }),
           });
         }
       }
@@ -142,14 +157,14 @@ export default function SlotsPage() {
         await fetch(`/api/slots/${oldOpenSlot.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ dayOfWeek: form.dayOfWeek, startTime: form.startTime, endTime }),
+          body: JSON.stringify({ dayOfWeek: form.dayOfWeek, startTime: form.startTime, endTime, instructorId }),
         });
       } else if (needsOpenSlot && reusedAsOpenId) {
         // Convert a removed student slot into an open slot
         await fetch(`/api/slots/${reusedAsOpenId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ dayOfWeek: form.dayOfWeek, startTime: form.startTime, endTime, userId: null }),
+          body: JSON.stringify({ dayOfWeek: form.dayOfWeek, startTime: form.startTime, endTime, userId: null, instructorId }),
         });
       } else if (selectedUserIds.length > 0 && oldOpenSlot) {
         // Remove old open slot (students were added)
@@ -204,6 +219,7 @@ export default function SlotsPage() {
                 <th className="text-left py-2 px-2 text-zinc-400">Fim</th>
                 <th className="text-left py-2 px-2 text-zinc-400">Aluno</th>
                 <th className="text-left py-2 px-2 text-zinc-400">Status</th>
+                {professors.length > 1 && <th className="text-left py-2 px-2 text-zinc-400">Prof.</th>}
                 <th className="text-left py-2 px-2"></th>
               </tr>
             </thead>
@@ -252,6 +268,11 @@ export default function SlotsPage() {
                           </Badge>
                         </button>
                       </td>
+                      {professors.length > 1 && (
+                        <td className="py-2 px-2 text-zinc-400 text-xs">
+                          {first.instructor?.name || "—"}
+                        </td>
+                      )}
                       <td className="py-2 px-2">
                         <div className="flex items-center gap-2">
                           <button
@@ -278,7 +299,7 @@ export default function SlotsPage() {
               })()}
               {slots.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-zinc-500">
+                  <td colSpan={professors.length > 1 ? 7 : 6} className="py-8 text-center text-zinc-500">
                     Nenhum horário cadastrado
                   </td>
                 </tr>
@@ -360,6 +381,18 @@ export default function SlotsPage() {
             onChange={(e) => setForm({ ...form, startTime: e.target.value })}
             required
           />
+          {professors.length > 1 && (
+            <Select
+              label="Professor"
+              value={form.instructorId}
+              onChange={(e) => setForm({ ...form, instructorId: e.target.value })}
+            >
+              <option value="">Nenhum</option>
+              {professors.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </Select>
+          )}
           <Button type="submit" className="w-full">
             {editingGroup ? "Salvar" : "Criar"}
           </Button>

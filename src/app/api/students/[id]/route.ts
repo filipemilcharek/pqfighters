@@ -61,6 +61,9 @@ export async function PATCH(
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
+  if (!session.user.isOwner) {
+    return NextResponse.json({ error: "Apenas o dono pode editar alunos" }, { status: 403 });
+  }
 
   const body = await req.json();
   const result = updateStudentSchema.safeParse(body);
@@ -152,6 +155,9 @@ export async function DELETE(
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  }
+  if (!session.user.isOwner) {
+    return NextResponse.json({ error: "Apenas o dono pode excluir alunos" }, { status: 403 });
   }
 
   await prisma.user.delete({ where: { id: params.id } });

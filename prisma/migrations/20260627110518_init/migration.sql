@@ -13,6 +13,7 @@ CREATE TABLE "User" (
     "monthlyCredits" INTEGER NOT NULL DEFAULT 0,
     "modalities" TEXT NOT NULL DEFAULT 'GRAPPLING',
     "isKids" BOOLEAN NOT NULL DEFAULT false,
+    "isOwner" BOOLEAN NOT NULL DEFAULT false,
     "photoUrl" TEXT,
     "billingFrequency" TEXT NOT NULL DEFAULT 'MENSAL',
     "monthlyDueDay" INTEGER,
@@ -30,7 +31,9 @@ CREATE TABLE "PrivateSlot" (
     "endTime" TEXT NOT NULL,
     "isAvailable" BOOLEAN NOT NULL DEFAULT true,
     "userId" TEXT,
-    CONSTRAINT "PrivateSlot_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "instructorId" TEXT,
+    CONSTRAINT "PrivateSlot_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "PrivateSlot_instructorId_fkey" FOREIGN KEY ("instructorId") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -42,7 +45,9 @@ CREATE TABLE "GroupClass" (
     "endTime" TEXT NOT NULL,
     "capacity" INTEGER NOT NULL,
     "isKids" BOOLEAN NOT NULL DEFAULT false,
-    "classType" TEXT NOT NULL DEFAULT 'GROUP'
+    "classType" TEXT NOT NULL DEFAULT 'GROUP',
+    "instructorId" TEXT,
+    CONSTRAINT "GroupClass_instructorId_fkey" FOREIGN KEY ("instructorId") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable

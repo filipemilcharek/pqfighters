@@ -13,6 +13,7 @@ export async function PATCH(
   }
 
   const body = await req.json();
+  if (body.instructorId === "") body.instructorId = null;
   const groupClass = await prisma.groupClass.update({
     where: { id: params.id },
     data: body,

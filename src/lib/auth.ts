@@ -49,6 +49,7 @@ export const authOptions: NextAuthOptions = {
             belt: user.belt,
             degrees: user.degrees,
             isKids: user.isKids,
+            isOwner: user.isOwner,
             photoUrl: user.photoUrl,
           };
         } catch (err) {
@@ -69,6 +70,7 @@ export const authOptions: NextAuthOptions = {
         token.belt = user.belt;
         token.degrees = user.degrees;
         token.isKids = user.isKids;
+        token.isOwner = user.isOwner;
         token.photoUrl = user.photoUrl;
       }
       return token;
@@ -81,6 +83,7 @@ export const authOptions: NextAuthOptions = {
       session.user.belt = token.belt;
       session.user.degrees = token.degrees;
       session.user.isKids = token.isKids;
+      session.user.isOwner = token.isOwner;
       session.user.photoUrl = token.photoUrl;
       return session;
     },

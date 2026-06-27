@@ -23,26 +23,28 @@ import {
   Timer,
   ArrowUpCircle,
   CreditCard,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StudentAvatar } from "./student-avatar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const adminLinks = [
-  { href: "/admin", label: "Dashboard", icon: Home },
-  { href: "/admin/slots", label: "Horários Particulares", icon: Clock },
-  { href: "/admin/group-classes", label: "Aulas", icon: BookOpen },
-  { href: "/admin/events", label: "Eventos", icon: CalendarDays },
-  { href: "/admin/notifications", label: "Notificações", icon: Bell },
+  { href: "/admin", label: "Dashboard", icon: Home, ownerOnly: true },
+  { href: "/admin/professors", label: "Professores", icon: Users, ownerOnly: true },
+  { href: "/admin/slots", label: "Horários Particulares", icon: Clock, ownerOnly: true },
+  { href: "/admin/group-classes", label: "Aulas", icon: BookOpen, ownerOnly: true },
+  { href: "/admin/events", label: "Eventos", icon: CalendarDays, ownerOnly: true },
+  { href: "/admin/notifications", label: "Notificações", icon: Bell, ownerOnly: true },
   { href: "/admin/agenda", label: "Agenda do Dia", icon: CalendarDays },
   { href: "/admin/roll-call", label: "Chamada", icon: ClipboardList },
   { href: "/admin/attendance", label: "Presenças", icon: ClipboardCheck },
-  { href: "/admin/belt-requirements", label: "Requisitos de Faixa", icon: Award },
+  { href: "/admin/belt-requirements", label: "Requisitos de Faixa", icon: Award, ownerOnly: true },
   { href: "/admin/ranking", label: "Ranking", icon: Trophy },
   { href: "/admin/timer", label: "Timer", icon: Timer },
-  { href: "/admin/approvals", label: "Aprovações", icon: UserCheck },
-  { href: "/admin/plan-upgrades", label: "Solicitações de Plano", icon: ArrowUpCircle },
-  { href: "/admin/plans", label: "Planos", icon: CreditCard },
+  { href: "/admin/approvals", label: "Aprovações", icon: UserCheck, ownerOnly: true },
+  { href: "/admin/plan-upgrades", label: "Solicitações de Plano", icon: ArrowUpCircle, ownerOnly: true },
+  { href: "/admin/plans", label: "Planos", icon: CreditCard, ownerOnly: true },
 ];
 
 const studentLinks = [
@@ -59,16 +61,34 @@ export function NavSidebar() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    };
+  }, [open]);
+
   if (!session) return null;
 
   const isAdmin = session.user.role === "ADMIN";
-  const links = isAdmin ? adminLinks : studentLinks;
-  const homePath = isAdmin ? "/admin" : "/student";
+  const isOwner = session.user.isOwner;
+  const links = isAdmin
+    ? adminLinks.filter((l) => !l.ownerOnly || isOwner)
+    : studentLinks;
+  const homePath = isAdmin ? (isOwner ? "/admin" : "/admin/agenda") : "/student";
   const isHome = pathname === homePath;
 
   const sidebar = (
-    <div className="flex flex-col h-full">
-      <div className="p-5 border-b border-zinc-800">
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="p-5 border-b border-zinc-800 shrink-0">
         <div className="flex items-center gap-3">
           <Image src="/logo.png" alt="PQ" width={40} height={40} />
           <span className="text-2xl font-bold text-zinc-50 tracking-tight font-teko uppercase">
@@ -81,11 +101,16 @@ export function NavSidebar() {
             photoUrl={session.user.photoUrl}
             size={28}
           />
-          <span>{session.user.name}</span>
+          <div className="flex flex-col">
+            <span>{session.user.name}</span>
+            {isAdmin && (
+              <span className="text-xs text-zinc-500">{isOwner ? "Dono" : "Professor"}</span>
+            )}
+          </div>
         </div>
       </div>
 
-      <nav className="flex-1 p-3">
+      <nav className="flex-1 p-3 overflow-y-auto overscroll-contain min-h-0">
         {links.map((link) => {
           const Icon = link.icon;
           const isActive = pathname === link.href;
@@ -108,7 +133,7 @@ export function NavSidebar() {
         })}
       </nav>
 
-      <div className="p-3 border-t border-zinc-800 space-y-1">
+      <div className="p-3 border-t border-zinc-800 space-y-1 shrink-0">
         <button
           onClick={async () => {
             await signOut({ redirect: false });
@@ -156,12 +181,13 @@ export function NavSidebar() {
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
           onClick={() => setOpen(false)}
+          onTouchMove={(e) => e.preventDefault()}
         />
       )}
 
       <aside
         className={cn(
-          "fixed top-0 left-0 z-40 h-full w-64 bg-zinc-900 border-r border-zinc-800 transform transition-transform lg:translate-x-0 lg:relative lg:z-auto lg:h-screen lg:shrink-0",
+          "fixed top-0 left-0 z-40 h-dvh w-64 bg-zinc-900 border-r border-zinc-800 transform transition-transform lg:translate-x-0 lg:relative lg:z-auto lg:h-screen lg:shrink-0 overscroll-contain",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >

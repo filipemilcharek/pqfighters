@@ -11,6 +11,11 @@ import { Modal } from "@/components/ui/modal";
 import { DAY_NAMES } from "@/lib/utils";
 import { Trash2, Pencil } from "lucide-react";
 
+interface Professor {
+  id: string;
+  name: string;
+}
+
 interface GroupClass {
   id: string;
   name: string;
@@ -20,6 +25,8 @@ interface GroupClass {
   capacity: number;
   isKids: boolean;
   classType: string;
+  instructorId: string | null;
+  instructor: Professor | null;
 }
 
 const emptyForm = {
@@ -30,10 +37,12 @@ const emptyForm = {
   capacity: 20,
   isKids: false,
   classType: "GROUP" as string,
+  instructorId: "" as string,
 };
 
 export default function GroupClassesPage() {
   const [classes, setClasses] = useState<GroupClass[]>([]);
+  const [professors, setProfessors] = useState<Professor[]>([]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -41,6 +50,9 @@ export default function GroupClassesPage() {
 
   useEffect(() => {
     loadClasses();
+    fetch("/api/professors")
+      .then((r) => r.json())
+      .then((data: { id: string; name: string }[]) => setProfessors(data));
   }, []);
 
   function loadClasses() {
@@ -71,6 +83,7 @@ export default function GroupClassesPage() {
       capacity: gc.capacity,
       isKids: gc.isKids,
       classType: gc.classType || "GROUP",
+      instructorId: gc.instructorId || "",
     });
     setEditModalOpen(true);
   }
@@ -155,6 +168,18 @@ export default function GroupClassesPage() {
         />
         <span className="text-sm text-zinc-200">Aula Kids</span>
       </label>
+      {professors.length > 1 && (
+        <Select
+          label="Professor"
+          value={form.instructorId}
+          onChange={(e) => setForm({ ...form, instructorId: e.target.value })}
+        >
+          <option value="">Nenhum</option>
+          {professors.map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </Select>
+      )}
     </>
   );
 
@@ -175,6 +200,7 @@ export default function GroupClassesPage() {
                 <th className="text-left py-2 px-2 text-zinc-400">Horário</th>
                 <th className="text-left py-2 px-2 text-zinc-400">Capacidade</th>
                 <th className="text-left py-2 px-2 text-zinc-400">Tipo</th>
+                {professors.length > 1 && <th className="text-left py-2 px-2 text-zinc-400">Prof.</th>}
                 <th className="text-left py-2 px-2"></th>
               </tr>
             </thead>
@@ -195,6 +221,11 @@ export default function GroupClassesPage() {
                       {gc.isKids && <Badge variant="warning">Kids</Badge>}
                     </div>
                   </td>
+                  {professors.length > 1 && (
+                    <td className="py-2 px-2 text-zinc-400 text-xs">
+                      {gc.instructor?.name || "—"}
+                    </td>
+                  )}
                   <td className="py-2 px-2">
                     <div className="flex items-center gap-2">
                       <button
@@ -215,7 +246,7 @@ export default function GroupClassesPage() {
               ))}
               {classes.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-zinc-500">
+                  <td colSpan={professors.length > 1 ? 7 : 6} className="py-8 text-center text-zinc-500">
                     Nenhuma aula cadastrada
                   </td>
                 </tr>

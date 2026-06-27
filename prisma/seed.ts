@@ -34,6 +34,7 @@ async function main() {
       passwordHash,
       role: "ADMIN",
       status: "APPROVED",
+      isOwner: true,
       studentType: "PREMIUM",
       belt: "PRETA",
       degrees: 0,

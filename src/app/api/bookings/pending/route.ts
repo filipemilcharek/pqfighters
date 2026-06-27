@@ -15,13 +15,18 @@ export async function GET(req: NextRequest) {
   const where: Record<string, unknown> = {};
   if (date) where.date = date;
 
+  const isOwner = session.user.isOwner;
+
   // Auto-create bookings for active private slots on this date
   if (date) {
     const bookingDate = new Date(date + "T12:00:00");
     const dayOfWeek = bookingDate.getDay();
 
+    const slotWhere: Record<string, unknown> = { dayOfWeek, isAvailable: true, userId: { not: null } };
+    if (!isOwner) slotWhere.instructorId = session.user.id;
+
     const activeSlots = await prisma.privateSlot.findMany({
-      where: { dayOfWeek, isAvailable: true, userId: { not: null } },
+      where: slotWhere,
     });
 
     // Don't recreate bookings for rescheduled slots
@@ -49,6 +54,14 @@ export async function GET(req: NextRequest) {
         });
       }
     }
+  }
+
+  // If professor, filter bookings to their classes/slots only
+  if (!isOwner) {
+    where.OR = [
+      { groupClass: { instructorId: session.user.id } },
+      { privateSlot: { instructorId: session.user.id } },
+    ];
   }
 
   const bookings = await prisma.booking.findMany({
